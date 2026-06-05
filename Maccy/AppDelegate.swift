@@ -39,10 +39,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     Clipboard.shared.onNewCopy { History.shared.add($0) }
     Clipboard.shared.onNewCopy { ActionEngine.shared.handleNewCopy($0) }
+    Clipboard.shared.onNewCopy { LanSyncService.shared.pushClip($0) }
     Clipboard.shared.start()
+
+    LanSyncService.shared.start()
 
     KeyboardShortcuts.onKeyDown(for: .runDefaultAction) {
       ActionEngine.shared.runDefaultActionForCurrent()
+    }
+
+    KeyboardShortcuts.onKeyDown(for: .showRemoteClipboard) {
+      RemoteClipboardPanel.shared.toggle()
     }
 
     Task {

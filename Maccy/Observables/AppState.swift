@@ -160,6 +160,13 @@ class AppState: Sendable {
             toolbarIcon: NSImage(systemSymbolName: "bolt.fill", accessibilityDescription: nil) ?? NSImage()
           ) {
             ActionsSettingsPane()
+          },
+          Settings.Pane(
+            identifier: Settings.PaneIdentifier.sync,
+            title: "Sync",
+            toolbarIcon: NSImage(systemSymbolName: "arrow.triangle.2.circlepath", accessibilityDescription: nil) ?? NSImage()
+          ) {
+            SyncSettingsPane()
           }
         ]
       )

@@ -37,7 +37,7 @@ enum ActionFactory {
       guard let name = config.shortcutName, !name.isEmpty else { return nil }
       return RunShortcutAction(shortcutName: name)
     case .sendToAndroid:
-      return nil // Feature 1; not available in v1
+      return SendToAndroidAction()
     }
   }
 }
@@ -176,9 +176,26 @@ struct RunShortcutAction: ClipboardAction {
 
 // MARK: - Sync seam (Feature 1: Android clipboard sync)
 
-// Reserved interface so a future `SendToAndroidAction` can delegate here without
-// any engine changes. No implementation ships in v1.
+// Interface the action delegates to. `LanSyncService` is the concrete impl.
 @MainActor
 protocol SyncService {
   func send(_ value: String) async throws
+}
+
+// Pushes the item's primary string to the paired phone. Background auto-sync
+// already mirrors copies; this is the explicit, rule/menu-triggered action.
+struct SendToAndroidAction: ClipboardAction {
+  let id = "sendToAndroid"
+  let title = "Send to Phone"
+  let systemImage = "iphone"
+
+  func canRun(on item: HistoryItem) -> Bool {
+    LanSyncService.shared.state == .connected
+  }
+
+  func run(on item: HistoryItem) async throws {
+    let value = ValueClassifier.primaryString(of: item)
+    guard !value.isEmpty else { throw ActionError.noValue }
+    try await LanSyncService.shared.send(value)
+  }
 }

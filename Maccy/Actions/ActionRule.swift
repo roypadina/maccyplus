@@ -36,8 +36,7 @@ enum ActionType: String, Codable, CaseIterable, Identifiable {
     }
   }
 
-  // Reserved actions are not offered in the editor yet.
-  var isAvailable: Bool { self != .sendToAndroid }
+  var isAvailable: Bool { true }
 
   static var available: [ActionType] { allCases.filter(\.isAvailable) }
 }
