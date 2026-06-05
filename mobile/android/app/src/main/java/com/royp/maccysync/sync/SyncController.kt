@@ -1,6 +1,7 @@
 package com.royp.maccysync.sync
 
 import android.content.Context
+import android.util.Log
 import com.royp.maccysync.Prefs
 import com.royp.maccysync.clipboard.ClipboardWriter
 import com.royp.maccysync.clipboard.FileSaver
@@ -77,7 +78,7 @@ class SyncController(
       while (running && isActive) {
         if (peer == null) {
           runCatching { connectOnce() }
-            .onFailure { _state.value = ConnState.Disconnected }
+            .onFailure { Log.w(TAG, "connectOnce failed: ${it.message}", it); _state.value = ConnState.Disconnected }
         }
         delay(4_000)
       }
@@ -85,11 +86,13 @@ class SyncController(
   }
 
   private fun connectOnce() {
-    val host = prefs.macHost ?: return
-    val expected = prefs.macIdPub?.fromB64() ?: return
+    val host = prefs.macHost ?: run { Log.w(TAG, "no macHost"); return }
+    val expected = prefs.macIdPub?.fromB64() ?: run { Log.w(TAG, "no macIdPub"); return }
+    Log.i(TAG, "connecting to $host:${prefs.macPort}")
     _state.value = ConnState.Connecting
     val socket = Socket()
     socket.connect(InetSocketAddress(host, prefs.macPort), 5_000)
+    Log.i(TAG, "tcp connected to $host:${prefs.macPort}")
     val peer = PeerSocket(PeerSocket.Role.CLIENT, socket, identity,
       PeerSocket.Trust(expectedPeerIdPub = expected, pairingToken = null))
     attachHandlers(peer, pairing = false, onEstablished = null)
@@ -136,6 +139,7 @@ class SyncController(
 
   private fun attachHandlers(peer: PeerSocket, pairing: Boolean, onEstablished: (() -> Unit)?) {
     peer.onEstablished = {
+      Log.i(TAG, "handshake established")
       peer.send(Control.hello(prefs.deviceId, prefs.deviceName))
       scope.launch { sendHistorySync(peer) }
       _state.value = ConnState.Connected
@@ -144,7 +148,8 @@ class SyncController(
     }
     peer.onControl = { message -> scope.launch { handleControl(peer, message) } }
     peer.onContent = { chunk -> handleContent(chunk) }
-    peer.onClosed = {
+    peer.onClosed = { error ->
+      Log.w(TAG, "peer closed: ${error?.message}", error)
       if (this.peer === peer) {
         this.peer = null
         if (_state.value != ConnState.Pairing) _state.value = ConnState.Disconnected
@@ -257,4 +262,6 @@ class SyncController(
       }
     }
   }
+
+  private companion object { const val TAG = "MaccySync" }
 }

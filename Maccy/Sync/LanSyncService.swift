@@ -158,6 +158,7 @@ final class LanSyncService: SyncService {
         pendingPairingIdPub = nil
         pairingToken = nil
         pairingQR = nil
+        writePairingFile(nil)
       }
 
     case let .historySync(items):
@@ -309,12 +310,14 @@ final class LanSyncService: SyncService {
     pendingPairingIdPub = nil
     state = .pairing
     pairingQR = buildQRPayload(token: token)
+    writePairingFile(pairingQR)
   }
 
   func cancelPairing() {
     pairingToken = nil
     pairingQR = nil
     pendingPairingIdPub = nil
+    writePairingFile(nil)
     state = (peer != nil) ? .connected : (listener != nil ? .listening : .off)
   }
 
@@ -324,6 +327,23 @@ final class LanSyncService: SyncService {
     peer = nil
     RemoteClipStore.shared.clear()
     state = listener != nil ? .listening : .off
+  }
+
+  // Debug aid: mirror the active pairing payload to a file so a paired client can
+  // be driven over adb without the camera. Cleared once pairing completes.
+  private var pairingFileURL: URL {
+    let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+      .appendingPathComponent("MaccyActions", isDirectory: true)
+    try? FileManager.default.createDirectory(at: base, withIntermediateDirectories: true)
+    return base.appendingPathComponent("pairing.json")
+  }
+
+  private func writePairingFile(_ json: String?) {
+    if let json {
+      try? Data(json.utf8).write(to: pairingFileURL)
+    } else {
+      try? FileManager.default.removeItem(at: pairingFileURL)
+    }
   }
 
   private func buildQRPayload(token: String) -> String {

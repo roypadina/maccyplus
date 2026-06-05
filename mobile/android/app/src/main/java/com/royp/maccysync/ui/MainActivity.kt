@@ -65,6 +65,11 @@ class MainActivity : ComponentActivity() {
     super.onCreate(savedInstanceState)
     requestNotificationPermission()
     val app = application as MaccyApp
+    // Start the sync service from this foreground context (allowed on Android 12+,
+    // unlike Application.onCreate).
+    if (app.prefs.syncEnabled && app.prefs.isPaired) {
+      SyncForegroundService.start(this)
+    }
     setContent {
       val scheme = if (isSystemInDarkTheme()) darkColorScheme() else lightColorScheme()
       MaterialTheme(colorScheme = scheme) { App(app) }
