@@ -32,8 +32,20 @@
 
     <activity
       android:name=".pairing.PairingActivity"
-      android:exported="true"
+      android:exported="false"
       android:label="@string/pair_title" />
+
+    <activity
+      android:name=".share.ShareReceiverActivity"
+      android:exported="true"
+      android:excludeFromRecents="true"
+      android:theme="@android:style/Theme.Translucent.NoTitleBar">
+      <intent-filter>
+        <action android:name="android.intent.action.SEND" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <data android:mimeType="text/plain" />
+      </intent-filter>
+    </activity>
 
     <service
       android:name=".net.SyncForegroundService"

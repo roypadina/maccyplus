@@ -20,12 +20,12 @@ struct RemoteClipboardView: View {
     VStack(spacing: 0) {
       header
       Divider()
-      if sync.state != .connected {
-        disconnected
-      } else if items.isEmpty {
+      if !items.isEmpty {
+        list
+      } else if sync.state == .connected {
         empty
       } else {
-        list
+        disconnected
       }
     }
     .frame(minWidth: 380, minHeight: 360)

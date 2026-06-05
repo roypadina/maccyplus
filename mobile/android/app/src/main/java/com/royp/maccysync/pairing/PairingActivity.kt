@@ -33,35 +33,8 @@ import java.util.concurrent.atomic.AtomicBoolean
 class PairingActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    // Camera-free path: pair from a payload passed via intent (adb / share).
-    val injected = intent?.getStringExtra("payload")
-    if (injected != null) {
-      pairWithPayload(injected)
-      setContent { MaterialTheme { PairingStatus("Pairing…") } }
-      return
-    }
     setContent { MaterialTheme { PairingScreen(onDone = { finish() }) } }
   }
-
-  private fun pairWithPayload(raw: String) {
-    val payload = QrParser.parse(raw)
-    if (payload == null) {
-      android.util.Log.e("MaccyPair", "invalid payload")
-      finish()
-      return
-    }
-    android.util.Log.i("MaccyPair", "pairing with ${payload.name} @ ${payload.host}:${payload.port}")
-    MaccyApp.from(this).controller.startPairing(payload) { ok, err ->
-      android.util.Log.i("MaccyPair", "pair result ok=$ok err=$err")
-      if (ok) SyncForegroundService.start(this)
-      runOnUiThread { finish() }
-    }
-  }
-}
-
-@Composable
-private fun PairingStatus(text: String) {
-  Column(modifier = Modifier.fillMaxSize().padding(24.dp)) { Text(text) }
 }
 
 @Composable
@@ -97,13 +70,18 @@ private fun PairingScreen(onDone: () -> Unit) {
   fun launchScan() {
     handled.set(false)
     status = "Point at the QR in Maccy ▸ Settings ▸ Sync ▸ Pair"
+    android.util.Log.i("MaccyScan", "launchScan")
     val options = GmsBarcodeScannerOptions.Builder()
       .setBarcodeFormats(Barcode.FORMAT_QR_CODE)
       .build()
     GmsBarcodeScanning.getClient(context, options).startScan()
-      .addOnSuccessListener { barcode -> barcode.rawValue?.let { handleQr(it) } }
-      .addOnCanceledListener { status = "Scan cancelled" }
-      .addOnFailureListener { e -> status = "Scanner error: ${e.message}" }
+      .addOnSuccessListener { barcode ->
+        android.util.Log.i("MaccyScan", "success raw=${barcode.rawValue?.take(60)} fmt=${barcode.format}")
+        val raw = barcode.rawValue
+        if (raw == null) { status = "Scanned, but empty QR" } else handleQr(raw)
+      }
+      .addOnCanceledListener { android.util.Log.w("MaccyScan", "cancelled"); status = "Scan cancelled — tap Scan QR code" }
+      .addOnFailureListener { e -> android.util.Log.e("MaccyScan", "fail", e); status = "Scanner error: ${e.message}" }
   }
 
   LaunchedEffect(Unit) { launchScan() }
