@@ -33,24 +33,26 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.outlined.ContentCopy
-import androidx.compose.material.icons.outlined.Description
-import androidx.compose.material.icons.outlined.Image
-import androidx.compose.material.icons.outlined.Notes
+import androidx.compose.material.icons.rounded.ContentCopy
+import androidx.compose.material.icons.rounded.Description
+import androidx.compose.material.icons.rounded.Image
+import androidx.compose.material.icons.rounded.CloudUpload
+import androidx.compose.material.icons.rounded.Notes
+import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material.icons.rounded.Sync
+import androidx.compose.material.icons.rounded.Bolt
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
@@ -66,9 +68,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -103,8 +108,11 @@ class MainActivity : ComponentActivity() {
 
   @SuppressLint("BatteryLife")
   private fun requestBatteryExemptionIfNeeded() {
+    val prefs = (application as MaccyApp).prefs
+    if (prefs.batteryAsked) return
     val pm = getSystemService(PowerManager::class.java) ?: return
     if (!pm.isIgnoringBatteryOptimizations(packageName)) {
+      prefs.batteryAsked = true
       runCatching {
         startActivity(Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, Uri.parse("package:$packageName")))
       }
@@ -114,236 +122,220 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 private fun App(app: MaccyApp) {
-  var showSettings by remember { mutableStateOf(false) }
-  val state by app.controller.state.collectAsStateWithLifecycle()
-  val peerName by app.controller.peerName.collectAsStateWithLifecycle()
-
-  Scaffold(
-    containerColor = Ink.bg,
-    topBar = { MaccyHeader(state, peerName, showSettings) { showSettings = !showSettings } }
-  ) { pad ->
-    Box(Modifier.fillMaxSize().padding(pad)) {
-      if (showSettings) SettingsScreen(app) else ClipsScreen(app)
-    }
+  var onSettings by remember { mutableStateOf(false) }
+  val context = LocalContext.current
+  Box(Modifier.fillMaxSize().background(Hue.bgGradient)) {
+    if (onSettings) SettingsScreen(app) else ClipsScreen(app)
+    BottomBar(
+      onSettings = onSettings,
+      onHome = { onSettings = false },
+      onOpenSettings = { onSettings = true },
+      onSyncAll = {
+        app.controller.syncAllToMac { n ->
+          val msg = when {
+            n < 0 -> "Not connected to Mac"
+            n == 0 -> "Nothing to sync"
+            else -> "Synced $n clip${if (n == 1) "" else "s"} to Mac"
+          }
+          Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+        }
+      },
+      modifier = Modifier.align(Alignment.BottomCenter)
+    )
   }
 }
 
-// MARK: header + connection pill
-
-@Composable
-private fun MaccyHeader(state: SyncController.ConnState, peerName: String, showSettings: Boolean, onToggle: () -> Unit) {
-  Column(Modifier.background(Ink.bg)) {
-    Row(
-      Modifier.fillMaxWidth().padding(start = 18.dp, end = 8.dp, top = 14.dp, bottom = 12.dp),
-      verticalAlignment = Alignment.CenterVertically
-    ) {
-      Box(Modifier.size(11.dp).clip(RoundedCornerShape(3.dp)).background(Ink.lime))
-      Spacer(Modifier.width(9.dp))
-      Text("maccy", color = Ink.text, style = MaterialTheme.typography.titleLarge)
-      Text("·sync", color = Ink.muted, style = MaterialTheme.typography.titleLarge)
-      Spacer(Modifier.weight(1f))
-      ConnectionPill(state, peerName)
-      Spacer(Modifier.width(4.dp))
-      IconButton(onClick = onToggle) {
-        Icon(
-          if (showSettings) Icons.Filled.Close else Icons.Filled.Settings,
-          contentDescription = "Settings",
-          tint = if (showSettings) Ink.lime else Ink.muted
-        )
-      }
-    }
-    Box(Modifier.fillMaxWidth().height(1.dp).background(Ink.border))
-  }
-}
-
-@Composable
-private fun ConnectionPill(state: SyncController.ConnState, peerName: String) {
-  val (label, color) = when (state) {
-    SyncController.ConnState.Connected -> (if (peerName.isNotEmpty()) peerName.uppercase() else "LIVE") to Ink.lime
-    SyncController.ConnState.Connecting -> "SYNC…" to Ink.amber
-    SyncController.ConnState.Pairing -> "PAIRING" to Ink.amber
-    SyncController.ConnState.Disconnected -> "OFFLINE" to Ink.faint
-  }
-  val live = state == SyncController.ConnState.Connected || state == SyncController.ConnState.Connecting
-  Row(
-    Modifier
-      .clip(RoundedCornerShape(50))
-      .background(Ink.surfaceHi)
-      .border(1.dp, Ink.border, RoundedCornerShape(50))
-      .padding(horizontal = 10.dp, vertical = 5.dp),
-    verticalAlignment = Alignment.CenterVertically
-  ) {
-    PulseDot(color, live)
-    Spacer(Modifier.width(7.dp))
-    Text(label, color = color, style = MaterialTheme.typography.labelSmall, maxLines = 1)
-  }
-}
-
-@Composable
-private fun PulseDot(color: Color, pulsing: Boolean) {
-  val alpha = if (pulsing) {
-    val t = rememberInfiniteTransition(label = "pulse")
-    t.animateFloat(
-      initialValue = 0.35f, targetValue = 1f,
-      animationSpec = infiniteRepeatable(tween(900), RepeatMode.Reverse), label = "dot"
-    ).value
-  } else 1f
-  Box(Modifier.size(7.dp).clip(CircleShape).background(color.copy(alpha = alpha)))
-}
-
-// MARK: clips screen with separated phone / mac tabs
+// MARK: clips
 
 @Composable
 private fun ClipsScreen(app: MaccyApp) {
   val context = LocalContext.current
   val scope = rememberCoroutineScope()
   var tab by remember { mutableIntStateOf(0) }
+  val state by app.controller.state.collectAsStateWithLifecycle()
+  val peerName by app.controller.peerName.collectAsStateWithLifecycle()
   val phoneClips by app.repo.localClips().collectAsStateWithLifecycle(initialValue = emptyList())
   val macClips by app.repo.macClips().collectAsStateWithLifecycle(initialValue = emptyList())
-
   fun toast(m: String) = Toast.makeText(context, m, Toast.LENGTH_SHORT).show()
 
-  Column(Modifier.fillMaxSize()) {
-    SegmentedTabs(
-      selected = tab,
-      tabs = listOf("THIS PHONE" to Ink.lime, "FROM MAC" to Ink.amber),
-      counts = listOf(phoneClips.size, macClips.size),
-      onSelect = { tab = it }
-    )
-    if (tab == 0) {
-      ClipList(
-        items = phoneClips, accent = Ink.lime,
-        empty = EmptyCopy("No copies yet", "Share text here, or copy on this phone."),
-        onClick = { clip -> clip.text?.let { ClipboardWriter.setText(context, it); toast("Copied") } }
-      )
-    } else {
-      ClipList(
-        items = macClips, accent = Ink.amber,
-        empty = EmptyCopy("Nothing from your Mac", "Copy something on the Mac — it lands here."),
-        onClick = { clip ->
-          scope.launch {
-            val ok = withContext(Dispatchers.IO) { app.controller.applyMacClip(clip.toMeta()) }
-            toast(if (ok) "Copied to clipboard" else "Couldn't fetch — connect the phone")
+  Column(Modifier.fillMaxSize().statusBarsPadding()) {
+    Hero(state, peerName, app.prefs.isPaired, app.prefs.macName, phoneClips.size, macClips.size)
+
+    Column(
+      Modifier
+        .fillMaxSize()
+        .padding(top = 18.dp)
+        .clip(RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp))
+        .background(Hue.surface)
+    ) {
+      PillTabs(tab) { tab = it }
+      val phone = tab == 0
+      val items = if (phone) phoneClips else macClips
+      val tile = if (phone) Hue.phoneTile() else Hue.macTile()
+      if (items.isEmpty()) {
+        if (phone) EmptyState("Nothing here yet", "Share text here, or copy on this phone.")
+        else EmptyState("No Mac clips", "Copy on the Mac — it lands here.")
+      } else LazyColumn(
+        Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(start = 14.dp, end = 14.dp, top = 6.dp, bottom = 120.dp)
+      ) {
+        items(items, key = { it.id }) { clip ->
+          if (phone) {
+            ClipRow(
+              clip, tile, trailing = Icons.Rounded.CloudUpload,
+              onRow = { clip.text?.let { ClipboardWriter.setText(context, it); toast("Copied") } },
+              onTrailing = { toast(if (app.controller.sendToMac(clip.toMeta())) "Sent to Mac" else "Not connected") }
+            )
+          } else {
+            val apply: () -> Unit = {
+              scope.launch {
+                val ok = withContext(Dispatchers.IO) { app.controller.applyMacClip(clip.toMeta()) }
+                toast(if (ok) "Copied to clipboard" else "Couldn't fetch — connect the phone")
+              }
+            }
+            ClipRow(clip, tile, trailing = Icons.Rounded.ContentCopy, onRow = apply, onTrailing = apply)
           }
         }
-      )
-    }
-  }
-}
-
-private data class EmptyCopy(val title: String, val subtitle: String)
-
-@Composable
-private fun SegmentedTabs(
-  selected: Int,
-  tabs: List<Pair<String, Color>>,
-  counts: List<Int>,
-  onSelect: (Int) -> Unit
-) {
-  Row(
-    Modifier
-      .fillMaxWidth()
-      .padding(16.dp)
-      .clip(RoundedCornerShape(12.dp))
-      .background(Ink.surfaceHi)
-      .border(1.dp, Ink.border, RoundedCornerShape(12.dp))
-      .padding(4.dp)
-  ) {
-    tabs.forEachIndexed { index, (label, accent) ->
-      val active = index == selected
-      val bg by animateColorAsState(if (active) accent.copy(alpha = 0.16f) else Color.Transparent, label = "segbg")
-      val fg by animateColorAsState(if (active) accent else Ink.muted, label = "segfg")
-      Row(
-        Modifier
-          .weight(1f)
-          .clip(RoundedCornerShape(9.dp))
-          .background(bg)
-          .clickable { onSelect(index) }
-          .padding(vertical = 10.dp),
-        horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically
-      ) {
-        Text(label, color = fg, style = MaterialTheme.typography.labelMedium)
-        Spacer(Modifier.width(7.dp))
-        Text(
-          counts[index].toString(),
-          color = if (active) accent else Ink.faint,
-          style = MaterialTheme.typography.labelSmall,
-          modifier = Modifier
-            .clip(RoundedCornerShape(50))
-            .background(if (active) accent.copy(alpha = 0.18f) else Ink.bg)
-            .padding(horizontal = 6.dp, vertical = 2.dp)
-        )
       }
     }
   }
 }
 
 @Composable
-private fun ClipList(items: List<ClipEntity>, accent: Color, empty: EmptyCopy, onClick: (ClipEntity) -> Unit) {
-  if (items.isEmpty()) {
-    EmptyState(empty)
-    return
-  }
-  LazyColumn(
-    Modifier.fillMaxSize(),
-    contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 24.dp),
-    verticalArrangement = Arrangement.spacedBy(8.dp)
-  ) {
-    items(items, key = { it.id }) { clip -> ClipCard(clip, accent, onClick) }
-  }
-}
-
-@Composable
-private fun ClipCard(clip: ClipEntity, accent: Color, onClick: (ClipEntity) -> Unit) {
-  Row(
+private fun Hero(
+  state: SyncController.ConnState, peerName: String, paired: Boolean,
+  macName: String?, phoneCount: Int, macCount: Int
+) {
+  Box(
     Modifier
       .fillMaxWidth()
-      .clip(RoundedCornerShape(14.dp))
-      .background(Ink.surface)
-      .border(1.dp, Ink.border, RoundedCornerShape(14.dp))
-      .clickable { onClick(clip) }
-      .height(intrinsicSize = androidx.compose.foundation.layout.IntrinsicSize.Min),
-    verticalAlignment = Alignment.CenterVertically
+      .padding(horizontal = 16.dp, vertical = 14.dp)
+      .shadow(22.dp, RoundedCornerShape(30.dp), spotColor = Hue.purple, ambientColor = Hue.blue)
+      .clip(RoundedCornerShape(30.dp))
+      .background(Hue.heroGradient)
+      .padding(22.dp)
   ) {
-    Box(Modifier.width(3.dp).fillMaxSize().background(accent))
-    Box(
-      Modifier.padding(start = 12.dp).size(34.dp).clip(RoundedCornerShape(9.dp)).background(accent.copy(alpha = 0.14f)),
-      contentAlignment = Alignment.Center
-    ) {
-      Icon(kindIcon(clip.kind), contentDescription = null, tint = accent, modifier = Modifier.size(17.dp))
-    }
-    Column(Modifier.weight(1f).padding(horizontal = 12.dp, vertical = 12.dp)) {
+    Column {
+      Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        Box(Modifier.size(26.dp).clip(RoundedCornerShape(8.dp)).background(Color.White.copy(alpha = 0.18f)), contentAlignment = Alignment.Center) {
+          Icon(Icons.Rounded.Bolt, null, tint = Color.White, modifier = Modifier.size(16.dp))
+        }
+        Spacer(Modifier.width(9.dp))
+        Text("Maccy Sync", color = Color.White, style = MaterialTheme.typography.titleMedium)
+        Spacer(Modifier.weight(1f))
+        StatusPill(state, peerName)
+      }
+      Spacer(Modifier.height(22.dp))
+      Text(if (paired) "PAIRED DEVICE" else "GET STARTED", color = Color.White.copy(alpha = 0.6f), style = MaterialTheme.typography.labelSmall)
+      Spacer(Modifier.height(5.dp))
       Text(
-        clip.preview.ifBlank { clip.filename ?: "untitled" },
-        color = Ink.text, style = MaterialTheme.typography.bodyMedium,
-        maxLines = 2, overflow = TextOverflow.Ellipsis
+        if (paired) (macName ?: "Your Mac") else "Not paired yet",
+        color = Color.White, style = MaterialTheme.typography.headlineSmall, maxLines = 1, overflow = TextOverflow.Ellipsis
       )
-      Spacer(Modifier.height(4.dp))
-      Text(subtitle(clip), color = Ink.muted, style = MaterialTheme.typography.labelSmall)
+      Spacer(Modifier.height(18.dp))
+      Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        HeroStat("On this phone", phoneCount, Modifier.weight(1f))
+        HeroStat("From Mac", macCount, Modifier.weight(1f))
+      }
     }
-    Icon(
-      Icons.Outlined.ContentCopy, contentDescription = "copy", tint = Ink.faint,
-      modifier = Modifier.padding(end = 14.dp).size(16.dp)
-    )
   }
 }
 
 @Composable
-private fun EmptyState(copy: EmptyCopy) {
+private fun HeroStat(label: String, count: Int, modifier: Modifier = Modifier) {
   Column(
-    Modifier.fillMaxSize().padding(32.dp),
-    verticalArrangement = Arrangement.Center,
-    horizontalAlignment = Alignment.CenterHorizontally
+    modifier.clip(RoundedCornerShape(16.dp)).background(Color.White.copy(alpha = 0.12f)).padding(14.dp)
   ) {
-    Text("[ ∅ ]", color = Ink.faint, style = MaterialTheme.typography.headlineSmall)
-    Spacer(Modifier.height(14.dp))
-    Text(copy.title, color = Ink.text, style = MaterialTheme.typography.titleMedium)
+    Text(count.toString(), color = Color.White, style = MaterialTheme.typography.titleLarge)
+    Text(label, color = Color.White.copy(alpha = 0.7f), style = MaterialTheme.typography.bodySmall)
+  }
+}
+
+@Composable
+private fun StatusPill(state: SyncController.ConnState, peerName: String) {
+  val (label, color) = when (state) {
+    SyncController.ConnState.Connected -> "LIVE" to Color(0xFF7DE39B)
+    SyncController.ConnState.Connecting -> "SYNC" to Color(0xFFF3D27A)
+    SyncController.ConnState.Pairing -> "PAIR" to Color(0xFFF3D27A)
+    SyncController.ConnState.Disconnected -> "OFFLINE" to Color.White.copy(alpha = 0.7f)
+  }
+  val live = state == SyncController.ConnState.Connected || state == SyncController.ConnState.Connecting
+  Row(
+    Modifier.clip(RoundedCornerShape(50)).background(Color.White.copy(alpha = 0.16f)).padding(horizontal = 10.dp, vertical = 5.dp),
+    verticalAlignment = Alignment.CenterVertically
+  ) {
+    PulseDot(color, live)
+    Spacer(Modifier.width(6.dp))
+    Text(label, color = Color.White, style = MaterialTheme.typography.labelSmall)
+  }
+}
+
+@Composable
+private fun PulseDot(color: Color, pulsing: Boolean) {
+  val a = if (pulsing) {
+    rememberInfiniteTransition(label = "p").animateFloat(
+      0.35f, 1f, infiniteRepeatable(tween(900), RepeatMode.Reverse), label = "d"
+    ).value
+  } else 1f
+  Box(Modifier.size(7.dp).clip(CircleShape).background(color.copy(alpha = a)))
+}
+
+@Composable
+private fun PillTabs(selected: Int, onSelect: (Int) -> Unit) {
+  Row(
+    Modifier.fillMaxWidth().padding(16.dp).clip(RoundedCornerShape(14.dp)).background(Hue.surfaceHi).padding(5.dp)
+  ) {
+    Segment("This Phone", selected == 0, Hue.phoneTile(), Modifier.weight(1f)) { onSelect(0) }
+    Segment("From Mac", selected == 1, Hue.macTile(), Modifier.weight(1f)) { onSelect(1) }
+  }
+}
+
+@Composable
+private fun Segment(label: String, active: Boolean, activeBrush: Brush, modifier: Modifier, onClick: () -> Unit) {
+  val fg by animateColorAsState(if (active) Color.White else Hue.muted, label = "fg")
+  Box(
+    modifier
+      .clip(RoundedCornerShape(10.dp))
+      .then(if (active) Modifier.background(activeBrush) else Modifier)
+      .clickable { onClick() }
+      .padding(vertical = 11.dp),
+    contentAlignment = Alignment.Center
+  ) { Text(label, color = fg, style = MaterialTheme.typography.labelLarge) }
+}
+
+@Composable
+private fun ClipRow(clip: ClipEntity, tile: Brush, trailing: ImageVector, onRow: () -> Unit, onTrailing: () -> Unit) {
+  Row(
+    Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).clickable { onRow() }.padding(vertical = 9.dp, horizontal = 8.dp),
+    verticalAlignment = Alignment.CenterVertically
+  ) {
+    Box(Modifier.size(46.dp).clip(RoundedCornerShape(14.dp)).background(tile), contentAlignment = Alignment.Center) {
+      Icon(kindIcon(clip.kind), null, tint = Color.White, modifier = Modifier.size(20.dp))
+    }
+    Column(Modifier.weight(1f).padding(horizontal = 13.dp)) {
+      Text(clip.preview.ifBlank { clip.filename ?: "Untitled" }, color = Hue.text, style = MaterialTheme.typography.bodyMedium, maxLines = 2, overflow = TextOverflow.Ellipsis)
+      Spacer(Modifier.height(3.dp))
+      Text(subtitle(clip), color = Hue.muted, style = MaterialTheme.typography.bodySmall)
+    }
+    Box(
+      Modifier.size(38.dp).clip(CircleShape).background(Hue.surfaceHi).clickable { onTrailing() },
+      contentAlignment = Alignment.Center
+    ) {
+      Icon(trailing, "action", tint = Hue.muted, modifier = Modifier.size(17.dp))
+    }
+  }
+}
+
+@Composable
+private fun EmptyState(title: String, subtitle: String) {
+  Column(Modifier.fillMaxSize().padding(32.dp).padding(bottom = 80.dp), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
+    Box(Modifier.size(64.dp).clip(RoundedCornerShape(20.dp)).background(Hue.surfaceHi), contentAlignment = Alignment.Center) {
+      Icon(Icons.Rounded.ContentCopy, null, tint = Hue.faint, modifier = Modifier.size(28.dp))
+    }
+    Spacer(Modifier.height(16.dp))
+    Text(title, color = Hue.text, style = MaterialTheme.typography.titleMedium)
     Spacer(Modifier.height(6.dp))
-    Text(
-      copy.subtitle, color = Ink.muted, style = MaterialTheme.typography.bodySmall,
-      modifier = Modifier.fillMaxWidth(), textAlign = androidx.compose.ui.text.style.TextAlign.Center
-    )
+    Text(subtitle, color = Hue.muted, style = MaterialTheme.typography.bodySmall, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
   }
 }
 
@@ -360,12 +352,13 @@ private fun SettingsScreen(app: MaccyApp) {
   val exempt = isBatteryExempt(context)
 
   LazyColumn(
-    Modifier.fillMaxSize(),
-    contentPadding = PaddingValues(16.dp),
+    Modifier.fillMaxSize().statusBarsPadding(),
+    contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 14.dp, bottom = 120.dp),
     verticalArrangement = Arrangement.spacedBy(14.dp)
   ) {
+    item { Text("Settings", color = Hue.text, style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(start = 4.dp, bottom = 4.dp)) }
     item {
-      SettingsCard("SYNC") {
+      Card("SYNC") {
         ToggleRow("Enable clipboard sync", syncEnabled) {
           syncEnabled = it; app.prefs.syncEnabled = it
           if (it) SyncForegroundService.start(context) else SyncForegroundService.stop(context)
@@ -375,63 +368,45 @@ private fun SettingsScreen(app: MaccyApp) {
       }
     }
     item {
-      SettingsCard("PAIRING") {
+      Card("PAIRING") {
         if (paired) {
-          Text("Paired with ${app.prefs.macName ?: "Mac"}", color = Ink.text, style = MaterialTheme.typography.bodyMedium)
-          Spacer(Modifier.height(10.dp))
-          Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            GhostButton("RE-PAIR") { context.startActivity(Intent(context, PairingActivity::class.java)) }
-            GhostButton("UNPAIR", Ink.coral) {
-              app.controller.unpair(); SyncForegroundService.stop(context); paired = false
-            }
+          Text("Paired with ${app.prefs.macName ?: "Mac"}", color = Hue.text, style = MaterialTheme.typography.bodyLarge)
+          Spacer(Modifier.height(12.dp))
+          Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            Ghost("Re-pair") { context.startActivity(Intent(context, PairingActivity::class.java)) }
+            Ghost("Unpair", Hue.coral) { app.controller.unpair(); SyncForegroundService.stop(context); paired = false }
           }
         } else {
-          Text("Scan the QR shown in Maccy on your Mac.", color = Ink.muted, style = MaterialTheme.typography.bodySmall)
-          Spacer(Modifier.height(10.dp))
-          PrimaryButton("PAIR WITH MAC") { context.startActivity(Intent(context, PairingActivity::class.java)) }
+          Text("Scan the QR shown in Maccy on your Mac.", color = Hue.muted, style = MaterialTheme.typography.bodyMedium)
+          Spacer(Modifier.height(12.dp))
+          Primary("Pair with Mac") { context.startActivity(Intent(context, PairingActivity::class.java)) }
         }
       }
     }
     item {
-      SettingsCard("KEEP RUNNING") {
+      Card("KEEP RUNNING") {
         StatusLine(exempt, if (exempt) "Battery unrestricted — stays connected." else "Samsung suspends it in the background.")
-        if (!exempt) {
-          Spacer(Modifier.height(10.dp))
-          GhostButton("ALLOW UNRESTRICTED") {
-            runCatching {
-              context.startActivity(
-                Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, Uri.parse("package:${context.packageName}"))
-              )
-            }
-          }
-        }
+        if (!exempt) { Spacer(Modifier.height(12.dp)); Ghost("Allow unrestricted") {
+          runCatching { context.startActivity(Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, Uri.parse("package:${context.packageName}"))) }
+        } }
       }
     }
     item {
-      SettingsCard("AUTO-CAPTURE") {
-        StatusLine(a11y, if (a11y) "Accessibility on — copies captured where the OS allows." else "Optional: some devices block background clipboard reads.")
+      Card("AUTO-CAPTURE") {
+        StatusLine(a11y, if (a11y) "Accessibility on (where the OS allows)." else "Optional — some devices block background reads.")
         Spacer(Modifier.height(6.dp))
-        Text("Tip: phone→Mac always works via Share ▸ Maccy Sync.", color = Ink.muted, style = MaterialTheme.typography.bodySmall)
-        Spacer(Modifier.height(10.dp))
-        GhostButton(if (a11y) "ACCESSIBILITY SETTINGS" else "GRANT ACCESS") {
-          context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
-        }
+        Text("phone→Mac always works via Share ▸ Maccy Sync.", color = Hue.muted, style = MaterialTheme.typography.bodySmall)
+        Spacer(Modifier.height(12.dp))
+        Ghost(if (a11y) "Accessibility settings" else "Grant access") { context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)) }
       }
     }
   }
 }
 
 @Composable
-private fun SettingsCard(title: String, content: @Composable () -> Unit) {
-  Column(
-    Modifier
-      .fillMaxWidth()
-      .clip(RoundedCornerShape(16.dp))
-      .background(Ink.surface)
-      .border(1.dp, Ink.border, RoundedCornerShape(16.dp))
-      .padding(16.dp)
-  ) {
-    Text(title, color = Ink.muted, style = MaterialTheme.typography.titleSmall)
+private fun Card(title: String, content: @Composable () -> Unit) {
+  Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(Hue.surface).border(1.dp, Hue.border, RoundedCornerShape(20.dp)).padding(18.dp)) {
+    Text(title, color = Hue.faint, style = MaterialTheme.typography.titleSmall)
     Spacer(Modifier.height(14.dp))
     content()
   }
@@ -439,79 +414,99 @@ private fun SettingsCard(title: String, content: @Composable () -> Unit) {
 
 @Composable
 private fun ToggleRow(label: String, checked: Boolean, onChange: (Boolean) -> Unit) {
-  Row(Modifier.fillMaxWidth().padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-    Text(label, color = Ink.text, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
-    Switch(
-      checked = checked, onCheckedChange = onChange,
-      colors = SwitchDefaults.colors(
-        checkedThumbColor = Ink.onAccent, checkedTrackColor = Ink.lime,
-        uncheckedThumbColor = Ink.muted, uncheckedTrackColor = Ink.surfaceHi, uncheckedBorderColor = Ink.border
-      )
-    )
+  Row(Modifier.fillMaxWidth().padding(vertical = 5.dp), verticalAlignment = Alignment.CenterVertically) {
+    Text(label, color = Hue.text, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
+    Switch(checked, onChange, colors = SwitchDefaults.colors(
+      checkedThumbColor = Color.White, checkedTrackColor = Hue.blue,
+      uncheckedThumbColor = Hue.muted, uncheckedTrackColor = Hue.surfaceHi, uncheckedBorderColor = Hue.border
+    ))
   }
 }
 
 @Composable
 private fun FieldRow(label: String, value: String, onChange: (String) -> Unit) {
-  Column(Modifier.padding(vertical = 6.dp)) {
-    Text(label, color = Ink.muted, style = MaterialTheme.typography.labelMedium)
-    Spacer(Modifier.height(6.dp))
-    TextField(
-      value = value, onValueChange = onChange, singleLine = true,
-      textStyle = MaterialTheme.typography.bodyLarge,
-      modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(10.dp)),
+  Column(Modifier.padding(vertical = 7.dp)) {
+    Text(label, color = Hue.muted, style = MaterialTheme.typography.labelMedium)
+    Spacer(Modifier.height(7.dp))
+    TextField(value, onChange, singleLine = true, textStyle = MaterialTheme.typography.bodyLarge,
+      modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)),
       colors = TextFieldDefaults.colors(
-        focusedContainerColor = Ink.surfaceHi, unfocusedContainerColor = Ink.surfaceHi,
-        focusedTextColor = Ink.text, unfocusedTextColor = Ink.text,
-        focusedIndicatorColor = Ink.lime, unfocusedIndicatorColor = Color.Transparent,
-        cursorColor = Ink.lime
-      )
-    )
+        focusedContainerColor = Hue.surfaceHi, unfocusedContainerColor = Hue.surfaceHi,
+        focusedTextColor = Hue.text, unfocusedTextColor = Hue.text,
+        focusedIndicatorColor = Hue.blue, unfocusedIndicatorColor = Color.Transparent, cursorColor = Hue.blue
+      ))
   }
 }
 
 @Composable
 private fun StatusLine(ok: Boolean, text: String) {
   Row(verticalAlignment = Alignment.CenterVertically) {
-    Box(Modifier.size(7.dp).clip(CircleShape).background(if (ok) Ink.lime else Ink.amber))
-    Spacer(Modifier.width(9.dp))
-    Text(text, color = Ink.muted, style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1f))
+    Box(Modifier.size(8.dp).clip(CircleShape).background(if (ok) Color(0xFF7DE39B) else Hue.purple))
+    Spacer(Modifier.width(10.dp))
+    Text(text, color = Hue.muted, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
   }
 }
 
 @Composable
-private fun PrimaryButton(label: String, onClick: () -> Unit) {
-  Box(
-    Modifier.fillMaxWidth().clip(RoundedCornerShape(10.dp)).background(Ink.lime).clickable { onClick() }
-      .padding(vertical = 12.dp),
-    contentAlignment = Alignment.Center
-  ) { Text(label, color = Ink.onAccent, style = MaterialTheme.typography.labelLarge) }
+private fun Primary(label: String, onClick: () -> Unit) {
+  Box(Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(Hue.heroGradient).clickable { onClick() }.padding(vertical = 13.dp), contentAlignment = Alignment.Center) {
+    Text(label, color = Color.White, style = MaterialTheme.typography.labelLarge)
+  }
 }
 
 @Composable
-private fun GhostButton(label: String, tint: Color = Ink.text, onClick: () -> Unit) {
-  Box(
-    Modifier.clip(RoundedCornerShape(10.dp)).border(1.dp, Ink.border, RoundedCornerShape(10.dp)).background(Ink.surfaceHi)
-      .clickable { onClick() }.padding(horizontal = 16.dp, vertical = 11.dp),
-    contentAlignment = Alignment.Center
-  ) { Text(label, color = tint, style = MaterialTheme.typography.labelMedium) }
+private fun Ghost(label: String, tint: Color = Hue.text, onClick: () -> Unit) {
+  Box(Modifier.clip(RoundedCornerShape(12.dp)).border(1.dp, Hue.border, RoundedCornerShape(12.dp)).background(Hue.surfaceHi).clickable { onClick() }.padding(horizontal = 16.dp, vertical = 11.dp), contentAlignment = Alignment.Center) {
+    Text(label, color = tint, style = MaterialTheme.typography.labelMedium)
+  }
+}
+
+// MARK: bottom bar
+
+@Composable
+private fun BottomBar(onSettings: Boolean, onHome: () -> Unit, onOpenSettings: () -> Unit, onSyncAll: () -> Unit, modifier: Modifier = Modifier) {
+  Row(
+    modifier
+      .navigationBarsPadding()
+      .padding(horizontal = 28.dp, vertical = 16.dp)
+      .fillMaxWidth()
+      .shadow(20.dp, RoundedCornerShape(28.dp), spotColor = Hue.purple)
+      .clip(RoundedCornerShape(28.dp))
+      .background(Hue.surfaceHi)
+      .border(1.dp, Hue.border, RoundedCornerShape(28.dp))
+      .padding(horizontal = 22.dp, vertical = 12.dp),
+    verticalAlignment = Alignment.CenterVertically,
+    horizontalArrangement = Arrangement.SpaceBetween
+  ) {
+    NavIcon(Icons.Rounded.Notes, active = !onSettings, onHome)
+    Box(
+      Modifier.size(52.dp).shadow(16.dp, CircleShape, spotColor = Hue.purple).clip(CircleShape).background(Hue.heroGradient).clickable { onSyncAll() },
+      contentAlignment = Alignment.Center
+    ) { Icon(Icons.Rounded.Sync, "sync all to Mac", tint = Color.White, modifier = Modifier.size(24.dp)) }
+    NavIcon(Icons.Rounded.Settings, active = onSettings, onOpenSettings)
+  }
+}
+
+@Composable
+private fun NavIcon(icon: ImageVector, active: Boolean, onClick: () -> Unit) {
+  Box(Modifier.size(46.dp).clip(CircleShape).clickable { onClick() }, contentAlignment = Alignment.Center) {
+    Icon(icon, null, tint = if (active) Hue.text else Hue.faint, modifier = Modifier.size(23.dp))
+  }
 }
 
 // MARK: helpers
 
-private fun kindIcon(kind: String) = when (kind) {
-  "image" -> Icons.Outlined.Image
-  "file" -> Icons.Outlined.Description
-  else -> Icons.Outlined.Notes
+private fun kindIcon(kind: String): ImageVector = when (kind) {
+  "image" -> Icons.Rounded.Image
+  "file" -> Icons.Rounded.Description
+  else -> Icons.Rounded.Notes
 }
 
 private fun subtitle(clip: ClipEntity): String {
-  val rel = DateUtils.getRelativeTimeSpanString(
-    clip.createdAt, System.currentTimeMillis(), DateUtils.MINUTE_IN_MILLIS
-  ).toString().lowercase()
+  val rel = DateUtils.getRelativeTimeSpanString(clip.createdAt, System.currentTimeMillis(), DateUtils.MINUTE_IN_MILLIS).toString()
   return when (clip.kind) {
-    "image" -> "image · $rel"
-    "file" -> "${clip.filename ?: "file"} · $rel"
+    "image" -> "Image · $rel"
+    "file" -> "${clip.filename ?: "File"} · $rel"
     else -> rel
   }
 }

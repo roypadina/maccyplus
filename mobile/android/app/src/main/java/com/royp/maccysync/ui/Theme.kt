@@ -4,58 +4,68 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import com.royp.maccysync.R
 
-// "Terminal Citrus" — dark, monospace-forward utility aesthetic for a clipboard tool.
-object Ink {
-  val bg = Color(0xFF0C0D0E)        // near-black canvas
-  val surface = Color(0xFF151719)   // cards
-  val surfaceHi = Color(0xFF1E2125) // raised / segmented track
-  val border = Color(0xFF2A2F34)    // hairline borders
-  val text = Color(0xFFEAEDE6)      // primary text
-  val muted = Color(0xFF848C84)     // secondary text
-  val faint = Color(0xFF5A615A)
+// "Aurora" — modern fintech-style, deep blue + deep purple (not bright), dark.
+object Hue {
+  val bg0 = Color(0xFF161235)      // deep indigo (gradient top)
+  val bg1 = Color(0xFF0B0917)      // near-black (gradient bottom)
+  val surface = Color(0xFF191534)  // card
+  val surfaceHi = Color(0xFF221C45)
+  val border = Color(0xFF2C2658)
+  val text = Color(0xFFEDEAFA)
+  val muted = Color(0xFF9A93C2)
+  val faint = Color(0xFF675F95)
 
-  val lime = Color(0xFFB6F24E)      // phone · live · primary accent
-  val amber = Color(0xFFF4B860)     // mac clips
-  val coral = Color(0xFFFF6B5E)     // destructive · offline
-  val onAccent = Color(0xFF0F1409)  // text on lime
+  val blue = Color(0xFF4750C4)     // phone accent — deep blue-violet
+  val blueDeep = Color(0xFF2A2C82)
+  val purple = Color(0xFF7A3FC0)   // mac accent — deep purple
+  val purpleDeep = Color(0xFF45236F)
+  val coral = Color(0xFFD75A6A)    // destructive
+  val onAccent = Color(0xFFF5F3FF)
+
+  val bgGradient = Brush.verticalGradient(listOf(bg0, bg1))
+  val heroGradient = Brush.linearGradient(listOf(Color(0xFF2E2C86), Color(0xFF5C2E8E)))
+  fun phoneTile() = Brush.linearGradient(listOf(blue, blueDeep))
+  fun macTile() = Brush.linearGradient(listOf(purple, purpleDeep))
 }
 
-private val MaccyScheme = darkColorScheme(
-  primary = Ink.lime,
-  onPrimary = Ink.onAccent,
-  secondary = Ink.amber,
-  onSecondary = Ink.onAccent,
-  background = Ink.bg,
-  onBackground = Ink.text,
-  surface = Ink.surface,
-  onSurface = Ink.text,
-  surfaceVariant = Ink.surfaceHi,
-  onSurfaceVariant = Ink.muted,
-  error = Ink.coral,
-  onError = Ink.onAccent,
-  outline = Ink.border,
-  outlineVariant = Ink.border
+val Poppins = FontFamily(
+  Font(R.font.poppins_regular, FontWeight.Normal),
+  Font(R.font.poppins_medium, FontWeight.Medium),
+  Font(R.font.poppins_semibold, FontWeight.SemiBold),
+  Font(R.font.poppins_bold, FontWeight.Bold)
 )
 
-private val mono = FontFamily.Monospace
+private val MaccyScheme = darkColorScheme(
+  primary = Hue.blue, onPrimary = Hue.onAccent,
+  secondary = Hue.purple, onSecondary = Hue.onAccent,
+  background = Hue.bg1, onBackground = Hue.text,
+  surface = Hue.surface, onSurface = Hue.text,
+  surfaceVariant = Hue.surfaceHi, onSurfaceVariant = Hue.muted,
+  error = Hue.coral, onError = Hue.onAccent,
+  outline = Hue.border, outlineVariant = Hue.border
+)
 
 private val MaccyTypography = Typography(
-  headlineSmall = TextStyle(fontFamily = mono, fontWeight = FontWeight.Bold, fontSize = 22.sp, letterSpacing = (-0.5).sp),
-  titleLarge = TextStyle(fontFamily = mono, fontWeight = FontWeight.Bold, fontSize = 18.sp, letterSpacing = 0.5.sp),
-  titleMedium = TextStyle(fontFamily = mono, fontWeight = FontWeight.Bold, fontSize = 14.sp, letterSpacing = 0.5.sp),
-  titleSmall = TextStyle(fontFamily = mono, fontWeight = FontWeight.Medium, fontSize = 11.sp, letterSpacing = 2.sp),
-  bodyLarge = TextStyle(fontFamily = mono, fontSize = 14.sp, lineHeight = 20.sp),
-  bodyMedium = TextStyle(fontFamily = mono, fontSize = 13.sp, lineHeight = 19.sp),
-  bodySmall = TextStyle(fontFamily = mono, fontSize = 11.sp, lineHeight = 15.sp),
-  labelLarge = TextStyle(fontFamily = mono, fontWeight = FontWeight.Bold, fontSize = 13.sp, letterSpacing = 0.5.sp),
-  labelMedium = TextStyle(fontFamily = mono, fontWeight = FontWeight.Medium, fontSize = 11.sp, letterSpacing = 1.sp),
-  labelSmall = TextStyle(fontFamily = mono, fontWeight = FontWeight.Medium, fontSize = 10.sp, letterSpacing = 1.5.sp)
+  displaySmall = TextStyle(fontFamily = Poppins, fontWeight = FontWeight.Bold, fontSize = 30.sp, letterSpacing = (-0.5).sp),
+  headlineSmall = TextStyle(fontFamily = Poppins, fontWeight = FontWeight.SemiBold, fontSize = 23.sp, letterSpacing = (-0.3).sp),
+  titleLarge = TextStyle(fontFamily = Poppins, fontWeight = FontWeight.SemiBold, fontSize = 18.sp),
+  titleMedium = TextStyle(fontFamily = Poppins, fontWeight = FontWeight.SemiBold, fontSize = 15.sp),
+  titleSmall = TextStyle(fontFamily = Poppins, fontWeight = FontWeight.Medium, fontSize = 11.sp, letterSpacing = 1.2.sp),
+  bodyLarge = TextStyle(fontFamily = Poppins, fontWeight = FontWeight.Normal, fontSize = 14.sp, lineHeight = 20.sp),
+  bodyMedium = TextStyle(fontFamily = Poppins, fontWeight = FontWeight.Medium, fontSize = 13.sp, lineHeight = 19.sp),
+  bodySmall = TextStyle(fontFamily = Poppins, fontWeight = FontWeight.Normal, fontSize = 12.sp, lineHeight = 16.sp),
+  labelLarge = TextStyle(fontFamily = Poppins, fontWeight = FontWeight.SemiBold, fontSize = 14.sp),
+  labelMedium = TextStyle(fontFamily = Poppins, fontWeight = FontWeight.Medium, fontSize = 12.sp),
+  labelSmall = TextStyle(fontFamily = Poppins, fontWeight = FontWeight.Medium, fontSize = 10.sp, letterSpacing = 0.8.sp)
 )
 
 @Composable

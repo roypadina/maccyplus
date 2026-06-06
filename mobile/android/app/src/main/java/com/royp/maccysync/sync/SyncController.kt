@@ -24,6 +24,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -260,6 +261,30 @@ class SyncController(
         val bytes = runCatching { fetchContent(meta.id) }.getOrNull() ?: return false
         FileSaver.saveDownload(appContext, meta.filename ?: "${meta.id}.bin", meta.mime, bytes)
       }
+    }
+  }
+
+  // MARK: explicit phone -> Mac push
+
+  fun isConnected(): Boolean = peer != null
+
+  /** Push one already-stored phone clip to the Mac. Returns false if not connected. */
+  fun sendToMac(meta: ItemMeta): Boolean {
+    val p = peer ?: return false
+    p.send(Control.clipAdded(meta))
+    return true
+  }
+
+  /** Push all local phone clips to the Mac. onResult gets the count, or -1 if not connected. */
+  fun syncAllToMac(onResult: (Int) -> Unit) {
+    scope.launch {
+      val p = peer
+      val n = if (p == null) -1 else {
+        val items = repo.recentLocal(200)
+        items.forEach { p.send(Control.clipAdded(it)) }
+        items.size
+      }
+      withContext(Dispatchers.Main) { onResult(n) }
     }
   }
 
