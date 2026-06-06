@@ -252,7 +252,10 @@ class SyncController(
       var pushed = false
       if (rawText.isNotBlank() &&
         !ClipboardWriter.wasJustWritten(rawText) &&
-        repo.latestLocalText() != rawText
+        repo.latestLocalText() != rawText &&
+        // Auto-capture must not refile a clip that came FROM the Mac (it lands on
+        // the phone clipboard when you tap a "From Mac" row) back into "This Phone".
+        (!auto || !repo.macHasText(rawText))
       ) {
         val meta = ClipboardCapture.metaFor(rawText)
         repo.upsertLocal(meta)

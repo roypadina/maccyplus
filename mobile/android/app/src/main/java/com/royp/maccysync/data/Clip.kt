@@ -54,6 +54,9 @@ interface ClipDao {
   @Query("SELECT text FROM clips WHERE origin = :origin ORDER BY createdAt DESC LIMIT 1")
   suspend fun latestText(origin: String): String?
 
+  @Query("SELECT EXISTS(SELECT 1 FROM clips WHERE origin = :origin AND text = :text)")
+  suspend fun hasText(origin: String, text: String): Boolean
+
   @Query("DELETE FROM clips WHERE origin = :origin")
   suspend fun clearOrigin(origin: String)
 

@@ -44,6 +44,10 @@ class ClipRepository(context: Context) {
   /** Text of the most recent local clip — used to dedupe repeated captures. */
   suspend fun latestLocalText(): String? = dao.latestText(ORIGIN_LOCAL)
 
+  /** True if this text already exists as a clip received from the Mac — so
+   *  auto-capture won't refile Mac-origin content as a phone clip. */
+  suspend fun macHasText(text: String): Boolean = dao.hasText(ORIGIN_MAC, text)
+
   // Content cache for fetched Mac image/file bytes.
   fun cachedContentFile(id: String): File? =
     File(contentDir, id).takeIf { it.exists() }
