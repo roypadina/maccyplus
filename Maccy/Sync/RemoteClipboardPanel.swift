@@ -41,6 +41,8 @@ final class RemoteClipboardPanel: NSPanel {
   }
 
   private func present() {
+    // Pull the phone's current history so the panel is never stale on open.
+    LanSyncService.shared.requestHistory()
     if let screen = NSScreen.main {
       let frame = screen.visibleFrame
       let size = self.frame.size

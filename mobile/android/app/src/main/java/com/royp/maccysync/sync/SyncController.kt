@@ -178,6 +178,7 @@ class SyncController(
         _state.value = ConnState.Connected
       }
       "historySync" -> repo.replaceMacHistory(message.items ?: emptyList())
+      "requestHistory" -> sendHistorySync(peer)
       "clipAdded" -> message.item?.let { repo.upsertMac(it) }
       "contentRequest" -> message.id?.let { serveContent(peer, it) }
       "contentBegin" -> message.id?.let { fetchBuffers[it] = ByteArrayOutputStream() }

@@ -150,11 +150,15 @@ separate pairing control messages.)
 
 ```json
 { "t": "historySync", "items": [ <ItemMeta>, ... ] }
+{ "t": "requestHistory" }
 { "t": "clipAdded", "item": <ItemMeta> }
 ```
 On connect (after `hello` both ways), each side sends one `historySync` with its
-most recent items (default **50**, newest first). Each new local copy → one
-`clipAdded`.
+most recent items (up to `HISTORY_SYNC_COUNT`, newest first). Each new local copy
+→ one `clipAdded`. A peer may send `requestHistory` at any time (e.g. when the
+user opens the remote-clipboard browser); the receiver replies with a fresh
+`historySync` so the view is never stale. Files are never auto-included in
+`historySync`/`clipAdded` — they ship only on an explicit per-item send.
 
 **ItemMeta**:
 ```json
@@ -212,7 +216,7 @@ Each side sends `ping` every **20 s** of idle; expects `pong`. No traffic for
 | `CHUNK_SIZE` | `65536` bytes (64 KiB) |
 | `MAX_FRAME` | `17825792` bytes (17 MiB) |
 | `MAX_CONTENT` | `16777216` bytes (16 MiB) — content over this → `contentError "too_large"` |
-| `HISTORY_SYNC_COUNT` | `50` |
+| `HISTORY_SYNC_COUNT` | `200` |
 | `PING_INTERVAL` | `20 s` |
 | `DEAD_TIMEOUT` | `60 s` |
 

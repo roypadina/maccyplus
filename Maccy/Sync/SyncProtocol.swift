@@ -11,7 +11,7 @@ enum SyncProtocol {
   static let chunkSize = 65_536              // bytes per content chunk
   static let maxFrame = 17_825_792           // 17 MiB
   static let maxContent = 16_777_216         // 16 MiB
-  static let historySyncCount = 50
+  static let historySyncCount = 200
   static let pingInterval: TimeInterval = 20
   static let deadTimeout: TimeInterval = 60
 }
@@ -51,6 +51,7 @@ enum SyncMessage {
   case hs3(id: String, sig: String, token: String?)
   case hello(deviceId: String, name: String, platform: String, protocolVersion: Int)
   case historySync(items: [ItemMeta])
+  case requestHistory
   case clipAdded(item: ItemMeta)
   case contentRequest(id: String)
   case contentBegin(id: String, kind: String, size: Int, mime: String?, filename: String?)
@@ -65,6 +66,7 @@ enum SyncMessage {
     case .hs3: return "hs3"
     case .hello: return "hello"
     case .historySync: return "historySync"
+    case .requestHistory: return "requestHistory"
     case .clipAdded: return "clipAdded"
     case .contentRequest: return "contentRequest"
     case .contentBegin: return "contentBegin"
@@ -102,6 +104,7 @@ extension SyncMessage: Codable {
                     protocolVersion: try c.decode(Int.self, forKey: .protocolVersion))
     case "historySync":
       self = .historySync(items: try c.decode([ItemMeta].self, forKey: .items))
+    case "requestHistory": self = .requestHistory
     case "clipAdded":
       self = .clipAdded(item: try c.decode(ItemMeta.self, forKey: .item))
     case "contentRequest":
@@ -148,7 +151,7 @@ extension SyncMessage: Codable {
       try c.encodeIfPresent(mime, forKey: .mime); try c.encodeIfPresent(filename, forKey: .filename)
     case let .contentError(id, reason):
       try c.encode(id, forKey: .id); try c.encode(reason, forKey: .reason)
-    case .ping, .pong:
+    case .ping, .pong, .requestHistory:
       break
     }
   }

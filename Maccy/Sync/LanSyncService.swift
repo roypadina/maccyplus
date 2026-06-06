@@ -163,6 +163,9 @@ final class LanSyncService: SyncService {
     case let .historySync(items):
       RemoteClipStore.shared.replaceAll(items, peerName: connectedPeerName)
 
+    case .requestHistory:
+      sendHistorySync()
+
     case let .clipAdded(item):
       RemoteClipStore.shared.add(item)
 
@@ -254,6 +257,13 @@ final class LanSyncService: SyncService {
   }
 
   // MARK: - Outbound (local copy -> peer)
+
+  // Ask the phone to (re)send its full clipboard history — used when the Remote
+  // Clipboard panel opens, so it always shows the phone's current list.
+  func requestHistory() {
+    guard peer != nil else { return }
+    send(.requestHistory)
+  }
 
   private func sendHistorySync() {
     let recent = recentLocalItems()

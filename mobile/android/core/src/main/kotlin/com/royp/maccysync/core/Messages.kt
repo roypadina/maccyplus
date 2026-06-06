@@ -56,6 +56,7 @@ data class Control(
     fun hello(deviceId: String, name: String) =
       Control(t = "hello", deviceId = deviceId, name = name, platform = "android", protocolVersion = Protocol.VERSION)
     fun historySync(items: List<ItemMeta>) = Control(t = "historySync", items = items)
+    val requestHistory = Control(t = "requestHistory")
     fun clipAdded(item: ItemMeta) = Control(t = "clipAdded", item = item)
     fun contentRequest(id: String) = Control(t = "contentRequest", id = id)
     fun contentBegin(id: String, kind: String, size: Int, mime: String?, filename: String?) =
