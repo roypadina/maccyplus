@@ -79,6 +79,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.royp.maccysync.MaccyApp
 import com.royp.maccysync.clipboard.ClipboardAccessibilityService
+import com.royp.maccysync.clipboard.ClipboardCapture
 import com.royp.maccysync.clipboard.ClipboardWriter
 import com.royp.maccysync.data.ClipEntity
 import com.royp.maccysync.net.SyncForegroundService
@@ -96,6 +97,15 @@ class MainActivity : ComponentActivity() {
     if (app.prefs.syncEnabled && app.prefs.isPaired) SyncForegroundService.start(this)
     requestBatteryExemptionIfNeeded()
     setContent { MaccyTheme { App(app) } }
+  }
+
+  // Reading the clipboard is only permitted while we're the focused app. Every
+  // time the app comes forward, grab the current clip so the phone list mirrors
+  // the system clipboard 1:1 (the only no-root way to auto-capture on Android 10+).
+  override fun onResume() {
+    super.onResume()
+    val app = application as MaccyApp
+    ClipboardCapture.currentText(this)?.let { app.controller.onLocalText(it) }
   }
 
   private fun requestNotificationPermission() {
@@ -184,7 +194,9 @@ private fun ClipsScreen(app: MaccyApp) {
             ClipRow(
               clip, tile, trailing = Icons.Rounded.CloudUpload,
               onRow = { clip.text?.let { ClipboardWriter.setText(context, it); toast("Copied") } },
-              onTrailing = { toast(if (app.controller.sendToMac(clip.toMeta())) "Sent to Mac" else "Not connected") }
+              onTrailing = {
+                app.controller.sendToMac(clip.toMeta()) { ok -> toast(if (ok) "Sent to Mac" else "Not connected") }
+              }
             )
           } else {
             val apply: () -> Unit = {

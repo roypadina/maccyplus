@@ -194,8 +194,7 @@ struct SendToAndroidAction: ClipboardAction {
   }
 
   func run(on item: HistoryItem) async throws {
-    let value = ValueClassifier.primaryString(of: item)
-    guard !value.isEmpty else { throw ActionError.noValue }
-    try await LanSyncService.shared.send(value)
+    // Explicit send — pushes any kind (text/image/file) to the phone.
+    LanSyncService.shared.sendItem(item)
   }
 }

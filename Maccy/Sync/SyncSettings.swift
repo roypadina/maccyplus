@@ -20,7 +20,9 @@ extension Defaults.Keys {
   // Content kinds permitted to leave this device (outbound filter).
   static let syncSendText = Key<Bool>("syncSendText", default: true)
   static let syncSendImages = Key<Bool>("syncSendImages", default: true)
-  static let syncSendFiles = Key<Bool>("syncSendFiles", default: true)
+  // Files are never auto-synced — they only go to the phone on an explicit
+  // "Send to Phone" action (large payloads shouldn't leave the Mac silently).
+  static let syncSendFiles = Key<Bool>("syncSendFiles", default: false)
 }
 
 enum SyncSettings {

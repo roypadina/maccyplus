@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import com.royp.maccysync.MaccyApp
-import com.royp.maccysync.clipboard.ClipboardCapture
 import com.royp.maccysync.net.SyncForegroundService
 
 // Receives "Share ▸ Maccy Sync" intents and pushes the shared text to the Mac.
@@ -32,7 +31,7 @@ class ShareReceiverActivity : ComponentActivity() {
 
     val text = intent.getStringExtra(Intent.EXTRA_TEXT) ?: return false
     if (text.isBlank()) return false
-    app.controller.captureLocal(ClipboardCapture.metaFor(text))
+    app.controller.onLocalText(text, auto = false)
     return true
   }
 }

@@ -50,7 +50,7 @@ class ClipboardAccessibilityService : AccessibilityService() {
     if (ClipboardWriter.wasJustWritten(text)) { lastSeen = text; return }
     lastSeen = text
     Log.i(TAG, "captured len=${text.length}")
-    MaccyApp.from(this).controller.captureLocal(ClipboardCapture.metaFor(text))
+    MaccyApp.from(this).controller.onLocalText(text)
   }
 
   private companion object { const val TAG = "MaccyCap" }

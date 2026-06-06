@@ -3,6 +3,7 @@ package com.royp.maccysync.net
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
@@ -13,6 +14,9 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import com.royp.maccysync.MaccyApp
 import com.royp.maccysync.R
+import com.royp.maccysync.notify.ClipActionReceiver
+import com.royp.maccysync.notify.SendLatestActivity
+import com.royp.maccysync.ui.MainActivity
 
 // Keeps the sync connection (and mDNS discovery) alive in the background.
 class SyncForegroundService : Service() {
@@ -47,10 +51,25 @@ class SyncForegroundService : Service() {
         CHANNEL_ID, getString(R.string.fgs_channel), NotificationManager.IMPORTANCE_LOW)
       manager.createNotificationChannel(channel)
     }
+    val flags = PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+    // Tap the notification body → send the latest clip to the Mac.
+    val tap = PendingIntent.getActivity(
+      this, 1, Intent(this, SendLatestActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK), flags)
+    // Action: open the app.
+    val open = PendingIntent.getActivity(
+      this, 2, Intent(this, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK), flags)
+    // Action: sync all phone clips to the Mac.
+    val syncAll = PendingIntent.getBroadcast(
+      this, 3, Intent(this, ClipActionReceiver::class.java).setAction(ClipActionReceiver.ACTION_SYNC_ALL), flags)
+
     val notification: Notification = NotificationCompat.Builder(this, CHANNEL_ID)
       .setContentTitle(getString(R.string.fgs_title))
+      .setContentText(getString(R.string.fgs_text))
       .setSmallIcon(R.drawable.ic_tile)
       .setOngoing(true)
+      .setContentIntent(tap)
+      .addAction(0, getString(R.string.fgs_open), open)
+      .addAction(0, getString(R.string.fgs_sync_all), syncAll)
       .build()
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
       startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)

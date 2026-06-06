@@ -3,6 +3,7 @@ package com.royp.maccysync.sync
 import android.content.Context
 import android.util.Log
 import com.royp.maccysync.Prefs
+import com.royp.maccysync.clipboard.ClipboardCapture
 import com.royp.maccysync.clipboard.ClipboardWriter
 import com.royp.maccysync.clipboard.FileSaver
 import com.royp.maccysync.core.Control
@@ -163,7 +164,8 @@ class SyncController(
 
   private suspend fun sendHistorySync(peer: PeerSocket) {
     if (!prefs.sendText) { peer.send(Control.historySync(emptyList())); return }
-    val items = repo.recentLocal(Protocol.HISTORY_SYNC_COUNT)
+    // Files are never auto-synced — only sent on an explicit per-clip tap.
+    val items = repo.recentLocal(Protocol.HISTORY_SYNC_COUNT).filter { it.kind != "file" }
     peer.send(Control.historySync(items))
   }
 
@@ -238,10 +240,27 @@ class SyncController(
 
   // MARK: outbound (local clip -> Mac)
 
-  fun captureLocal(meta: ItemMeta) {
+  /**
+   * Record a freshly observed/shared text clip. Skips our own clipboard writes
+   * (echo) and consecutive duplicates, stores it locally so it shows in the
+   * phone list 1:1, then pushes it to the Mac. `auto` capture (accessibility,
+   * foreground read) respects the "send my copies" toggle; explicit user
+   * actions (share, tile, notification) always push when connected.
+   */
+  fun onLocalText(rawText: String, auto: Boolean = true, onResult: ((Boolean) -> Unit)? = null) {
     scope.launch {
-      repo.upsertLocal(meta)
-      if (_state.value == ConnState.Connected) peer?.send(Control.clipAdded(meta))
+      var pushed = false
+      if (rawText.isNotBlank() &&
+        !ClipboardWriter.wasJustWritten(rawText) &&
+        repo.latestLocalText() != rawText
+      ) {
+        val meta = ClipboardCapture.metaFor(rawText)
+        repo.upsertLocal(meta)
+        if ((!auto || prefs.sendText) && _state.value == ConnState.Connected) {
+          peer?.send(Control.clipAdded(meta)); pushed = true
+        }
+      }
+      onResult?.let { cb -> withContext(Dispatchers.Main) { cb(pushed) } }
     }
   }
 
@@ -268,23 +287,57 @@ class SyncController(
 
   fun isConnected(): Boolean = peer != null
 
-  /** Push one already-stored phone clip to the Mac. Returns false if not connected. */
-  fun sendToMac(meta: ItemMeta): Boolean {
-    val p = peer ?: return false
-    p.send(Control.clipAdded(meta))
-    return true
+  /**
+   * Push one already-stored phone clip to the Mac on a background thread.
+   * Files are allowed here — this is the explicit per-clip tap. onResult(false)
+   * if not connected. MUST be async: peer.send() does blocking socket IO and
+   * crashed the app when called on the UI thread (NetworkOnMainThreadException).
+   */
+  fun sendToMac(meta: ItemMeta, onResult: (Boolean) -> Unit) {
+    scope.launch {
+      val ok = peer?.let { it.send(Control.clipAdded(meta)); true } ?: false
+      withContext(Dispatchers.Main) { onResult(ok) }
+    }
   }
 
-  /** Push all local phone clips to the Mac. onResult gets the count, or -1 if not connected. */
+  /**
+   * Push all local phone clips to the Mac, EXCLUDING files (files only go on an
+   * explicit per-clip tap). onResult gets the count sent, or -1 if not connected.
+   */
   fun syncAllToMac(onResult: (Int) -> Unit) {
     scope.launch {
       val p = peer
       val n = if (p == null) -1 else {
-        val items = repo.recentLocal(200)
+        val items = repo.recentLocal(200).filter { it.kind != "file" }
         items.forEach { p.send(Control.clipAdded(it)) }
         items.size
       }
       withContext(Dispatchers.Main) { onResult(n) }
+    }
+  }
+
+  /**
+   * Send the phone's latest clip to the Mac (notification tap). `liveText` is the
+   * current clipboard read by a foreground activity; if blank, falls back to the
+   * most recent stored non-file clip. onResult(false) if nothing to send / offline.
+   */
+  fun sendLatestToMac(liveText: String?, onResult: (Boolean) -> Unit) {
+    scope.launch {
+      val p = peer
+      var ok = false
+      if (p != null) {
+        val meta: ItemMeta? = if (!liveText.isNullOrBlank()) {
+          ClipboardCapture.metaFor(liveText).also { m ->
+            if (!ClipboardWriter.wasJustWritten(liveText) && repo.latestLocalText() != liveText) {
+              repo.upsertLocal(m)
+            }
+          }
+        } else {
+          repo.recentLocal(50).firstOrNull { it.kind != "file" }
+        }
+        if (meta != null) { p.send(Control.clipAdded(meta)); ok = true }
+      }
+      withContext(Dispatchers.Main) { onResult(ok) }
     }
   }
 

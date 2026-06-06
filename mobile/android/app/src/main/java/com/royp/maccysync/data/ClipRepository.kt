@@ -41,6 +41,9 @@ class ClipRepository(context: Context) {
   suspend fun recentLocal(limit: Int): List<ItemMeta> =
     dao.recent(ORIGIN_LOCAL, limit).map { it.toMeta() }
 
+  /** Text of the most recent local clip — used to dedupe repeated captures. */
+  suspend fun latestLocalText(): String? = dao.latestText(ORIGIN_LOCAL)
+
   // Content cache for fetched Mac image/file bytes.
   fun cachedContentFile(id: String): File? =
     File(contentDir, id).takeIf { it.exists() }

@@ -14,7 +14,7 @@ class CaptureTileService : TileService() {
       Toast.makeText(this, "Clipboard empty or unreadable", Toast.LENGTH_SHORT).show()
       return
     }
-    MaccyApp.from(this).controller.captureLocal(ClipboardCapture.metaFor(text))
+    MaccyApp.from(this).controller.onLocalText(text, auto = false)
     Toast.makeText(this, "Captured to Maccy Sync", Toast.LENGTH_SHORT).show()
   }
 }

@@ -283,6 +283,17 @@ final class LanSyncService: SyncService {
     send(.clipAdded(item: meta))
   }
 
+  // Explicit "Send to Phone" — sends any kind including files, ignoring the
+  // auto-send filters. This is the only path that pushes a file to the phone.
+  func sendItem(_ item: HistoryItem) {
+    guard peer != nil else { return }
+    let id = UUID().uuidString
+    guard let meta = SyncContent.meta(
+      for: item, id: id, sendText: true, sendImages: true, sendFiles: true) else { return }
+    announced[id] = item
+    send(.clipAdded(item: meta))
+  }
+
   private func recentLocalItems() -> [HistoryItem] {
     Array(AppState.shared.history.all.prefix(SyncProtocol.historySyncCount).map { $0.item })
   }
