@@ -200,8 +200,11 @@ final class LanSyncService: SyncService {
     }
   }
 
-  // Merge a phone clip into the local clipboard history as a real HistoryItem,
-  // tagged `.fromPhone`. Text is inline; image/file content is fetched on arrival.
+  // Merge a phone clip into the local clipboard history as a real HistoryItem
+  // (tagged `.fromPhone`) AND put it on the Mac clipboard so it's immediately
+  // pasteable. phone→Mac is explicit-only, so every arriving clip is a deliberate
+  // "send to Mac" — making it the current clipboard is the expected result.
+  // Text is inline; image/file content is fetched on arrival.
   private func ingestPhoneClip(_ meta: ItemMeta) {
     Task { @MainActor in
       var content: Data?
@@ -209,9 +212,12 @@ final class LanSyncService: SyncService {
         content = try? await fetchContent(id: meta.id)
         if content == nil { return }  // couldn't materialize — skip
       }
-      guard let item = SyncContent.historyItem(
-        for: meta, content: content, peerName: connectedPeerName) else { return }
-      History.shared.add(item)
+      if let item = SyncContent.historyItem(
+        for: meta, content: content, peerName: connectedPeerName) {
+        History.shared.add(item)
+      }
+      // Set the Mac clipboard (apply stamps .fromMaccy → no echo / no re-record).
+      SyncContent.apply(meta: meta, content: content)
     }
   }
 
