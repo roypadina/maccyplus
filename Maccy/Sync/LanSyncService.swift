@@ -150,7 +150,6 @@ final class LanSyncService: SyncService {
     switch message {
     case let .hello(deviceId, name, _, _):
       connectedPeerName = name
-      RemoteClipStore.shared.peerName = name
       state = .connected
       if let idPub = pendingPairingIdPub {
         Defaults[.syncPairedDevice] = PairedDevice(
@@ -161,13 +160,13 @@ final class LanSyncService: SyncService {
       }
 
     case let .historySync(items):
-      RemoteClipStore.shared.replaceAll(items, peerName: connectedPeerName)
+      items.forEach { ingestPhoneClip($0) }
 
     case .requestHistory:
       sendHistorySync()
 
     case let .clipAdded(item):
-      RemoteClipStore.shared.add(item)
+      ingestPhoneClip(item)
 
     case let .contentRequest(id):
       serveContent(id: id)
@@ -195,10 +194,24 @@ final class LanSyncService: SyncService {
     buffer.append(chunk.bytes)
     fetchBuffers[id] = buffer
     guard chunk.last else { return }
-    RemoteClipStore.shared.storeContent(buffer, for: id)
     fetchBuffers[id] = nil
     if let cont = fetchConts.removeValue(forKey: id) {
       cont.resume(returning: buffer)
+    }
+  }
+
+  // Merge a phone clip into the local clipboard history as a real HistoryItem,
+  // tagged `.fromPhone`. Text is inline; image/file content is fetched on arrival.
+  private func ingestPhoneClip(_ meta: ItemMeta) {
+    Task { @MainActor in
+      var content: Data?
+      if meta.kindEnum != .text || meta.text == nil {
+        content = try? await fetchContent(id: meta.id)
+        if content == nil { return }  // couldn't materialize — skip
+      }
+      guard let item = SyncContent.historyItem(
+        for: meta, content: content, peerName: connectedPeerName) else { return }
+      History.shared.add(item)
     }
   }
 
@@ -236,7 +249,6 @@ final class LanSyncService: SyncService {
   // MARK: - Fetching content from the peer
 
   func fetchContent(id: String) async throws -> Data {
-    if let cached = RemoteClipStore.shared.cachedContent(for: id) { return cached }
     return try await withCheckedThrowingContinuation { cont in
       fetchConts[id] = cont
       fetchBuffers[id] = Data()
@@ -282,7 +294,9 @@ final class LanSyncService: SyncService {
   }
 
   func pushClip(_ item: HistoryItem) {
-    guard peer != nil, !item.fromMaccy else { return }
+    // Never push back a clip that came FROM the phone (no echo loop), and never
+    // our own Maccy-originated copies.
+    guard peer != nil, !item.fromMaccy, !item.fromPhone else { return }
     let id = UUID().uuidString
     guard let meta = SyncContent.meta(
       for: item, id: id,
@@ -343,7 +357,8 @@ final class LanSyncService: SyncService {
     Defaults[.syncPairedDevice] = nil
     peer?.cancel()
     peer = nil
-    RemoteClipStore.shared.clear()
+    // Phone clips already merged into the local history stay (they're regular,
+    // badged clips now).
     state = listener != nil ? .listening : .off
   }
 

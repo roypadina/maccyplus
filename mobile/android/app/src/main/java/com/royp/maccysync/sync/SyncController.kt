@@ -163,10 +163,9 @@ class SyncController(
   }
 
   private suspend fun sendHistorySync(peer: PeerSocket) {
-    if (!prefs.sendText) { peer.send(Control.historySync(emptyList())); return }
-    // Files are never auto-synced — only sent on an explicit per-clip tap.
-    val items = repo.recentLocal(Protocol.HISTORY_SYNC_COUNT).filter { it.kind != "file" }
-    peer.send(Control.historySync(items))
+    // Phone→Mac is explicit-only now: nothing is bulk-pushed on connect. Clips go
+    // to the Mac solely via the notification (current clip) or a per-clip tap.
+    peer.send(Control.historySync(emptyList()))
   }
 
   // MARK: inbound
@@ -260,7 +259,10 @@ class SyncController(
       ) {
         val meta = ClipboardCapture.metaFor(rawText)
         repo.upsertLocal(meta)
-        if ((!auto || prefs.sendText) && _state.value == ConnState.Connected) {
+        // Auto-capture NEVER pushes — it only fills the phone's own list. Pushing
+        // to the Mac is explicit only (share/tile here; notification + per-clip tap
+        // elsewhere).
+        if (!auto && _state.value == ConnState.Connected) {
           peer?.send(Control.clipAdded(meta)); pushed = true
         }
       }
@@ -305,48 +307,28 @@ class SyncController(
   }
 
   /**
-   * Push all local phone clips to the Mac, EXCLUDING files (files only go on an
-   * explicit per-clip tap). onResult gets the count sent, or -1 if not connected.
+   * Notification tap: send the clip the user just copied (read by a focused
+   * activity — the only place a read is allowed) to the Mac. Stores it in the
+   * phone's own list too. Skips our own writes and Mac-origin text. Waits briefly
+   * for the connection in case the app was frozen and is reconnecting.
+   * onResult(false) if not connected or nothing to send.
    */
-  fun syncAllToMac(onResult: (Int) -> Unit) {
+  fun sendCurrentToMac(currentText: String?, onResult: (Boolean) -> Unit) {
     scope.launch {
-      val p = peer
-      val n = if (p == null) -1 else {
-        val items = repo.recentLocal(200).filter { it.kind != "file" }
-        items.forEach { p.send(Control.clipAdded(it)) }
-        items.size
-      }
-      withContext(Dispatchers.Main) { onResult(n) }
-    }
-  }
-
-  /**
-   * Notification "Sync all": capture the clipboard the user just copied (passed in
-   * by a focused activity — the only place a read is allowed), store it, then push
-   * every local non-file clip so the just-copied text is included and lands first.
-   * Waits briefly for the connection in case the app was frozen and is reconnecting.
-   * onResult gets the count synced, or -1 if still not connected.
-   */
-  fun syncAllIncludingCurrent(currentText: String?, onResult: (Int) -> Unit) {
-    scope.launch {
-      // Capture the freshly-copied clip first (skip echoes/dupes/Mac-origin text).
-      if (!currentText.isNullOrBlank() &&
-        !ClipboardWriter.wasJustWritten(currentText) &&
-        repo.latestLocalText() != currentText &&
-        !repo.macHasText(currentText)
-      ) {
-        repo.upsertLocal(ClipboardCapture.metaFor(currentText))
-      }
       // The app may have been frozen in the background — give the reconnect a moment.
       var p = peer
       var waited = 0
       while (p == null && waited < 6_000) { delay(500); waited += 500; p = peer }
-      val n = if (p == null) -1 else {
-        val items = repo.recentLocal(200).filter { it.kind != "file" }
-        items.forEach { p.send(Control.clipAdded(it)) }
-        items.size
+      var ok = false
+      val text = currentText
+      if (p != null && !text.isNullOrBlank() &&
+        !ClipboardWriter.wasJustWritten(text) && !repo.macHasText(text)
+      ) {
+        val meta = ClipboardCapture.metaFor(text)
+        if (repo.latestLocalText() != text) repo.upsertLocal(meta)
+        p.send(Control.clipAdded(meta)); ok = true
       }
-      withContext(Dispatchers.Main) { onResult(n) }
+      withContext(Dispatchers.Main) { onResult(ok) }
     }
   }
 

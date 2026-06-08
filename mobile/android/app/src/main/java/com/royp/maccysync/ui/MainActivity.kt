@@ -140,16 +140,6 @@ private fun App(app: MaccyApp) {
       onSettings = onSettings,
       onHome = { onSettings = false },
       onOpenSettings = { onSettings = true },
-      onSyncAll = {
-        app.controller.syncAllToMac { n ->
-          val msg = when {
-            n < 0 -> "Not connected to Mac"
-            n == 0 -> "Nothing to sync"
-            else -> "Synced $n clip${if (n == 1) "" else "s"} to Mac"
-          }
-          Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
-        }
-      },
       modifier = Modifier.align(Alignment.BottomCenter)
     )
   }
@@ -476,7 +466,7 @@ private fun Ghost(label: String, tint: Color = Hue.text, onClick: () -> Unit) {
 // MARK: bottom bar
 
 @Composable
-private fun BottomBar(onSettings: Boolean, onHome: () -> Unit, onOpenSettings: () -> Unit, onSyncAll: () -> Unit, modifier: Modifier = Modifier) {
+private fun BottomBar(onSettings: Boolean, onHome: () -> Unit, onOpenSettings: () -> Unit, modifier: Modifier = Modifier) {
   Row(
     modifier
       .navigationBarsPadding()
@@ -486,15 +476,11 @@ private fun BottomBar(onSettings: Boolean, onHome: () -> Unit, onOpenSettings: (
       .clip(RoundedCornerShape(28.dp))
       .background(Hue.surfaceHi)
       .border(1.dp, Hue.border, RoundedCornerShape(28.dp))
-      .padding(horizontal = 22.dp, vertical = 12.dp),
+      .padding(horizontal = 40.dp, vertical = 12.dp),
     verticalAlignment = Alignment.CenterVertically,
     horizontalArrangement = Arrangement.SpaceBetween
   ) {
     NavIcon(Icons.Rounded.Notes, active = !onSettings, onHome)
-    Box(
-      Modifier.size(52.dp).shadow(16.dp, CircleShape, spotColor = Hue.purple).clip(CircleShape).background(Hue.heroGradient).clickable { onSyncAll() },
-      contentAlignment = Alignment.Center
-    ) { Icon(Icons.Rounded.Sync, "sync all to Mac", tint = Color.White, modifier = Modifier.size(24.dp)) }
     NavIcon(Icons.Rounded.Settings, active = onSettings, onOpenSettings)
   }
 }

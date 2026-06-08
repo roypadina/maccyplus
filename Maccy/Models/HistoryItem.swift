@@ -50,6 +50,7 @@ class HistoryItem {
   private static let transientTypes: [String] = [
     NSPasteboard.PasteboardType.modified.rawValue,
     NSPasteboard.PasteboardType.fromMaccy.rawValue,
+    NSPasteboard.PasteboardType.fromPhone.rawValue,
     NSPasteboard.PasteboardType.linkPresentationMetadata.rawValue,
     NSPasteboard.PasteboardType.customWebKitPasteboardData.rawValue,
     NSPasteboard.PasteboardType.source.rawValue,
@@ -193,6 +194,14 @@ class HistoryItem {
 
   var fromMaccy: Bool { contentData([.fromMaccy]) != nil }
   var universalClipboard: Bool { contentData([.universalClipboard]) != nil }
+
+  // Set when the item was synced from the paired phone. `phoneName` is the device
+  // name carried in the marker's value.
+  var fromPhone: Bool { contentData([.fromPhone]) != nil }
+  var phoneName: String? {
+    guard let data = contentData([.fromPhone]) else { return nil }
+    return String(data: data, encoding: .utf8)
+  }
 
   private var universalClipboardImage: Bool { universalClipboard && fileURLs.first?.pathExtension == "jpeg" }
   private var universalClipboardText: Bool {

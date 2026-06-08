@@ -72,6 +72,45 @@ enum SyncContent {
     return nil
   }
 
+  // MARK: - Remote meta -> a real (merged) HistoryItem
+
+  /// Builds a HistoryItem from a phone clip so it merges into the local history,
+  /// tagged with the `.fromPhone` marker (value = phone name). `content` must be
+  /// supplied for image/file (and large text); inline text uses meta.text.
+  static func historyItem(for meta: ItemMeta, content: Data?, peerName: String) -> HistoryItem? {
+    var contents: [HistoryItemContent] = []
+    switch meta.kindEnum {
+    case .text:
+      let text = meta.text ?? content.flatMap { String(data: $0, encoding: .utf8) }
+      guard let text, !text.isEmpty else { return nil }
+      contents.append(HistoryItemContent(type: NSPasteboard.PasteboardType.string.rawValue, value: Data(text.utf8)))
+    case .image:
+      guard let data = content else { return nil }
+      contents.append(HistoryItemContent(type: NSPasteboard.PasteboardType.png.rawValue, value: data))
+    case .file:
+      guard let data = content else { return nil }
+      let name = meta.filename ?? "\(meta.id).bin"
+      let url = phoneFilesDir().appendingPathComponent(name)
+      guard (try? data.write(to: url)) != nil else { return nil }
+      contents.append(HistoryItemContent(type: NSPasteboard.PasteboardType.fileURL.rawValue, value: url.dataRepresentation))
+    }
+    contents.append(HistoryItemContent(type: NSPasteboard.PasteboardType.fromPhone.rawValue, value: Data(peerName.utf8)))
+
+    let item = HistoryItem(contents: contents)
+    let copiedAt = Date(timeIntervalSince1970: Double(meta.createdAt) / 1000)
+    item.firstCopiedAt = copiedAt
+    item.lastCopiedAt = copiedAt
+    item.title = item.generateTitle()
+    return item
+  }
+
+  private static func phoneFilesDir() -> URL {
+    let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+      .appendingPathComponent("MaccyActions/phone-files", isDirectory: true)
+    try? FileManager.default.createDirectory(at: base, withIntermediateDirectories: true)
+    return base
+  }
+
   // MARK: - Remote meta -> local pasteboard
 
   /// Writes the remote item to the general pasteboard. `content` must be

@@ -18,6 +18,10 @@ extension NSPasteboard.PasteboardType: Defaults.Serializable {
   // Marks that copy was made from Maccy.
   static let fromMaccy = NSPasteboard.PasteboardType(rawValue: "org.p0deje.Maccy")
 
+  // Marks a history item that came from the paired phone. Its value is the phone
+  // name (UTF-8). Used to badge the row and to never push it back to the phone.
+  static let fromPhone = NSPasteboard.PasteboardType(rawValue: "com.royp.MaccyActions.fromPhone")
+
   // Types that indicate Microsoft Word bookmarks (links).
   static let microsoftObjectLink = NSPasteboard.PasteboardType(rawValue: "com.microsoft.ObjectLink")
   static let microsoftLinkSource = NSPasteboard.PasteboardType(rawValue: "com.microsoft.Link-Source")

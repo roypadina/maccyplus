@@ -31,13 +31,19 @@ struct HistoryItemView: View {
 
   @Environment(AppState.self) private var appState
 
+  // A small phone glyph shown on rows synced from the paired phone.
+  private static let phoneBadge: NSImage? = NSImage(
+    systemSymbolName: "iphone", accessibilityDescription: "From phone"
+  )?.withSymbolConfiguration(NSImage.SymbolConfiguration(pointSize: 11, weight: .regular))
+
   var body: some View {
     ListItemView(
       id: item.id,
       selectionId: item.id,
       appIcon: item.applicationImage,
       image: item.thumbnailImage,
-      accessoryImage: item.thumbnailImage != nil ? nil : ColorImage.from(item.title),
+      accessoryImage: item.item.fromPhone ? Self.phoneBadge
+        : (item.thumbnailImage != nil ? nil : ColorImage.from(item.title)),
       attributedTitle: item.attributedTitle,
       shortcuts: item.shortcuts,
       rowActions: rowActions,

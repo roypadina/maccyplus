@@ -25,10 +25,6 @@ struct SyncSettingsPane: View {
         statusRow
       }
 
-      Settings.Section(label: { Text("Open phone clipboard") }) {
-        KeyboardShortcuts.Recorder(for: .showRemoteClipboard)
-      }
-
       Settings.Section(title: "This Mac", bottomDivider: true) {
         TextField("Name", text: $deviceName)
           .frame(width: 220)

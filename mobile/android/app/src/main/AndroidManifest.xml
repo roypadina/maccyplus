@@ -55,10 +55,6 @@
       android:taskAffinity=""
       android:theme="@android:style/Theme.Translucent.NoTitleBar" />
 
-    <receiver
-      android:name=".notify.ClipActionReceiver"
-      android:exported="false" />
-
     <service
       android:name=".net.SyncForegroundService"
       android:exported="false"

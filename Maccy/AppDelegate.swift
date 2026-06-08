@@ -48,9 +48,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
       ActionEngine.shared.runDefaultActionForCurrent()
     }
 
-    KeyboardShortcuts.onKeyDown(for: .showRemoteClipboard) {
-      RemoteClipboardPanel.shared.toggle()
-    }
+    // Phone clips now merge into the main popup (badged), so the separate phone
+    // panel + its ⌃⇧V shortcut are retired.
 
     Task {
       for await _ in Defaults.updates(.clipboardCheckInterval, initial: false) {
