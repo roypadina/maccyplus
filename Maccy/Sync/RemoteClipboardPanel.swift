@@ -41,6 +41,13 @@ final class RemoteClipboardPanel: NSPanel {
   }
 
   private func present() {
+    // Rebuild the hosting view on every open. An NSPanel reuses its content view
+    // across close/open, so SwiftUI's onAppear and @Observable updates don't
+    // re-fire on re-open — the panel would keep showing the first snapshot. A
+    // fresh view reads the current store and re-runs onAppear.
+    contentView = NSHostingView(rootView: RemoteClipboardView(onClose: { [weak self] in
+      self?.close()
+    }).ignoresSafeArea())
     // Pull the phone's current history so the panel is never stale on open.
     LanSyncService.shared.requestHistory()
     if let screen = NSScreen.main {
