@@ -14,7 +14,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import com.royp.maccysync.MaccyApp
 import com.royp.maccysync.R
-import com.royp.maccysync.notify.ClipActionReceiver
+import com.royp.maccysync.notify.SyncNowActivity
 import com.royp.maccysync.ui.MainActivity
 
 // Keeps the sync connection (and mDNS discovery) alive in the background.
@@ -51,10 +51,11 @@ class SyncForegroundService : Service() {
       manager.createNotificationChannel(channel)
     }
     val flags = PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-    // Tap the notification body → sync ALL phone clips to the Mac (a broadcast,
-    // so it needs no clipboard access and works regardless of focus).
-    val syncAll = PendingIntent.getBroadcast(
-      this, 3, Intent(this, ClipActionReceiver::class.java).setAction(ClipActionReceiver.ACTION_SYNC_ALL), flags)
+    // Tap the notification body → SyncNowActivity: a focused activity that can read
+    // the clipboard (a background broadcast cannot), captures the just-copied clip,
+    // then syncs ALL phone clips to the Mac so the new value is included.
+    val syncAll = PendingIntent.getActivity(
+      this, 4, Intent(this, SyncNowActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK), flags)
     // Action button: open the app.
     val open = PendingIntent.getActivity(
       this, 2, Intent(this, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK), flags)

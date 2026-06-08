@@ -321,27 +321,32 @@ class SyncController(
   }
 
   /**
-   * Send the phone's latest clip to the Mac (notification tap). `liveText` is the
-   * current clipboard read by a foreground activity; if blank, falls back to the
-   * most recent stored non-file clip. onResult(false) if nothing to send / offline.
+   * Notification "Sync all": capture the clipboard the user just copied (passed in
+   * by a focused activity — the only place a read is allowed), store it, then push
+   * every local non-file clip so the just-copied text is included and lands first.
+   * Waits briefly for the connection in case the app was frozen and is reconnecting.
+   * onResult gets the count synced, or -1 if still not connected.
    */
-  fun sendLatestToMac(liveText: String?, onResult: (Boolean) -> Unit) {
+  fun syncAllIncludingCurrent(currentText: String?, onResult: (Int) -> Unit) {
     scope.launch {
-      val p = peer
-      var ok = false
-      if (p != null) {
-        val meta: ItemMeta? = if (!liveText.isNullOrBlank()) {
-          ClipboardCapture.metaFor(liveText).also { m ->
-            if (!ClipboardWriter.wasJustWritten(liveText) && repo.latestLocalText() != liveText) {
-              repo.upsertLocal(m)
-            }
-          }
-        } else {
-          repo.recentLocal(50).firstOrNull { it.kind != "file" }
-        }
-        if (meta != null) { p.send(Control.clipAdded(meta)); ok = true }
+      // Capture the freshly-copied clip first (skip echoes/dupes/Mac-origin text).
+      if (!currentText.isNullOrBlank() &&
+        !ClipboardWriter.wasJustWritten(currentText) &&
+        repo.latestLocalText() != currentText &&
+        !repo.macHasText(currentText)
+      ) {
+        repo.upsertLocal(ClipboardCapture.metaFor(currentText))
       }
-      withContext(Dispatchers.Main) { onResult(ok) }
+      // The app may have been frozen in the background — give the reconnect a moment.
+      var p = peer
+      var waited = 0
+      while (p == null && waited < 6_000) { delay(500); waited += 500; p = peer }
+      val n = if (p == null) -1 else {
+        val items = repo.recentLocal(200).filter { it.kind != "file" }
+        items.forEach { p.send(Control.clipAdded(it)) }
+        items.size
+      }
+      withContext(Dispatchers.Main) { onResult(n) }
     }
   }
 

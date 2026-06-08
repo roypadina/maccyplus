@@ -7,12 +7,12 @@ import com.royp.maccysync.MaccyApp
 import com.royp.maccysync.clipboard.ClipboardCapture
 import com.royp.maccysync.net.SyncForegroundService
 
-// Launched by tapping the ongoing notification. The clipboard can only be read
-// once we actually hold WINDOW FOCUS — onResume fires too early and the OS denies
-// the read (returns null), which is why "send from notification" used to silently
-// re-send a stale clip. So we read in onWindowFocusChanged. If the read still
-// comes back empty, SyncController falls back to the latest stored clip.
-class SendLatestActivity : ComponentActivity() {
+// Launched by tapping the ongoing notification ("Sync all"). A broadcast can't do
+// this: the clipboard is only readable while an app holds WINDOW FOCUS, so we use
+// a translucent activity. On focus we read the clip the user just copied in another
+// app, capture it, then sync every phone clip to the Mac — so the new value is
+// included and lands first. (onResume is too early; the OS denies the read there.)
+class SyncNowActivity : ComponentActivity() {
   private var done = false
 
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -30,9 +30,14 @@ class SendLatestActivity : ComponentActivity() {
       finish(); return
     }
     SyncForegroundService.start(this)
-    val live = ClipboardCapture.currentText(this)
-    app.controller.sendLatestToMac(live) { ok ->
-      Toast.makeText(this, if (ok) "Sent latest to Mac" else "Not connected to Mac", Toast.LENGTH_SHORT).show()
+    val current = ClipboardCapture.currentText(this)
+    app.controller.syncAllIncludingCurrent(current) { n ->
+      val msg = when {
+        n < 0 -> "Not connected to Mac"
+        n == 0 -> "Nothing to sync"
+        else -> "Synced $n clip${if (n == 1) "" else "s"} to Mac"
+      }
+      Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
       finish()
     }
   }

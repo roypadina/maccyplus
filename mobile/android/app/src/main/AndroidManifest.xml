@@ -49,7 +49,7 @@
     </activity>
 
     <activity
-      android:name=".notify.SendLatestActivity"
+      android:name=".notify.SyncNowActivity"
       android:exported="false"
       android:excludeFromRecents="true"
       android:taskAffinity=""
