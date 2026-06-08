@@ -347,7 +347,6 @@ private fun EmptyState(title: String, subtitle: String) {
 private fun SettingsScreen(app: MaccyApp) {
   val context = LocalContext.current
   var syncEnabled by remember { mutableStateOf(app.prefs.syncEnabled) }
-  var sendText by remember { mutableStateOf(app.prefs.sendText) }
   var deviceName by remember { mutableStateOf(app.prefs.deviceName) }
   var paired by remember { mutableStateOf(app.prefs.isPaired) }
   val a11y = isAccessibilityEnabled(context)
@@ -366,7 +365,6 @@ private fun SettingsScreen(app: MaccyApp) {
           if (it) SyncForegroundService.start(context) else SyncForegroundService.stop(context)
         }
         FieldRow("This phone's name", deviceName) { deviceName = it; app.prefs.deviceName = it }
-        ToggleRow("Send my copies to Mac", sendText) { sendText = it; app.prefs.sendText = it }
       }
     }
     item {

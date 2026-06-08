@@ -37,10 +37,6 @@ class Prefs(context: Context) {
     get() = sp.getBoolean("sync_enabled", true)
     set(value) { sp.edit().putBoolean("sync_enabled", value).apply() }
 
-  var sendText: Boolean
-    get() = sp.getBoolean("send_text", true)
-    set(value) { sp.edit().putBoolean("send_text", value).apply() }
-
   var batteryAsked: Boolean
     get() = sp.getBoolean("battery_asked", false)
     set(value) { sp.edit().putBoolean("battery_asked", value).apply() }
