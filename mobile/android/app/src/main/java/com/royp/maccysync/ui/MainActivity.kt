@@ -109,6 +109,8 @@ class MainActivity : ComponentActivity() {
   override fun onResume() {
     super.onResume()
     val app = application as MaccyApp
+    // Revive a connection Samsung may have frozen in the background + pull latest.
+    app.controller.nudge()
     ClipboardCapture.currentText(this)?.let { app.controller.onLocalText(it) }
   }
 

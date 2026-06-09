@@ -57,6 +57,10 @@ class SyncController(
   private var peer: PeerSocket? = null
   @Volatile private var running = false
   private var reconnectJob: Job? = null
+  // Liveness: the Mac pings every ~20s; if we hear nothing for DEAD_TIMEOUT the
+  // socket is half-open (typically after Doze) — drop it so the loop redials.
+  @Volatile private var lastRxAt = 0L
+  @Volatile private var connectedHost: String? = null
 
   private val fetchBuffers = ConcurrentHashMap<String, ByteArrayOutputStream>()
   private val fetchWaiters = ConcurrentHashMap<String, CompletableDeferred<ByteArray>>()
@@ -85,9 +89,17 @@ class SyncController(
     reconnectJob?.cancel()
     reconnectJob = scope.launch {
       while (running && isActive) {
-        if (peer == null) {
+        val p = peer
+        if (p == null) {
           runCatching { connectOnce() }
             .onFailure { Log.w(TAG, "connectOnce failed: ${it.message}", it); _state.value = ConnState.Disconnected }
+        } else if (lastRxAt > 0 && System.currentTimeMillis() - lastRxAt > Protocol.DEAD_TIMEOUT_MS) {
+          // Half-open (Doze / network change) — Mac pings every 20s, so >60s silence = dead.
+          Log.w(TAG, "connection stale (${System.currentTimeMillis() - lastRxAt}ms), reconnecting")
+          runCatching { p.cancel() }
+          if (peer === p) peer = null
+          connectedHost = null
+          _state.value = ConnState.Disconnected
         }
         delay(4_000)
       }
@@ -96,7 +108,9 @@ class SyncController(
 
   private fun connectOnce() {
     val expected = prefs.macIdPub?.fromB64() ?: run { Log.w(TAG, "no macIdPub"); return }
-    val candidates = prefs.macHosts
+    // The mDNS-discovered current address (prefs.macHost) goes first, then the
+    // stored candidates (LAN + Tailscale). Dedup keeps it from being retried.
+    val candidates = (listOfNotNull(prefs.macHost) + prefs.macHosts).distinct()
     if (candidates.isEmpty()) { Log.w(TAG, "no macHost"); return }
     _state.value = ConnState.Connecting
     // Try each candidate (LAN first, Tailscale last) until one TCP-connects. The
@@ -118,6 +132,8 @@ class SyncController(
     }
     if (socket == null) { _state.value = ConnState.Disconnected; return }
     used?.let { if (prefs.macHost != it) prefs.macHost = it }
+    connectedHost = used
+    lastRxAt = System.currentTimeMillis()
     val peer = PeerSocket(PeerSocket.Role.CLIENT, socket, identity,
       PeerSocket.Trust(expectedPeerIdPub = expected, pairingToken = null))
     attachHandlers(peer, pairing = false, onEstablished = null)
@@ -160,6 +176,26 @@ class SyncController(
     scope.launch { repo.clearMac() }
   }
 
+  /**
+   * mDNS resolved the Mac's current LAN address. Make it the first connect
+   * candidate; if we're currently bound to a different (likely dead) address —
+   * e.g. the Mac's DHCP IP changed — drop the socket so the loop redials the new
+   * one immediately instead of waiting out the dead-timeout.
+   */
+  fun onDiscovered(host: String, port: Int) {
+    prefs.macPort = port
+    if (prefs.macHost != host) prefs.macHost = host
+    prefs.macHosts = listOf(host) + prefs.macHosts  // setter dedups → host stays first
+    val cur = connectedHost
+    if (peer != null && cur != null && cur != host) {
+      Log.i(TAG, "discovered new Mac address $host (was $cur), reconnecting")
+      runCatching { peer?.cancel() }
+      peer = null
+      connectedHost = null
+      _state.value = ConnState.Disconnected
+    }
+  }
+
   // MARK: peer wiring
 
   private fun attachHandlers(peer: PeerSocket, pairing: Boolean, onEstablished: (() -> Unit)?) {
@@ -177,6 +213,7 @@ class SyncController(
       Log.w(TAG, "peer closed: ${error?.message}", error)
       if (this.peer === peer) {
         this.peer = null
+        connectedHost = null
         if (_state.value != ConnState.Pairing) _state.value = ConnState.Disconnected
       }
       fetchWaiters.values.forEach { it.completeExceptionally(IOException("connection closed")) }
@@ -200,6 +237,7 @@ class SyncController(
   // MARK: inbound
 
   private suspend fun handleControl(peer: PeerSocket, message: Control) {
+    lastRxAt = System.currentTimeMillis()
     when (message.t) {
       "hello" -> {
         message.name?.let { _peerName.value = it; prefs.macName = it }
@@ -237,6 +275,7 @@ class SyncController(
   }
 
   private fun handleContent(chunk: ContentChunk) {
+    lastRxAt = System.currentTimeMillis()
     val id = chunk.id.toString()
     // File stream → write straight to disk.
     val fileStream = fetchFileStreams[id]
@@ -353,6 +392,28 @@ class SyncController(
         }
       }
       onResult?.let { cb -> withContext(Dispatchers.Main) { cb(pushed) } }
+    }
+  }
+
+  /**
+   * Call when the app returns to the foreground. Samsung freezes the whole process
+   * in the background, so a connection can be silently half-open. If we haven't
+   * heard from the Mac recently, drop + redial; otherwise just pull the latest
+   * history so the list is current the instant the user opens the app.
+   */
+  fun nudge() {
+    if (!running) return
+    val p = peer ?: return  // reconnect loop will dial
+    scope.launch {
+      if (System.currentTimeMillis() - lastRxAt > 8_000) {
+        Log.i(TAG, "foreground nudge: stale, reconnecting")
+        runCatching { p.cancel() }
+        if (peer === p) peer = null
+        connectedHost = null
+        _state.value = ConnState.Disconnected
+      } else {
+        runCatching { p.send(Control.requestHistory) }
+      }
     }
   }
 

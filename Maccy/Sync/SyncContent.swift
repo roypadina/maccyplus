@@ -16,7 +16,10 @@ enum SyncContent {
     sendImages: Bool,
     sendFiles: Bool
   ) -> ItemMeta? {
-    let createdAt = Int64(item.firstCopiedAt.timeIntervalSince1970 * 1000)
+    // Use lastCopiedAt (recency), not firstCopiedAt: re-copying an existing item
+    // resets firstCopiedAt to its ORIGINAL time (History.add dedup), which would
+    // bury the re-copied clip down the phone list instead of putting it on top.
+    let createdAt = Int64(item.lastCopiedAt.timeIntervalSince1970 * 1000)
 
     if let url = item.fileURLs.first, sendFiles {
       let attrs = try? FileManager.default.attributesOfItem(atPath: url.path)

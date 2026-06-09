@@ -29,8 +29,7 @@ class SyncForegroundService : Service() {
     app.controller.start()
     if (discovery == null) {
       discovery = NsdDiscovery(this) { host, port ->
-        app.prefs.macHost = host
-        app.prefs.macPort = port
+        app.controller.onDiscovered(host, port)
       }.also { it.start() }
     }
     return START_STICKY
