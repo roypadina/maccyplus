@@ -3,6 +3,7 @@ import Defaults
 import Foundation
 import Network
 import Observation
+import UniformTypeIdentifiers
 
 // Central LAN sync orchestrator. Mac is the server: it listens, advertises via
 // Bonjour, accepts one phone, runs the handshake, then exchanges history/clips.
@@ -30,8 +31,13 @@ final class LanSyncService: SyncService {
   private var pendingPairingIdPub: Data?
 
   private var announced: [String: HistoryItem] = [:]
+  // In-RAM receive (text/image): id -> accumulating bytes + continuation.
   private var fetchBuffers: [String: Data] = [:]
   private var fetchConts: [String: CheckedContinuation<Data, Error>] = [:]
+  // Disk-streamed receive (file): id -> open write handle / destination / continuation.
+  private var fetchFileHandles: [String: FileHandle] = [:]
+  private var fetchFileURLs: [String: URL] = [:]
+  private var fetchFileConts: [String: CheckedContinuation<URL, Error>] = [:]
   private var pingTimer: Timer?
 
   // MARK: - Lifecycle
@@ -123,7 +129,8 @@ final class LanSyncService: SyncService {
 
   private func onEstablished() {
     send(.hello(deviceId: Defaults[.syncDeviceId], name: Defaults[.syncDeviceName],
-                platform: "macos", protocolVersion: SyncProtocol.version))
+                platform: "macos", protocolVersion: SyncProtocol.version,
+                hosts: Self.localIPv4Addresses()))
     sendHistorySync()
     startPingTimer()
   }
@@ -137,6 +144,11 @@ final class LanSyncService: SyncService {
     for (_, cont) in fetchConts { cont.resume(throwing: SyncCryptoError.openFailed) }
     fetchConts.removeAll()
     fetchBuffers.removeAll()
+    for (_, cont) in fetchFileConts { cont.resume(throwing: SyncCryptoError.openFailed) }
+    fetchFileConts.removeAll()
+    for (_, handle) in fetchFileHandles { try? handle.close() }
+    fetchFileHandles.removeAll()
+    fetchFileURLs.removeAll()
     state = listener != nil ? .listening : .off
   }
 
@@ -148,7 +160,7 @@ final class LanSyncService: SyncService {
 
   private func handleControl(_ message: SyncMessage) {
     switch message {
-    case let .hello(deviceId, name, _, _):
+    case let .hello(deviceId, name, _, _, _):
       connectedPeerName = name
       state = .connected
       if let idPub = pendingPairingIdPub {
@@ -171,14 +183,29 @@ final class LanSyncService: SyncService {
     case let .contentRequest(id):
       serveContent(id: id)
 
-    case let .contentBegin(id, _, _, _, _):
-      fetchBuffers[id] = Data()
+    case let .contentBegin(id, kind, _, _, filename):
+      if kind == ItemMeta.Kind.file.rawValue {
+        // Stream a file straight to disk (never buffer 256 MiB in RAM).
+        let dest = SyncContent.phoneFileURL(id: id, filename: filename)
+        FileManager.default.createFile(atPath: dest.path, contents: nil)
+        if let handle = try? FileHandle(forWritingTo: dest) {
+          fetchFileHandles[id] = handle
+          fetchFileURLs[id] = dest
+        } else {
+          fetchFileConts.removeValue(forKey: id)?.resume(throwing: SyncCryptoError.openFailed)
+        }
+      } else {
+        fetchBuffers[id] = Data()
+      }
 
     case let .contentError(id, _):
       if let cont = fetchConts.removeValue(forKey: id) {
         cont.resume(throwing: SyncCryptoError.openFailed)
       }
       fetchBuffers[id] = nil
+      if let handle = fetchFileHandles.removeValue(forKey: id) { try? handle.close() }
+      fetchFileURLs[id] = nil
+      fetchFileConts.removeValue(forKey: id)?.resume(throwing: SyncCryptoError.openFailed)
 
     case .ping:
       send(.pong)
@@ -190,6 +217,18 @@ final class LanSyncService: SyncService {
 
   private func handleContent(_ chunk: ContentChunk) {
     let id = chunk.id.uuidString.lowercased()
+    // File stream → write straight to the open handle.
+    if let handle = fetchFileHandles[id] {
+      try? handle.write(contentsOf: chunk.bytes)
+      guard chunk.last else { return }
+      try? handle.close()
+      fetchFileHandles[id] = nil
+      let url = fetchFileURLs.removeValue(forKey: id)
+      if let cont = fetchFileConts.removeValue(forKey: id) {
+        if let url { cont.resume(returning: url) } else { cont.resume(throwing: SyncCryptoError.openFailed) }
+      }
+      return
+    }
     var buffer = fetchBuffers[id] ?? Data()
     buffer.append(chunk.bytes)
     fetchBuffers[id] = buffer
@@ -207,46 +246,103 @@ final class LanSyncService: SyncService {
   // Text is inline; image/file content is fetched on arrival.
   private func ingestPhoneClip(_ meta: ItemMeta) {
     Task { @MainActor in
-      var content: Data?
-      if meta.kindEnum != .text || meta.text == nil {
-        content = try? await fetchContent(id: meta.id)
-        if content == nil { return }  // couldn't materialize — skip
-      }
-      if let item = SyncContent.historyItem(
-        for: meta, content: content, peerName: connectedPeerName) {
+      switch meta.kindEnum {
+      case .file:
+        // Auto-download the explicitly-uploaded file to disk and add it to history
+        // (badged .fromPhone). NO clipboard takeover — the user pastes/saves it from
+        // the list when they want it.
+        guard let url = try? await fetchContentToFile(id: meta.id),
+              let item = SyncContent.fileHistoryItem(at: url, meta: meta, peerName: connectedPeerName)
+        else { return }
         History.shared.add(item)
+
+      case .image:
+        guard let content = try? await fetchContent(id: meta.id) else { return }
+        addPhoneClip(meta, content: content)
+
+      case .text:
+        var content: Data?
+        if meta.text == nil {
+          content = try? await fetchContent(id: meta.id)
+          if content == nil { return }
+        }
+        addPhoneClip(meta, content: content)
       }
-      // Set the Mac clipboard (apply stamps .fromMaccy → no echo / no re-record).
-      SyncContent.apply(meta: meta, content: content)
     }
+  }
+
+  // Text/image: merge into history AND set the Mac clipboard (explicit phone send →
+  // making it current is expected). apply stamps .fromMaccy so there's no echo.
+  private func addPhoneClip(_ meta: ItemMeta, content: Data?) {
+    if let item = SyncContent.historyItem(for: meta, content: content, peerName: connectedPeerName) {
+      History.shared.add(item)
+    }
+    SyncContent.apply(meta: meta, content: content)
   }
 
   // MARK: - Serving content to the peer
 
   private func serveContent(id: String) {
-    guard let item = announced[id], let full = SyncContent.fullContent(for: item) else {
-      send(.contentError(id: id, reason: "not_found"))
+    guard let item = announced[id] else { send(.contentError(id: id, reason: "not_found")); return }
+    guard let uuid = UUID(uuidString: id) else { send(.contentError(id: id, reason: "bad_id")); return }
+    // Files stream from disk (no whole-file load); text/image stay in RAM.
+    if let url = item.fileURLs.first {
+      serveFile(id: id, uuid: uuid, url: url)
       return
     }
+    guard let full = SyncContent.fullContent(for: item) else {
+      send(.contentError(id: id, reason: "not_found")); return
+    }
     guard full.data.count <= SyncProtocol.maxContent else {
-      send(.contentError(id: id, reason: "too_large"))
-      return
+      send(.contentError(id: id, reason: "too_large")); return
     }
     send(.contentBegin(id: id, kind: full.kind.rawValue, size: full.data.count,
                        mime: full.mime, filename: full.filename))
-    guard let uuid = UUID(uuidString: id) else { return }
-    let data = full.data
-    var seq: UInt32 = 0
-    var offset = 0
+    sendDataChunks(uuid: uuid, data: full.data)
+  }
+
+  // Stream a file from disk → chunks. Reads on the main actor but yields between
+  // chunks so the UI stays responsive even for a large (256 MiB) transfer.
+  private func serveFile(id: String, uuid: UUID, url: URL) {
+    let attrs = try? FileManager.default.attributesOfItem(atPath: url.path)
+    let size = (attrs?[.size] as? Int) ?? 0
+    guard size <= SyncProtocol.maxContent else { send(.contentError(id: id, reason: "too_large")); return }
+    guard let handle = try? FileHandle(forReadingFrom: url) else {
+      send(.contentError(id: id, reason: "not_found")); return
+    }
+    let mime = UTType(filenameExtension: url.pathExtension)?.preferredMIMEType ?? "application/octet-stream"
+    send(.contentBegin(id: id, kind: ItemMeta.Kind.file.rawValue, size: size,
+                       mime: mime, filename: url.lastPathComponent))
+    if size == 0 {
+      peer?.send(ContentChunk(id: uuid, seq: 0, last: true, bytes: Data()))
+      try? handle.close()
+      return
+    }
+    Task { @MainActor in
+      defer { try? handle.close() }
+      var seq: UInt32 = 0
+      var offset = 0
+      while offset < size {
+        guard let chunk = try? handle.read(upToCount: SyncProtocol.chunkSize), !chunk.isEmpty else { break }
+        offset += chunk.count
+        peer?.send(ContentChunk(id: uuid, seq: seq, last: offset >= size, bytes: chunk))
+        seq += 1
+        await Task.yield()
+      }
+    }
+  }
+
+  private func sendDataChunks(uuid: UUID, data: Data) {
     if data.isEmpty {
       peer?.send(ContentChunk(id: uuid, seq: 0, last: true, bytes: Data()))
       return
     }
+    var seq: UInt32 = 0
+    var offset = 0
     while offset < data.count {
       let end = Swift.min(offset + SyncProtocol.chunkSize, data.count)
       let slice = data.subdata(in: offset..<end)
-      let last = end >= data.count
-      peer?.send(ContentChunk(id: uuid, seq: seq, last: last, bytes: slice))
+      peer?.send(ContentChunk(id: uuid, seq: seq, last: end >= data.count, bytes: slice))
       seq += 1
       offset = end
     }
@@ -258,6 +354,15 @@ final class LanSyncService: SyncService {
     return try await withCheckedThrowingContinuation { cont in
       fetchConts[id] = cont
       fetchBuffers[id] = Data()
+      send(.contentRequest(id: id))
+    }
+  }
+
+  // Like fetchContent but streams a file to disk (the contentBegin handler opens
+  // the write handle once it learns kind == file). Returns the on-disk URL.
+  func fetchContentToFile(id: String) async throws -> URL {
+    return try await withCheckedThrowingContinuation { cont in
+      fetchFileConts[id] = cont
       send(.contentRequest(id: id))
     }
   }
@@ -401,30 +506,42 @@ final class LanSyncService: SyncService {
     return Data(bytes).base64EncodedString()
   }
 
+  // Candidate addresses the phone can dial, LAN first and Tailscale last. Tailscale
+  // runs on a utun interface with a 100.64.0.0/10 (CGNAT) address — including it is
+  // what lets sync work over WAN when both devices are on the same tailnet.
   static func localIPv4Addresses() -> [String] {
-    var addresses: [String] = []
+    var lan: [String] = []
+    var tailscale: [String] = []
     var ifaddr: UnsafeMutablePointer<ifaddrs>?
-    guard getifaddrs(&ifaddr) == 0, let first = ifaddr else { return addresses }
+    guard getifaddrs(&ifaddr) == 0, let first = ifaddr else { return lan }
     defer { freeifaddrs(ifaddr) }
     var pointer: UnsafeMutablePointer<ifaddrs>? = first
     while let current = pointer {
+      defer { pointer = current.pointee.ifa_next }
       let flags = Int32(current.pointee.ifa_flags)
       let addr = current.pointee.ifa_addr.pointee
-      if (flags & (IFF_UP | IFF_RUNNING)) == (IFF_UP | IFF_RUNNING),
-         (flags & IFF_LOOPBACK) == 0,
-         addr.sa_family == UInt8(AF_INET) {
-        let name = String(cString: current.pointee.ifa_name)
-        if name.hasPrefix("en") {
-          var hostname = [CChar](repeating: 0, count: Int(NI_MAXHOST))
-          if getnameinfo(current.pointee.ifa_addr, socklen_t(addr.sa_len), &hostname,
-                         socklen_t(hostname.count), nil, 0, NI_NUMERICHOST) == 0 {
-            let ip = String(cString: hostname)
-            if !ip.isEmpty, !addresses.contains(ip) { addresses.append(ip) }
-          }
-        }
+      guard (flags & (IFF_UP | IFF_RUNNING)) == (IFF_UP | IFF_RUNNING),
+            (flags & IFF_LOOPBACK) == 0,
+            addr.sa_family == UInt8(AF_INET) else { continue }
+      let name = String(cString: current.pointee.ifa_name)
+      var hostname = [CChar](repeating: 0, count: Int(NI_MAXHOST))
+      guard getnameinfo(current.pointee.ifa_addr, socklen_t(addr.sa_len), &hostname,
+                        socklen_t(hostname.count), nil, 0, NI_NUMERICHOST) == 0 else { continue }
+      let ip = String(cString: hostname)
+      guard !ip.isEmpty, !ip.hasPrefix("169.254") else { continue }
+      if isTailscaleIP(ip) {
+        if !tailscale.contains(ip) { tailscale.append(ip) }
+      } else if name.hasPrefix("en") {
+        if !lan.contains(ip) { lan.append(ip) }
       }
-      pointer = current.pointee.ifa_next
     }
-    return addresses
+    return lan + tailscale
+  }
+
+  /// True for a Tailscale CGNAT address (100.64.0.0/10 → 100.64.x – 100.127.x).
+  static func isTailscaleIP(_ ip: String) -> Bool {
+    let parts = ip.split(separator: ".").compactMap { Int($0) }
+    guard parts.count == 4 else { return false }
+    return parts[0] == 100 && (64...127).contains(parts[1])
   }
 }

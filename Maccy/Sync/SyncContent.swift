@@ -24,7 +24,8 @@ enum SyncContent {
       let mime = UTType(filenameExtension: url.pathExtension)?.preferredMIMEType ?? "application/octet-stream"
       return ItemMeta(id: id, kind: ItemMeta.Kind.file.rawValue, createdAt: createdAt,
                       size: size, mime: mime, preview: url.lastPathComponent,
-                      text: nil, filename: url.lastPathComponent, thumb: nil)
+                      text: nil, filename: url.lastPathComponent, thumb: nil,
+                      path: url.path)
     }
 
     if let imageData = item.imageData, sendImages, let png = pngData(imageData) {
@@ -109,6 +110,28 @@ enum SyncContent {
       .appendingPathComponent("MaccyActions/phone-files", isDirectory: true)
     try? FileManager.default.createDirectory(at: base, withIntermediateDirectories: true)
     return base
+  }
+
+  /// Stable on-disk destination for an incoming phone file (id-prefixed so two
+  /// files with the same name don't collide). Used by the streamed receive path.
+  static func phoneFileURL(id: String, filename: String?) -> URL {
+    let safe = (filename ?? "\(id).bin").replacingOccurrences(of: "/", with: "_")
+    return phoneFilesDir().appendingPathComponent("\(id.prefix(8))-\(safe)")
+  }
+
+  /// Build a `.fileURL` HistoryItem from an already-on-disk phone file, tagged
+  /// `.fromPhone`. (The bytes were streamed to `url` by the receive path.)
+  static func fileHistoryItem(at url: URL, meta: ItemMeta, peerName: String) -> HistoryItem? {
+    let contents: [HistoryItemContent] = [
+      HistoryItemContent(type: NSPasteboard.PasteboardType.fileURL.rawValue, value: url.dataRepresentation),
+      HistoryItemContent(type: NSPasteboard.PasteboardType.fromPhone.rawValue, value: Data(peerName.utf8))
+    ]
+    let item = HistoryItem(contents: contents)
+    let copiedAt = Date(timeIntervalSince1970: Double(meta.createdAt) / 1000)
+    item.firstCopiedAt = copiedAt
+    item.lastCopiedAt = copiedAt
+    item.title = item.generateTitle()
+    return item
   }
 
   // MARK: - Remote meta -> local pasteboard

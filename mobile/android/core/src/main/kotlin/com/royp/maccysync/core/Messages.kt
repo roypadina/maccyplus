@@ -15,7 +15,8 @@ data class ItemMeta(
   val preview: String,
   val text: String? = null,         // present iff text kind and size <= INLINE_TEXT_CAP
   val filename: String? = null,
-  val thumb: String? = null         // base64 PNG, image kind only
+  val thumb: String? = null,        // base64 PNG, image kind only
+  val path: String? = null          // source path on the sender (file kind)
 ) {
   enum class Kind { text, image, file }
   val kindEnum: Kind get() = runCatching { Kind.valueOf(kind) }.getOrDefault(Kind.text)
@@ -40,7 +41,8 @@ data class Control(
   val size: Int? = null,
   val mime: String? = null,
   val filename: String? = null,
-  val reason: String? = null
+  val reason: String? = null,
+  val hosts: List<String>? = null
 ) {
   companion object {
     @OptIn(ExperimentalSerializationApi::class)

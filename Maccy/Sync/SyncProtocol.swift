@@ -10,7 +10,7 @@ enum SyncProtocol {
   static let thumbCap = 65_536               // bytes; image thumbnail max
   static let chunkSize = 65_536              // bytes per content chunk
   static let maxFrame = 17_825_792           // 17 MiB
-  static let maxContent = 16_777_216         // 16 MiB
+  static let maxContent = 268_435_456        // 256 MiB
   static let historySyncCount = 200
   static let pingInterval: TimeInterval = 20
   static let deadTimeout: TimeInterval = 60
@@ -30,8 +30,19 @@ struct ItemMeta: Codable, Identifiable, Hashable {
   let text: String?           // present iff text kind and size <= inlineTextCap
   let filename: String?
   let thumb: String?          // base64 PNG, image kind only
+  // Source path on the sender (file kind): Mac sends the full file path; the
+  // phone sends a display path. Optional + defaulted → back-compatible wire.
+  var path: String?
 
   var kindEnum: Kind { Kind(rawValue: kind) ?? .text }
+
+  init(id: String, kind: String, createdAt: Int64, size: Int, mime: String?,
+       preview: String, text: String?, filename: String?, thumb: String?,
+       path: String? = nil) {
+    self.id = id; self.kind = kind; self.createdAt = createdAt; self.size = size
+    self.mime = mime; self.preview = preview; self.text = text
+    self.filename = filename; self.thumb = thumb; self.path = path
+  }
 }
 
 // MARK: - Content chunk (binary frame payload)
@@ -49,7 +60,7 @@ enum SyncMessage {
   case hs1(eph: String)
   case hs2(eph: String, id: String, sig: String)
   case hs3(id: String, sig: String, token: String?)
-  case hello(deviceId: String, name: String, platform: String, protocolVersion: Int)
+  case hello(deviceId: String, name: String, platform: String, protocolVersion: Int, hosts: [String])
   case historySync(items: [ItemMeta])
   case requestHistory
   case clipAdded(item: ItemMeta)
@@ -80,7 +91,7 @@ enum SyncMessage {
 extension SyncMessage: Codable {
   private enum CodingKeys: String, CodingKey {
     case t, eph, id, sig, token, deviceId, name, platform, protocolVersion
-    case items, item, kind, size, mime, filename, reason
+    case items, item, kind, size, mime, filename, reason, hosts
   }
 
   init(from decoder: Decoder) throws {
@@ -101,7 +112,8 @@ extension SyncMessage: Codable {
       self = .hello(deviceId: try c.decode(String.self, forKey: .deviceId),
                     name: try c.decode(String.self, forKey: .name),
                     platform: try c.decode(String.self, forKey: .platform),
-                    protocolVersion: try c.decode(Int.self, forKey: .protocolVersion))
+                    protocolVersion: try c.decode(Int.self, forKey: .protocolVersion),
+                    hosts: try c.decodeIfPresent([String].self, forKey: .hosts) ?? [])
     case "historySync":
       self = .historySync(items: try c.decode([ItemMeta].self, forKey: .items))
     case "requestHistory": self = .requestHistory
@@ -137,9 +149,10 @@ extension SyncMessage: Codable {
     case let .hs3(id, sig, token):
       try c.encode(id, forKey: .id); try c.encode(sig, forKey: .sig)
       try c.encodeIfPresent(token, forKey: .token)
-    case let .hello(deviceId, name, platform, pv):
+    case let .hello(deviceId, name, platform, pv, hosts):
       try c.encode(deviceId, forKey: .deviceId); try c.encode(name, forKey: .name)
       try c.encode(platform, forKey: .platform); try c.encode(pv, forKey: .protocolVersion)
+      if !hosts.isEmpty { try c.encode(hosts, forKey: .hosts) }
     case let .historySync(items):
       try c.encode(items, forKey: .items)
     case let .clipAdded(item):

@@ -22,8 +22,8 @@ class ClipRepository(context: Context) {
 
   suspend fun byId(id: String): ClipEntity? = dao.byId(id)
 
-  suspend fun upsertLocal(meta: ItemMeta) {
-    dao.upsert(meta.toEntity(ORIGIN_LOCAL))
+  suspend fun upsertLocal(meta: ItemMeta, contentPath: String? = null) {
+    dao.upsert(meta.toEntity(ORIGIN_LOCAL, contentPath))
     dao.trim(ORIGIN_LOCAL, 200)
   }
 

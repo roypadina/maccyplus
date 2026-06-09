@@ -1,10 +1,12 @@
 package com.royp.maccysync.sync
 
 import android.content.Context
+import android.net.Uri
 import android.util.Log
 import com.royp.maccysync.Prefs
 import com.royp.maccysync.clipboard.ClipboardCapture
 import com.royp.maccysync.clipboard.ClipboardWriter
+import com.royp.maccysync.clipboard.FileImport
 import com.royp.maccysync.clipboard.FileSaver
 import com.royp.maccysync.core.Control
 import com.royp.maccysync.core.ContentChunk
@@ -29,6 +31,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.io.FileOutputStream
 import java.io.IOException
 import java.net.InetSocketAddress
 import java.net.Socket
@@ -57,6 +60,10 @@ class SyncController(
 
   private val fetchBuffers = ConcurrentHashMap<String, ByteArrayOutputStream>()
   private val fetchWaiters = ConcurrentHashMap<String, CompletableDeferred<ByteArray>>()
+  // Disk-streamed file downloads (never buffer 256 MiB in RAM).
+  private val fetchFileStreams = ConcurrentHashMap<String, FileOutputStream>()
+  private val fetchFileTargets = ConcurrentHashMap<String, File>()
+  private val fetchFileWaiters = ConcurrentHashMap<String, CompletableDeferred<File>>()
 
   // MARK: lifecycle
 
@@ -88,13 +95,29 @@ class SyncController(
   }
 
   private fun connectOnce() {
-    val host = prefs.macHost ?: run { Log.w(TAG, "no macHost"); return }
     val expected = prefs.macIdPub?.fromB64() ?: run { Log.w(TAG, "no macIdPub"); return }
-    Log.i(TAG, "connecting to $host:${prefs.macPort}")
+    val candidates = prefs.macHosts
+    if (candidates.isEmpty()) { Log.w(TAG, "no macHost"); return }
     _state.value = ConnState.Connecting
-    val socket = Socket()
-    socket.connect(InetSocketAddress(host, prefs.macPort), 5_000)
-    Log.i(TAG, "tcp connected to $host:${prefs.macPort}")
+    // Try each candidate (LAN first, Tailscale last) until one TCP-connects. The
+    // handshake still pins the Mac's idPub, so trying multiple hosts is safe.
+    var socket: Socket? = null
+    var used: String? = null
+    for (host in candidates) {
+      val s = Socket()
+      try {
+        Log.i(TAG, "connecting to $host:${prefs.macPort}")
+        s.connect(InetSocketAddress(host, prefs.macPort), 4_000)
+        socket = s; used = host
+        Log.i(TAG, "tcp connected to $host:${prefs.macPort}")
+        break
+      } catch (e: Exception) {
+        Log.w(TAG, "connect $host failed: ${e.message}")
+        runCatching { s.close() }
+      }
+    }
+    if (socket == null) { _state.value = ConnState.Disconnected; return }
+    used?.let { if (prefs.macHost != it) prefs.macHost = it }
     val peer = PeerSocket(PeerSocket.Role.CLIENT, socket, identity,
       PeerSocket.Trust(expectedPeerIdPub = expected, pairingToken = null))
     attachHandlers(peer, pairing = false, onEstablished = null)
@@ -118,7 +141,7 @@ class SyncController(
         this@SyncController.peer = peer
         peer.start()
         withTimeout(8_000) { established.await() }
-        prefs.savePaired(payload.idpub, payload.name, payload.host, payload.port, payload.deviceId)
+        prefs.savePaired(payload.idpub, payload.name, payload.host, payload.port, payload.deviceId, payload.hosts)
         prefs.syncEnabled = true
         running = true
         startReconnectLoop()
@@ -159,6 +182,12 @@ class SyncController(
       fetchWaiters.values.forEach { it.completeExceptionally(IOException("connection closed")) }
       fetchWaiters.clear()
       fetchBuffers.clear()
+      fetchFileWaiters.values.forEach { it.completeExceptionally(IOException("connection closed")) }
+      fetchFileWaiters.clear()
+      fetchFileStreams.values.forEach { runCatching { it.close() } }
+      fetchFileStreams.clear()
+      fetchFileTargets.values.forEach { it.delete() }
+      fetchFileTargets.clear()
     }
   }
 
@@ -174,16 +203,33 @@ class SyncController(
     when (message.t) {
       "hello" -> {
         message.name?.let { _peerName.value = it; prefs.macName = it }
+        // Learn the Mac's full address set (incl. Tailscale) so a LAN-paired phone
+        // can later reach it over WAN. Merge keeps the LAN-first ordering.
+        message.hosts?.takeIf { it.isNotEmpty() }?.let { prefs.macHosts = prefs.macHosts + it }
         _state.value = ConnState.Connected
       }
       "historySync" -> repo.replaceMacHistory(message.items ?: emptyList())
       "requestHistory" -> sendHistorySync(peer)
       "clipAdded" -> message.item?.let { repo.upsertMac(it) }
       "contentRequest" -> message.id?.let { serveContent(peer, it) }
-      "contentBegin" -> message.id?.let { fetchBuffers[it] = ByteArrayOutputStream() }
+      "contentBegin" -> message.id?.let { id ->
+        if (message.kind == "file") {
+          // Stream straight to a temp file in the cache dir.
+          val tmp = File(appContext.cacheDir, "dl-$id")
+          runCatching { fetchFileStreams[id] = FileOutputStream(tmp) }
+            .onSuccess { fetchFileTargets[id] = tmp }
+            .onFailure { fetchFileWaiters.remove(id)?.completeExceptionally(it) }
+        } else {
+          fetchBuffers[id] = ByteArrayOutputStream()
+        }
+      }
       "contentError" -> message.id?.let { id ->
-        fetchWaiters.remove(id)?.completeExceptionally(IOException(message.reason ?: "content error"))
+        val err = IOException(message.reason ?: "content error")
+        fetchWaiters.remove(id)?.completeExceptionally(err)
         fetchBuffers.remove(id)
+        fetchFileStreams.remove(id)?.let { runCatching { it.close() } }
+        fetchFileTargets.remove(id)?.delete()
+        fetchFileWaiters.remove(id)?.completeExceptionally(err)
       }
       "ping" -> peer.send(Control.pong)
       else -> {}
@@ -192,6 +238,18 @@ class SyncController(
 
   private fun handleContent(chunk: ContentChunk) {
     val id = chunk.id.toString()
+    // File stream → write straight to disk.
+    val fileStream = fetchFileStreams[id]
+    if (fileStream != null) {
+      runCatching { fileStream.write(chunk.bytes) }
+      if (!chunk.last) return
+      runCatching { fileStream.close() }
+      fetchFileStreams.remove(id)
+      val target = fetchFileTargets.remove(id)
+      if (target != null) fetchFileWaiters.remove(id)?.complete(target)
+      else fetchFileWaiters.remove(id)?.completeExceptionally(IOException("no target"))
+      return
+    }
     val buffer = fetchBuffers[id] ?: return
     buffer.write(chunk.bytes)
     if (!chunk.last) return
@@ -206,23 +264,41 @@ class SyncController(
   private suspend fun serveContent(peer: PeerSocket, id: String) {
     val entity = repo.byId(id)
     if (entity == null) { peer.send(Control.contentError(id, "not_found")); return }
-    val bytes: ByteArray = when (entity.kind) {
-      "text" -> (entity.text ?: "").toByteArray(Charsets.UTF_8)
-      else -> entity.contentPath?.let { File(it).readBytes() }
-        ?: run { peer.send(Control.contentError(id, "not_found")); return }
-    }
-    if (bytes.size > Protocol.MAX_CONTENT) { peer.send(Control.contentError(id, "too_large")); return }
-    peer.send(Control.contentBegin(id, entity.kind, bytes.size, entity.mime, entity.filename))
     val uuid = runCatching { UUID.fromString(id) }.getOrNull()
       ?: run { peer.send(Control.contentError(id, "bad_id")); return }
-    if (bytes.isEmpty()) { peer.send(ContentChunk(uuid, 0, true, ByteArray(0))); return }
-    var seq = 0
-    var offset = 0
-    while (offset < bytes.size) {
-      val end = minOf(offset + Protocol.CHUNK_SIZE, bytes.size)
-      val slice = bytes.copyOfRange(offset, end)
-      peer.send(ContentChunk(uuid, seq, end >= bytes.size, slice))
-      seq++; offset = end
+
+    // Text ships from RAM; files stream off disk (so a 256 MiB upload never loads whole).
+    if (entity.kind == "text") {
+      val bytes = (entity.text ?: "").toByteArray(Charsets.UTF_8)
+      if (bytes.size > Protocol.MAX_CONTENT) { peer.send(Control.contentError(id, "too_large")); return }
+      peer.send(Control.contentBegin(id, "text", bytes.size, entity.mime, entity.filename))
+      if (bytes.isEmpty()) { peer.send(ContentChunk(uuid, 0, true, ByteArray(0))); return }
+      var seq = 0; var offset = 0
+      while (offset < bytes.size) {
+        val end = minOf(offset + Protocol.CHUNK_SIZE, bytes.size)
+        peer.send(ContentChunk(uuid, seq, end >= bytes.size, bytes.copyOfRange(offset, end)))
+        seq++; offset = end
+      }
+      return
+    }
+
+    val file = entity.contentPath?.let { File(it) }
+    if (file == null || !file.exists()) { peer.send(Control.contentError(id, "not_found")); return }
+    val size = file.length()
+    if (size > Protocol.MAX_CONTENT) { peer.send(Control.contentError(id, "too_large")); return }
+    peer.send(Control.contentBegin(id, entity.kind, size.toInt(), entity.mime, entity.filename))
+    if (size == 0L) { peer.send(ContentChunk(uuid, 0, true, ByteArray(0))); return }
+    file.inputStream().use { input ->
+      val buf = ByteArray(Protocol.CHUNK_SIZE)
+      var seq = 0
+      var sent = 0L
+      while (true) {
+        val n = input.read(buf)
+        if (n <= 0) break
+        sent += n
+        peer.send(ContentChunk(uuid, seq, sent >= size, buf.copyOf(n)))
+        seq++
+      }
     }
   }
 
@@ -236,6 +312,16 @@ class SyncController(
     fetchBuffers[id] = ByteArrayOutputStream()
     peer.send(Control.contentRequest(id))
     return withTimeout(30_000) { waiter.await() }
+  }
+
+  // Streams a Mac file to a temp file on disk (the contentBegin handler opens the
+  // stream once it learns kind == file). Generous timeout for big transfers.
+  private suspend fun fetchContentToFile(id: String): File {
+    val peer = this.peer ?: throw IOException("not connected")
+    val waiter = CompletableDeferred<File>()
+    fetchFileWaiters[id] = waiter
+    peer.send(Control.contentRequest(id))
+    return withTimeout(300_000) { waiter.await() }
   }
 
   // MARK: outbound (local clip -> Mac)
@@ -270,6 +356,25 @@ class SyncController(
     }
   }
 
+  // MARK: bringing a file INTO the phone list (picker / share-sheet)
+
+  /**
+   * Import a picked/shared file URI into the phone's "This Phone" list as a file
+   * clip (copied into app storage so it survives). Does NOT upload — the user taps
+   * the clip's Upload button to send it. onResult(false) on copy failure / over cap.
+   */
+  fun importFile(uri: Uri, upload: Boolean = false, onResult: (Boolean) -> Unit) {
+    scope.launch {
+      val imported = withContext(Dispatchers.IO) { FileImport.fromUri(appContext, uri) }
+      if (imported == null) { withContext(Dispatchers.Main) { onResult(false) }; return@launch }
+      repo.upsertLocal(imported.meta, imported.contentPath)
+      // Share-sheet import is an explicit "send" → push now (the Mac pulls the bytes).
+      // The + picker just stages the clip; the user taps Upload when ready.
+      if (upload) peer?.let { it.send(Control.clipAdded(imported.meta)) }
+      withContext(Dispatchers.Main) { onResult(true) }
+    }
+  }
+
   // MARK: applying a Mac clip on this phone
 
   suspend fun applyMacClip(meta: ItemMeta): Boolean {
@@ -283,8 +388,10 @@ class SyncController(
         FileSaver.saveImage(appContext, meta.filename ?: "${meta.id}.png", bytes)
       }
       ItemMeta.Kind.file -> {
-        val bytes = runCatching { fetchContent(meta.id) }.getOrNull() ?: return false
-        FileSaver.saveDownload(appContext, meta.filename ?: "${meta.id}.bin", meta.mime, bytes)
+        val tmp = runCatching { fetchContentToFile(meta.id) }.getOrNull() ?: return false
+        val ok = FileSaver.saveDownloadStreamed(appContext, meta.filename ?: "${meta.id}.bin", meta.mime, tmp)
+        tmp.delete()
+        ok
       }
     }
   }

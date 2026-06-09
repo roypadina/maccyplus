@@ -57,6 +57,13 @@ class Prefs(context: Context) {
     get() = sp.getString("mac_host", null)
     set(value) { sp.edit().putString("mac_host", value).apply() }
 
+  // All addresses the Mac can be reached at (LAN first, Tailscale last), so sync
+  // works over Wi-Fi AND over Tailscale/WAN. Falls back to the single macHost.
+  var macHosts: List<String>
+    get() = sp.getString("mac_hosts", null)?.split("\n")?.filter { it.isNotBlank() }
+      ?: listOfNotNull(macHost)
+    set(value) { sp.edit().putString("mac_hosts", value.distinct().joinToString("\n")).apply() }
+
   var macPort: Int
     get() = sp.getInt("mac_port", 53121)
     set(value) { sp.edit().putInt("mac_port", value).apply() }
@@ -65,20 +72,25 @@ class Prefs(context: Context) {
     get() = sp.getString("mac_device_id", null)
     set(value) { sp.edit().putString("mac_device_id", value).apply() }
 
-  fun savePaired(idPub: String, name: String, host: String, port: Int, deviceId: String) {
+  fun savePaired(
+    idPub: String, name: String, host: String, port: Int, deviceId: String,
+    hosts: List<String> = emptyList()
+  ) {
+    val candidates = (listOf(host) + hosts).filter { it.isNotBlank() }.distinct()
     sp.edit()
       .putString("mac_idpub", idPub)
       .putString("mac_name", name)
       .putString("mac_host", host)
       .putInt("mac_port", port)
       .putString("mac_device_id", deviceId)
+      .putString("mac_hosts", candidates.joinToString("\n"))
       .apply()
   }
 
   fun clearPaired() {
     sp.edit()
       .remove("mac_idpub").remove("mac_name").remove("mac_host")
-      .remove("mac_port").remove("mac_device_id")
+      .remove("mac_port").remove("mac_device_id").remove("mac_hosts")
       .apply()
   }
 }

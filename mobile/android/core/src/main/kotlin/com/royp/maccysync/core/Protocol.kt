@@ -9,7 +9,7 @@ object Protocol {
   const val THUMB_CAP = 65_536
   const val CHUNK_SIZE = 65_536
   const val MAX_FRAME = 17_825_792
-  const val MAX_CONTENT = 16_777_216
+  const val MAX_CONTENT = 268_435_456 // 256 MiB
   const val HISTORY_SYNC_COUNT = 200
   const val PING_INTERVAL_MS = 20_000L
   const val DEAD_TIMEOUT_MS = 60_000L

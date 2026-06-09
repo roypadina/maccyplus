@@ -26,15 +26,16 @@ data class ClipEntity(
   val text: String?,
   val filename: String?,
   val thumb: String?,
+  val path: String? = null,
   val contentPath: String? = null
 ) {
-  fun toMeta() = ItemMeta(id, kind, createdAt, size, mime, preview, text, filename, thumb)
+  fun toMeta() = ItemMeta(id, kind, createdAt, size, mime, preview, text, filename, thumb, path)
 }
 
 fun ItemMeta.toEntity(origin: String, contentPath: String? = null) = ClipEntity(
   id = id, origin = origin, kind = kind, createdAt = createdAt, size = size,
   mime = mime, preview = preview, text = text, filename = filename, thumb = thumb,
-  contentPath = contentPath
+  path = path, contentPath = contentPath
 )
 
 @Dao
@@ -64,7 +65,7 @@ interface ClipDao {
   suspend fun trim(origin: String, keep: Int)
 }
 
-@Database(entities = [ClipEntity::class], version = 1, exportSchema = false)
+@Database(entities = [ClipEntity::class], version = 2, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
   abstract fun clipDao(): ClipDao
 }

@@ -40,7 +40,7 @@ final class SyncTests: XCTestCase {
       .hs2(eph: "BBB", id: "CCC", sig: "DDD"),
       .hs3(id: "EEE", sig: "FFF", token: "GGG"),
       .hs3(id: "EEE", sig: "FFF", token: nil),
-      .hello(deviceId: "dev", name: "Mac", platform: "macos", protocolVersion: 1),
+      .hello(deviceId: "dev", name: "Mac", platform: "macos", protocolVersion: 1, hosts: ["192.168.0.5", "100.86.8.97"]),
       .historySync(items: [meta]),
       .clipAdded(item: meta),
       .contentRequest(id: "x"),

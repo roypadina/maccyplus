@@ -14,7 +14,9 @@ import android.provider.Settings
 import android.text.format.DateUtils
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -43,9 +45,11 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.ContentCopy
 import androidx.compose.material.icons.rounded.Description
 import androidx.compose.material.icons.rounded.Image
+import androidx.compose.material.icons.rounded.CloudDownload
 import androidx.compose.material.icons.rounded.CloudUpload
 import androidx.compose.material.icons.rounded.Notes
 import androidx.compose.material.icons.rounded.Settings
@@ -158,6 +162,12 @@ private fun ClipsScreen(app: MaccyApp) {
   val macClips by app.repo.macClips().collectAsStateWithLifecycle(initialValue = emptyList())
   fun toast(m: String) = Toast.makeText(context, m, Toast.LENGTH_SHORT).show()
 
+  // SAF picker → import the file into "This Phone" as a file clip (no auto-upload;
+  // the user taps the clip's ↑ to send).
+  val pickFile = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+    uri?.let { app.controller.importFile(it) { ok -> toast(if (ok) "Added — tap ↑ to send" else "Couldn't add file") } }
+  }
+
   Column(Modifier.fillMaxSize().statusBarsPadding()) {
     Hero(state, peerName, app.prefs.isPaired, app.prefs.macName, phoneClips.size, macClips.size)
 
@@ -172,30 +182,45 @@ private fun ClipsScreen(app: MaccyApp) {
       val phone = tab == 0
       val items = if (phone) phoneClips else macClips
       val tile = if (phone) Hue.phoneTile() else Hue.macTile()
+      if (phone) AttachFileButton { pickFile.launch("*/*") }
       if (items.isEmpty()) {
-        if (phone) EmptyState("Nothing here yet", "Share text here, or copy on this phone.")
+        if (phone) EmptyState("Nothing here yet", "Attach a file, share text here, or copy on this phone.")
         else EmptyState("No Mac clips", "Copy on the Mac — it lands here.")
       } else LazyColumn(
         Modifier.fillMaxSize(),
         contentPadding = PaddingValues(start = 14.dp, end = 14.dp, top = 6.dp, bottom = 120.dp)
       ) {
         items(items, key = { it.id }) { clip ->
+          val isFile = clip.kind == "file"
           if (phone) {
+            // Upload to Mac (works for text and file clips).
+            val upload: () -> Unit = {
+              app.controller.sendToMac(clip.toMeta()) { ok -> toast(if (ok) "Sent to Mac" else "Not connected") }
+            }
             ClipRow(
               clip, tile, trailing = Icons.Rounded.CloudUpload,
-              onRow = { clip.text?.let { ClipboardWriter.setText(context, it); toast("Copied") } },
-              onTrailing = {
-                app.controller.sendToMac(clip.toMeta()) { ok -> toast(if (ok) "Sent to Mac" else "Not connected") }
-              }
+              onRow = {
+                if (isFile) upload()
+                else clip.text?.let { ClipboardWriter.setText(context, it); toast("Copied") }
+              },
+              onTrailing = upload
             )
           } else {
-            val apply: () -> Unit = {
+            // Download from Mac: file → save to Downloads; text/image → onto clipboard.
+            val download: () -> Unit = {
               scope.launch {
                 val ok = withContext(Dispatchers.IO) { app.controller.applyMacClip(clip.toMeta()) }
-                toast(if (ok) "Copied to clipboard" else "Couldn't fetch — connect the phone")
+                toast(
+                  if (ok) (if (isFile) "Saved to Downloads/MaccySync" else "Copied to clipboard")
+                  else "Couldn't fetch — connect the phone"
+                )
               }
             }
-            ClipRow(clip, tile, trailing = Icons.Rounded.ContentCopy, onRow = apply, onTrailing = apply)
+            ClipRow(
+              clip, tile,
+              trailing = if (isFile) Icons.Rounded.CloudDownload else Icons.Rounded.ContentCopy,
+              onRow = download, onTrailing = download
+            )
           }
         }
       }
@@ -306,6 +331,26 @@ private fun Segment(label: String, active: Boolean, activeBrush: Brush, modifier
 }
 
 @Composable
+private fun AttachFileButton(onClick: () -> Unit) {
+  Row(
+    Modifier
+      .fillMaxWidth()
+      .padding(horizontal = 14.dp, vertical = 4.dp)
+      .clip(RoundedCornerShape(14.dp))
+      .border(1.dp, Hue.border, RoundedCornerShape(14.dp))
+      .background(Hue.surfaceHi)
+      .clickable { onClick() }
+      .padding(vertical = 12.dp),
+    horizontalArrangement = Arrangement.Center,
+    verticalAlignment = Alignment.CenterVertically
+  ) {
+    Icon(Icons.Rounded.Add, null, tint = Hue.text, modifier = Modifier.size(18.dp))
+    Spacer(Modifier.width(8.dp))
+    Text("Attach a file", color = Hue.text, style = MaterialTheme.typography.labelLarge)
+  }
+}
+
+@Composable
 private fun ClipRow(clip: ClipEntity, tile: Brush, trailing: ImageVector, onRow: () -> Unit, onTrailing: () -> Unit) {
   Row(
     Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).clickable { onRow() }.padding(vertical = 9.dp, horizontal = 8.dp),
@@ -318,6 +363,10 @@ private fun ClipRow(clip: ClipEntity, tile: Brush, trailing: ImageVector, onRow:
       Text(clip.preview.ifBlank { clip.filename ?: "Untitled" }, color = Hue.text, style = MaterialTheme.typography.bodyMedium, maxLines = 2, overflow = TextOverflow.Ellipsis)
       Spacer(Modifier.height(3.dp))
       Text(subtitle(clip), color = Hue.muted, style = MaterialTheme.typography.bodySmall)
+      if (clip.kind == "file" && !clip.path.isNullOrBlank()) {
+        Spacer(Modifier.height(2.dp))
+        Text(clip.path, color = Hue.faint, style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
+      }
     }
     Box(
       Modifier.size(38.dp).clip(CircleShape).background(Hue.surfaceHi).clickable { onTrailing() },
