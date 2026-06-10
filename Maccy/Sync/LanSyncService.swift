@@ -321,12 +321,8 @@ final class LanSyncService: SyncService {
   // MARK: - Serving content to the peer
 
   private func serveContent(id: String) {
-    guard let item = announced[id] else {
-      NSLog("MaccySync serveContent NOT ANNOUNCED id=\(id)")
-      send(.contentError(id: id, reason: "not_found")); return
-    }
+    guard let item = announced[id] else { send(.contentError(id: id, reason: "not_found")); return }
     guard let uuid = UUID(uuidString: id) else { send(.contentError(id: id, reason: "bad_id")); return }
-    NSLog("MaccySync serveContent id=\(id) fileURLs=\(item.fileURLs.count) kind=\(item.fileURLs.first != nil ? "file" : "other")")
     // Files stream from disk (no whole-file load); text/image stay in RAM.
     if let url = item.fileURLs.first {
       serveFile(id: id, uuid: uuid, url: url)

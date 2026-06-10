@@ -103,7 +103,7 @@ enum SyncContent {
     let item = HistoryItem(contents: contents)
     let copiedAt = Date(timeIntervalSince1970: Double(meta.createdAt) / 1000)
     item.firstCopiedAt = copiedAt
-    item.lastCopiedAt = copiedAt
+    item.lastCopiedAt = Date()  // arrival time → shows at top (Maccy sorts by lastCopiedAt)
     item.title = item.generateTitle()
     return item
   }
@@ -132,7 +132,7 @@ enum SyncContent {
     let item = HistoryItem(contents: contents)
     let copiedAt = Date(timeIntervalSince1970: Double(meta.createdAt) / 1000)
     item.firstCopiedAt = copiedAt
-    item.lastCopiedAt = copiedAt
+    item.lastCopiedAt = Date()  // arrival time → shows at top (Maccy sorts by lastCopiedAt)
     item.title = item.generateTitle()
     return item
   }
