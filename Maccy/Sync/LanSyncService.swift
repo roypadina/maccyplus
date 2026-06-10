@@ -347,14 +347,11 @@ final class LanSyncService: SyncService {
     let scoped = url.startAccessingSecurityScopedResource()
     let attrs = try? FileManager.default.attributesOfItem(atPath: url.path)
     let size = (attrs?[.size] as? Int) ?? 0
-    let readable = FileManager.default.isReadableFile(atPath: url.path)
-    NSLog("MaccySync serveFile path=\(url.path) size=\(size) scoped=\(scoped) readable=\(readable)")
     guard size <= SyncProtocol.maxContent else {
       if scoped { url.stopAccessingSecurityScopedResource() }
       send(.contentError(id: id, reason: "too_large")); return
     }
     guard let handle = try? FileHandle(forReadingFrom: url) else {
-      NSLog("MaccySync serveFile OPEN FAILED (sandbox?) path=\(url.path)")
       if scoped { url.stopAccessingSecurityScopedResource() }
       send(.contentError(id: id, reason: "not_found")); return
     }

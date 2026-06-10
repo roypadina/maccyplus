@@ -249,7 +249,6 @@ class SyncController(
 
   private suspend fun handleControl(peer: PeerSocket, message: Control) {
     lastRxAt = System.currentTimeMillis()
-    if (message.t != "ping" && message.t != "pong") Log.i(TAG, "rx ${message.t}")
     when (message.t) {
       "hello" -> {
         message.name?.let { _peerName.value = it; prefs.macName = it }
@@ -296,7 +295,6 @@ class SyncController(
     // File stream → write straight to disk.
     val fileStream = fetchFileStreams[id]
     if (fileStream != null) {
-      Log.i(TAG, "rx chunk id=$id last=${chunk.last} bytes=${chunk.bytes.size}")
       runCatching { fileStream.write(chunk.bytes) }
       // Report download progress (Mac→phone) for the active download.
       if (id == dlId) {
@@ -324,7 +322,6 @@ class SyncController(
 
   private suspend fun serveContent(peer: PeerSocket, id: String) {
     val entity = repo.byId(id)
-    Log.i(TAG, "serveContent id=$id kind=${entity?.kind} path=${entity?.contentPath}")
     if (entity == null) { peer.send(Control.contentError(id, "not_found")); return }
     val uuid = runCatching { UUID.fromString(id) }.getOrNull()
       ?: run { peer.send(Control.contentError(id, "bad_id")); return }
@@ -566,7 +563,6 @@ class SyncController(
   fun sendToMac(meta: ItemMeta, onResult: (Boolean) -> Unit) {
     scope.launch {
       val ok = peer?.let { it.send(Control.clipAdded(meta)); true } ?: false
-      Log.i(TAG, "tx clipAdded ${meta.kind} id=${meta.id} ok=$ok")
       withContext(Dispatchers.Main) { onResult(ok) }
     }
   }
