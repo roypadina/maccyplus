@@ -188,7 +188,7 @@ private fun ClipsScreen(app: MaccyApp) {
     }
   }
 
-  transfer?.let { TransferSheet(it) }
+  transfer?.let { TransferSheet(it, onCancel = { app.controller.cancelTransfer() }) }
   savedFile?.let { (uri, mime) ->
     OpenSavedDialog(
       onOpen = {
@@ -245,8 +245,12 @@ private fun ClipsScreen(app: MaccyApp) {
             // File → pick a save location (then stream + offer Open); text/image → clipboard/Pictures.
             val download: () -> Unit = {
               if (isFile) {
-                pendingDownload = clip
-                saveFile.launch(clip.filename ?: "file")
+                if (transfer != null || app.controller.isDownloading()) {
+                  toast("A transfer is already in progress")
+                } else {
+                  pendingDownload = clip
+                  saveFile.launch(clip.filename ?: "file")
+                }
               } else {
                 scope.launch {
                   val ok = withContext(Dispatchers.IO) { app.controller.applyMacClip(clip.toMeta()) }
@@ -389,13 +393,13 @@ private fun AttachFileButton(onClick: () -> Unit) {
 }
 
 @Composable
-private fun TransferSheet(t: SyncController.Transfer) {
+private fun TransferSheet(t: SyncController.Transfer, onCancel: () -> Unit) {
   val ctx = LocalContext.current
   val pct = if (t.total > 0) (t.done.toFloat() / t.total).coerceIn(0f, 1f) else 0f
   fun human(b: Long) = android.text.format.Formatter.formatShortFileSize(ctx, b)
   AlertDialog(
-    onDismissRequest = {},
-    confirmButton = {},
+    onDismissRequest = onCancel,
+    confirmButton = { TextButton(onClick = onCancel) { Text("Cancel") } },
     title = { Text(if (t.incoming) "Receiving from Mac" else "Sending to Mac") },
     text = {
       Column {

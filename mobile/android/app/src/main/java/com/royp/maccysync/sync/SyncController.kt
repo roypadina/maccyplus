@@ -400,7 +400,23 @@ class SyncController(
    * streaming from the Mac to a temp file then copying into the destination.
    * Shows live progress via the [transfer] flow. onResult(success).
    */
+  /** True while a download is in flight (UI guards against overlapping taps). */
+  fun isDownloading(): Boolean = dlId != null
+
+  /** Abort the active transfer and clear the UI (the progress sheet's Cancel). */
+  fun cancelTransfer() {
+    val id = dlId
+    dlId = null
+    if (id != null) {
+      fetchFileWaiters.remove(id)?.completeExceptionally(IOException("cancelled"))
+      fetchFileStreams.remove(id)?.let { runCatching { it.close() } }
+      fetchFileTargets.remove(id)?.delete()
+    }
+    _transfer.value = null
+  }
+
   fun downloadToUri(meta: ItemMeta, dest: Uri, onResult: (Boolean) -> Unit) {
+    if (dlId != null) { onResult(false); return }  // one download at a time
     scope.launch {
       dlId = meta.id.lowercase()  // handleContent matches by lowercase chunk.id
       dlName = meta.filename ?: "file"
