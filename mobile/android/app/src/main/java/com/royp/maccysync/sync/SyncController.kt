@@ -103,7 +103,8 @@ class SyncController(
         if (p == null) {
           runCatching { connectOnce() }
             .onFailure { Log.w(TAG, "connectOnce failed: ${it.message}", it); _state.value = ConnState.Disconnected }
-        } else if (lastRxAt > 0 && System.currentTimeMillis() - lastRxAt > Protocol.DEAD_TIMEOUT_MS) {
+        } else if (lastRxAt > 0 && _transfer.value == null &&
+                   System.currentTimeMillis() - lastRxAt > Protocol.DEAD_TIMEOUT_MS) {
           // Half-open (Doze / network change) — Mac pings every 20s, so >60s silence = dead.
           Log.w(TAG, "connection stale (${System.currentTimeMillis() - lastRxAt}ms), reconnecting")
           runCatching { p.cancel() }
@@ -295,6 +296,7 @@ class SyncController(
     // File stream → write straight to disk.
     val fileStream = fetchFileStreams[id]
     if (fileStream != null) {
+      Log.i(TAG, "rx chunk id=$id last=${chunk.last} bytes=${chunk.bytes.size}")
       runCatching { fileStream.write(chunk.bytes) }
       // Report download progress (Mac→phone) for the active download.
       if (id == dlId) {
@@ -360,6 +362,7 @@ class SyncController(
           if (n <= 0) break
           sent += n
           peer.send(ContentChunk(uuid, seq, sent >= size, buf.copyOf(n)))
+          lastRxAt = System.currentTimeMillis()  // sending IS activity; keep the link "alive"
           _transfer.value = Transfer(label, sent, size, incoming = false)
           seq++
         }
@@ -463,6 +466,7 @@ class SyncController(
     if (!running) return
     val p = peer ?: return  // reconnect loop will dial
     scope.launch {
+      if (_transfer.value != null) return@launch  // never disturb an active transfer
       if (System.currentTimeMillis() - lastRxAt > 8_000) {
         Log.i(TAG, "foreground nudge: stale, reconnecting")
         runCatching { p.cancel() }
