@@ -1,6 +1,7 @@
 import SwiftUI
 
-@main
+// Note: `@main` lives in `main.swift` so the binary can run headless as a CLI
+// (see `ActionsCLI`). A SwiftUI `App` still gets a synthesized `static func main()`.
 struct MaccyApp: App {
   @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 

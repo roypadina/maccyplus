@@ -51,6 +51,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     // Wire per-action shortcuts so they're live at launch.
     ActionEngine.shared.registerShortcuts()
 
+    // Live-reload rules when a headless CLI process (ActionsCLI) mutates them.
+    DistributedNotificationCenter.default().addObserver(
+      forName: .init(ActionsCLI.rulesChangedNotification), object: nil, queue: .main) { _ in
+        MainActor.assumeIsolated { ActionEngine.shared.reloadRules() }
+    }
+
     // Phone clips now merge into the main popup (badged), so the separate phone
     // panel + its ⌃⇧V shortcut are retired.
 

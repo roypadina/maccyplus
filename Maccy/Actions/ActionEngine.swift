@@ -153,6 +153,15 @@ final class ActionEngine {
     }
   }
 
+  // Re-read rules from disk after a headless CLI process mutated them, then
+  // rewire shortcuts. `CFPreferencesAppSynchronize` defeats the in-memory
+  // UserDefaults cache so `rules` (computed from `Defaults`) sees the fresh
+  // value on the next copy automatically.
+  func reloadRules() {
+    CFPreferencesAppSynchronize(kCFPreferencesCurrentApplication)
+    registerShortcuts()
+  }
+
   // Per-action-shortcut entry point: run one specific action unconditionally on
   // the most recent item. No rule matching, no priority, no auto-run gate.
   func runSpecificActionForCurrent(actionID: UUID) {

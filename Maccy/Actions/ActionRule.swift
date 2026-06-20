@@ -82,26 +82,58 @@ enum RuleCondition: Codable, Identifiable, Hashable {
   }
 
   // Tagged JSON form, so conditions are agent-authorable: {"type":…, "value":…}.
-  // No legacy-format tolerance — a failed decode lets Defaults fall back to presets.
+  // The decoder also accepts the legacy Swift-synthesized form ({"kind":{"_0":"url"}})
+  // so existing stored rules survive the Codable change — Defaults decodes arrays
+  // element-by-element and silently drops any element that fails, so a hard failure
+  // would lose the user's rules rather than fall back to presets.
   private enum CodingKeys: String, CodingKey {
     case type, value
   }
 
+  // Legacy synthesized layout: {"<caseName>": {"_0": <associated value>}}.
+  private enum LegacyKey: String, CodingKey {
+    case kind, regex, contains, sourceApp
+  }
+  private enum LegacyAssoc: String, CodingKey {
+    case _0
+  }
+
   init(from decoder: Decoder) throws {
     let container = try decoder.container(keyedBy: CodingKeys.self)
-    let type = try container.decode(String.self, forKey: .type)
-    switch type {
-    case "kind": self = .kind(try container.decode(ValueKind.self, forKey: .value))
-    case "regex": self = .regex(try container.decode(String.self, forKey: .value))
-    case "contains": self = .contains(try container.decode(String.self, forKey: .value))
-    case "sourceApp": self = .sourceApp(try container.decode(String.self, forKey: .value))
-    case "softWrapped": self = .softWrapped
-    case "terminalSource": self = .terminalSource
-    default:
+    if let type = try? container.decode(String.self, forKey: .type) {
+      switch type {
+      case "kind": self = .kind(try container.decode(ValueKind.self, forKey: .value))
+      case "regex": self = .regex(try container.decode(String.self, forKey: .value))
+      case "contains": self = .contains(try container.decode(String.self, forKey: .value))
+      case "sourceApp": self = .sourceApp(try container.decode(String.self, forKey: .value))
+      case "softWrapped": self = .softWrapped
+      case "terminalSource": self = .terminalSource
+      default:
+        throw DecodingError.dataCorrupted(
+          DecodingError.Context(
+            codingPath: container.codingPath,
+            debugDescription: "Unknown condition type: \(type)"
+          )
+        )
+      }
+      return
+    }
+
+    // Fall back to the legacy synthesized form.
+    let legacy = try decoder.container(keyedBy: LegacyKey.self)
+    if let assoc = try? legacy.nestedContainer(keyedBy: LegacyAssoc.self, forKey: .kind) {
+      self = .kind(try assoc.decode(ValueKind.self, forKey: ._0))
+    } else if let assoc = try? legacy.nestedContainer(keyedBy: LegacyAssoc.self, forKey: .regex) {
+      self = .regex(try assoc.decode(String.self, forKey: ._0))
+    } else if let assoc = try? legacy.nestedContainer(keyedBy: LegacyAssoc.self, forKey: .contains) {
+      self = .contains(try assoc.decode(String.self, forKey: ._0))
+    } else if let assoc = try? legacy.nestedContainer(keyedBy: LegacyAssoc.self, forKey: .sourceApp) {
+      self = .sourceApp(try assoc.decode(String.self, forKey: ._0))
+    } else {
       throw DecodingError.dataCorrupted(
         DecodingError.Context(
-          codingPath: container.codingPath,
-          debugDescription: "Unknown condition type: \(type)"
+          codingPath: decoder.codingPath,
+          debugDescription: "Unrecognized RuleCondition payload"
         )
       )
     }
