@@ -16,6 +16,11 @@ Maccy works on macOS Sonoma 14 or higher.
 * [Features](#features)
 * [Install](#install)
 * [Usage](#usage)
+* [Actions](#actions)
+  * [Unwrap soft-wrapped terminal commands](#unwrap-soft-wrapped-terminal-commands)
+  * [Per-action shortcuts](#per-action-shortcuts)
+  * [Terminal apps](#terminal-apps)
+  * [Configure actions from the command line](#configure-actions-from-the-command-line)
 * [Advanced](#advanced)
   * [Ignore Copied Items](#ignore-copied-items)
   * [Ignore Custom Copy Types](#ignore-custom-copy-types)
@@ -62,6 +67,69 @@ brew install maccy
 10. To disable Maccy and ignore new copies, click on the menu icon with <kbd>OPTION (⌥)</kbd> pressed.
 11. To ignore only the next copy, click on the menu icon with <kbd>OPTION (⌥)</kbd> + <kbd>SHIFT (⇧)</kbd> pressed.
 12. To customize the behavior, check "Preferences…" window, or press <kbd>COMMAND (⌘)</kbd> + <kbd>,</kbd>.
+
+## Actions
+
+Actions let Maccy *do something* with a copied value instead of just storing it. An
+**action rule** has **conditions** (when it applies) and one or more ordered **actions**
+(what it does). A rule can run from the popup's right-click menu, from a global shortcut,
+from a per-action shortcut, or automatically the moment a matching value is copied.
+Rules are edited under Preferences → Actions.
+
+**Conditions** — kind (URL, email, phone, file path, color hex, image, text), regex,
+contains-text, source app, **soft-wrapped** (the value looks like a wrapped terminal
+command), and **from a terminal** (the copy came from a configured terminal app). A rule
+matches when *all* or *any* of its conditions hold.
+
+**Actions** — open as URL, open in a specific app, web search, **transform text**
+(trim, UPPERCASE, lowercase, strip formatting, **unwrap**), run a macOS Shortcut, and
+send to a paired phone.
+
+### Unwrap soft-wrapped terminal commands
+
+When a coding agent or CLI prints a long command in the terminal, the terminal wraps it
+across several visual lines. Copying it brings along the line breaks, so pasting it
+elsewhere fails. The **unwrap** transform strips those wrap breaks and leaves a single,
+ready-to-paste command on the clipboard.
+
+The built-in **"Unwrap terminal command"** rule does this automatically: when a copy comes
+**from a terminal app** *and* shows a fixed-width wrap signature, the wrap breaks are
+removed (the original command is reconstructed exactly — no merged tokens, no spurious
+spaces). Genuine multi-line scripts are left untouched. You can also trigger unwrap
+manually by giving the action a [per-action shortcut](#per-action-shortcuts).
+
+### Per-action shortcuts
+
+Any single action can carry its own keyboard shortcut (recorded in the rule editor). That
+shortcut runs **only that action** on the current clipboard, unconditionally — independent
+of rule matching and of the global default-action shortcut. Specs look like `cmd+shift+u`.
+
+### Terminal apps
+
+The **from a terminal** condition matches copies whose source app is in a configurable
+list (Terminal.app, iTerm2, Warp, kitty, Alacritty, WezTerm, Ghostty, VS Code by default).
+Edit the list under Preferences → Actions → "Terminal apps…", or from the command line.
+
+### Configure actions from the command line
+
+Maccy Actions ships a headless CLI so rules, actions, the terminal-app list, and per-action
+shortcuts can be managed without the GUI — useful for scripting and for AI coding agents.
+The running app picks up changes immediately.
+
+```sh
+# the executable name contains a space, so quote it
+APP=$(mdfind "kMDItemCFBundleIdentifier == 'com.royp.MaccyActions'" | head -1)
+BIN="$APP/Contents/MacOS/Maccy Actions"
+
+"$BIN" rules describe          # live JSON schema: condition/action/transform catalog
+"$BIN" rules list              # all rules as JSON
+"$BIN" rules add  --json '…'   # create a rule (also: get/update/remove/move/enable/disable/import)
+"$BIN" terminals list          # the terminal-app list (also: add/remove/reset)
+```
+
+All commands take and emit JSON and validate input before writing. For the full schema,
+command reference, and recipes — including how an agent should drive it — see the bundled
+skill at [`.claude/skills/maccy-actions/SKILL.md`](.claude/skills/maccy-actions/SKILL.md).
 
 ## Advanced
 
