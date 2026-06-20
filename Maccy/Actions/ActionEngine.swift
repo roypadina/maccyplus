@@ -6,6 +6,7 @@ import Observation
 
 extension Defaults.Keys {
   static let actionRules = Key<[ActionRule]>("actionRules", default: ActionRule.presets)
+  static let terminalAppBundleIDs = Key<[String]>("terminalAppBundleIDs", default: TerminalApps.defaults)
 }
 
 extension KeyboardShortcuts.Name {
@@ -54,6 +55,10 @@ final class ActionEngine {
         }
         let range = NSRange(text.startIndex..., in: text)
         return regex.firstMatch(in: text, range: range) != nil
+      case .softWrapped:
+        return TextUnwrap.isSoftWrapped(text)
+      case .terminalSource:
+        return app.map { Defaults[.terminalAppBundleIDs].contains($0) } ?? false
       }
     }
 

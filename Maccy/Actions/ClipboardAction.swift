@@ -143,6 +143,7 @@ struct TransformAction: ClipboardAction {
     case .uppercase: result = value.uppercased()
     case .lowercase: result = value.lowercased()
     case .stripFormatting: result = value // already the plain-string representation
+    case .unwrap: result = TextUnwrap.unwrap(value)
     }
     // Record the output so the clipboard poller's echo doesn't auto-trigger again.
     ActionEngine.shared.noteAutoOutput(result)

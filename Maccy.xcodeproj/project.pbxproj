@@ -73,6 +73,8 @@
 		DA243D122C2F64830012A27F /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA243D112C2F64820012A27F /* ContentView.swift */; };
 		DA243D142C2F66DD0012A27F /* Storage.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA243D132C2F66DD0012A27F /* Storage.swift */; };
 		E3C9CE28D35D727B6DE02737 /* ValueKind.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3814BCA873AD3C65CA3C959E /* ValueKind.swift */; };
+		E5697889E51C0335BF905695 /* TextUnwrap.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54E5B26E2EE4F1B9E04D38DE /* TextUnwrap.swift */; };
+		867DEE9D7580E257EA8F0DCC /* TerminalApps.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F7334309EA5524E651D9C39 /* TerminalApps.swift */; };
 		3C3F922CDB3F842488E85C29 /* ActionRule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28274B61B2299E4CFC0EC51D /* ActionRule.swift */; };
 		46E3E69420099E35E5F692B6 /* ClipboardAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE0B38EFABD011A73D5FCB44 /* ClipboardAction.swift */; };
 		7E83EFFB3CF1961302CE5103 /* ActionEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01C1EF123742089F4AFE3304 /* ActionEngine.swift */; };
@@ -288,6 +290,8 @@
 		DA243D112C2F64820012A27F /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		DA243D132C2F66DD0012A27F /* Storage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Storage.swift; sourceTree = "<group>"; };
 		3814BCA873AD3C65CA3C959E /* ValueKind.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Actions/ValueKind.swift; sourceTree = "<group>"; };
+		54E5B26E2EE4F1B9E04D38DE /* TextUnwrap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Actions/TextUnwrap.swift; sourceTree = "<group>"; };
+		5F7334309EA5524E651D9C39 /* TerminalApps.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Actions/TerminalApps.swift; sourceTree = "<group>"; };
 		28274B61B2299E4CFC0EC51D /* ActionRule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Actions/ActionRule.swift; sourceTree = "<group>"; };
 		CE0B38EFABD011A73D5FCB44 /* ClipboardAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Actions/ClipboardAction.swift; sourceTree = "<group>"; };
 		01C1EF123742089F4AFE3304 /* ActionEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Actions/ActionEngine.swift; sourceTree = "<group>"; };
@@ -871,6 +875,8 @@
 				DA696BCD240177E800DE80CF /* Sorter.swift */,
 				DA243D132C2F66DD0012A27F /* Storage.swift */,
 				3814BCA873AD3C65CA3C959E /* ValueKind.swift */,
+				54E5B26E2EE4F1B9E04D38DE /* TextUnwrap.swift */,
+				5F7334309EA5524E651D9C39 /* TerminalApps.swift */,
 				28274B61B2299E4CFC0EC51D /* ActionRule.swift */,
 				CE0B38EFABD011A73D5FCB44 /* ClipboardAction.swift */,
 				01C1EF123742089F4AFE3304 /* ActionEngine.swift */,
@@ -1134,6 +1140,8 @@
 				DA9C3C622C20E1BF0056795D /* IgnoreRegexpsSettingsView.swift in Sources */,
 				DA243D142C2F66DD0012A27F /* Storage.swift in Sources */,
 				E3C9CE28D35D727B6DE02737 /* ValueKind.swift in Sources */,
+				E5697889E51C0335BF905695 /* TextUnwrap.swift in Sources */,
+				867DEE9D7580E257EA8F0DCC /* TerminalApps.swift in Sources */,
 				3C3F922CDB3F842488E85C29 /* ActionRule.swift in Sources */,
 				46E3E69420099E35E5F692B6 /* ClipboardAction.swift in Sources */,
 				7E83EFFB3CF1961302CE5103 /* ActionEngine.swift in Sources */,

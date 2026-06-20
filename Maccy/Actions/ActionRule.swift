@@ -46,6 +46,7 @@ enum TransformKind: String, Codable, CaseIterable, Identifiable {
   case uppercase
   case lowercase
   case stripFormatting
+  case unwrap
 
   var id: String { rawValue }
 
@@ -55,6 +56,7 @@ enum TransformKind: String, Codable, CaseIterable, Identifiable {
     case .uppercase: return "UPPERCASE"
     case .lowercase: return "lowercase"
     case .stripFormatting: return "Strip formatting"
+    case .unwrap: return "Unwrap (join wrapped lines)"
     }
   }
 }
@@ -65,6 +67,8 @@ enum RuleCondition: Codable, Identifiable, Hashable {
   case regex(String)
   case contains(String)
   case sourceApp(String) // bundle identifier
+  case softWrapped
+  case terminalSource
 
   var id: String {
     switch self {
@@ -72,6 +76,56 @@ enum RuleCondition: Codable, Identifiable, Hashable {
     case .regex(let value): return "regex:\(value)"
     case .contains(let value): return "contains:\(value)"
     case .sourceApp(let value): return "app:\(value)"
+    case .softWrapped: return "softWrapped"
+    case .terminalSource: return "terminalSource"
+    }
+  }
+
+  // Tagged JSON form, so conditions are agent-authorable: {"type":…, "value":…}.
+  // No legacy-format tolerance — a failed decode lets Defaults fall back to presets.
+  private enum CodingKeys: String, CodingKey {
+    case type, value
+  }
+
+  init(from decoder: Decoder) throws {
+    let container = try decoder.container(keyedBy: CodingKeys.self)
+    let type = try container.decode(String.self, forKey: .type)
+    switch type {
+    case "kind": self = .kind(try container.decode(ValueKind.self, forKey: .value))
+    case "regex": self = .regex(try container.decode(String.self, forKey: .value))
+    case "contains": self = .contains(try container.decode(String.self, forKey: .value))
+    case "sourceApp": self = .sourceApp(try container.decode(String.self, forKey: .value))
+    case "softWrapped": self = .softWrapped
+    case "terminalSource": self = .terminalSource
+    default:
+      throw DecodingError.dataCorrupted(
+        DecodingError.Context(
+          codingPath: container.codingPath,
+          debugDescription: "Unknown condition type: \(type)"
+        )
+      )
+    }
+  }
+
+  func encode(to encoder: Encoder) throws {
+    var container = encoder.container(keyedBy: CodingKeys.self)
+    switch self {
+    case .kind(let value):
+      try container.encode("kind", forKey: .type)
+      try container.encode(value, forKey: .value)
+    case .regex(let value):
+      try container.encode("regex", forKey: .type)
+      try container.encode(value, forKey: .value)
+    case .contains(let value):
+      try container.encode("contains", forKey: .type)
+      try container.encode(value, forKey: .value)
+    case .sourceApp(let value):
+      try container.encode("sourceApp", forKey: .type)
+      try container.encode(value, forKey: .value)
+    case .softWrapped:
+      try container.encode("softWrapped", forKey: .type)
+    case .terminalSource:
+      try container.encode("terminalSource", forKey: .type)
     }
   }
 }
@@ -92,6 +146,7 @@ struct ActionConfig: Codable, Identifiable, Hashable {
   var searchTemplate: String?   // webSearch, e.g. https://www.google.com/search?q={query}
   var transform: TransformKind? // transform
   var shortcutName: String?     // runShortcut
+  var shortcut: String?         // per-action keyboard shortcut, e.g. "cmd+shift+u"
 
   var title: String {
     switch type {
@@ -143,6 +198,13 @@ struct ActionRule: Codable, Identifiable, Hashable, Defaults.Serializable {
       name: "Search selected text",
       conditions: [.kind(.text)],
       actions: [ActionConfig(type: .webSearch, searchTemplate: WebSearchTemplate.google)]
+    ),
+    ActionRule(
+      name: "Unwrap terminal command",
+      matchMode: .all,
+      conditions: [.terminalSource, .softWrapped],
+      actions: [ActionConfig(type: .transform, transform: .unwrap)],
+      autoRunDefault: true
     )
   ]
 }

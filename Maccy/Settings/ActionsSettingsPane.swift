@@ -210,7 +210,7 @@ private struct ConditionRow: View {
   var onDelete: () -> Void
 
   private enum CondType: String, CaseIterable, Identifiable {
-    case kind, regex, contains, sourceApp
+    case kind, regex, contains, sourceApp, softWrapped, terminalSource
     var id: String { rawValue }
     var label: String {
       switch self {
@@ -218,6 +218,8 @@ private struct ConditionRow: View {
       case .regex: return "Regex"
       case .contains: return "Contains"
       case .sourceApp: return "Source app"
+      case .softWrapped: return "Soft-wrapped"
+      case .terminalSource: return "From terminal"
       }
     }
   }
@@ -245,6 +247,10 @@ private struct ConditionRow: View {
         Button("Choose…") {
           if let bundleID = AppPicker.choose() { condition = .sourceApp(bundleID) }
         }
+      case .softWrapped:
+        Text("Copy looks like a wrapped terminal command").foregroundStyle(.secondary)
+      case .terminalSource:
+        Text("Copied from a configured terminal app").foregroundStyle(.secondary)
       }
 
       Button(action: onDelete) { Image(systemName: "trash") }
@@ -260,6 +266,8 @@ private struct ConditionRow: View {
         case .regex: return .regex
         case .contains: return .contains
         case .sourceApp: return .sourceApp
+        case .softWrapped: return .softWrapped
+        case .terminalSource: return .terminalSource
         }
       },
       set: { newType in
@@ -268,6 +276,8 @@ private struct ConditionRow: View {
         case .regex: condition = .regex("")
         case .contains: condition = .contains("")
         case .sourceApp: condition = .sourceApp("")
+        case .softWrapped: condition = .softWrapped
+        case .terminalSource: condition = .terminalSource
         }
       }
     )
