@@ -48,6 +48,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
       ActionEngine.shared.runDefaultActionForCurrent()
     }
 
+    // Wire per-action shortcuts so they're live at launch.
+    ActionEngine.shared.registerShortcuts()
+
     // Phone clips now merge into the main popup (badged), so the separate phone
     // panel + its ⌃⇧V shortcut are retired.
 

@@ -25,6 +25,11 @@ final class ActionEngine {
   // poller's echo so auto-run doesn't loop forever.
   private var lastAutoOutput: String?
 
+  // Per-action shortcut Names we've already wired an onKeyDown handler for.
+  // The handler re-resolves the config by id at fire time, so it survives rule
+  // edits/reloads without re-registering (which would clobber other handlers).
+  private var registeredActionShortcutNames = Set<String>()
+
   private init() {}
 
   var rules: [ActionRule] { Defaults[.actionRules] }
@@ -121,6 +126,44 @@ final class ActionEngine {
       return
     }
     runDefault(for: item)
+  }
+
+  // MARK: Per-action shortcuts
+
+  // Wire (or rewire) the per-action hotkeys from the current rules. Safe to call
+  // repeatedly: each Name's handler is registered once and re-resolves its config
+  // at fire time, while `setShortcut` is updated to reflect the latest binding.
+  // Never calls `removeAllHandlers()` (that would clobber popup/pin/etc.).
+  func registerShortcuts() {
+    for rule in Defaults[.actionRules] {
+      for config in rule.actions {
+        let name = KeyboardShortcuts.Name("action_\(config.id.uuidString)")
+        if let spec = config.shortcut, let parsed = ShortcutSpec.parse(spec) {
+          KeyboardShortcuts.setShortcut(parsed, for: name)
+        } else {
+          KeyboardShortcuts.setShortcut(nil, for: name)
+        }
+        if registeredActionShortcutNames.insert(name.rawValue).inserted {
+          let actionID = config.id
+          KeyboardShortcuts.onKeyDown(for: name) {
+            ActionEngine.shared.runSpecificActionForCurrent(actionID: actionID)
+          }
+        }
+      }
+    }
+  }
+
+  // Per-action-shortcut entry point: run one specific action unconditionally on
+  // the most recent item. No rule matching, no priority, no auto-run gate.
+  func runSpecificActionForCurrent(actionID: UUID) {
+    guard let config = Defaults[.actionRules].flatMap(\.actions).first(where: { $0.id == actionID }),
+          let action = ActionFactory.make(config),
+          let item = History.shared.unpinnedItems.first?.item ?? History.shared.all.first?.item,
+          action.canRun(on: item) else {
+      NSSound.beep()
+      return
+    }
+    run(action, on: item)
   }
 
   // MARK: Auto-run (called from Clipboard.onNewCopy)
