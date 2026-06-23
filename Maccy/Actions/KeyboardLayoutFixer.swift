@@ -4,7 +4,7 @@ import Foundation
 // between US-QWERTY and Israeli SI-1452. Direction is auto-detected by script
 // count. Ported from the standalone KeyLayoutSwitcher engine; dumb +
 // deterministic, with no per-word plausibility scoring.
-extension KeyboardLayout {
+enum KeyboardLayoutFixer {
   // English-typed character -> Hebrew character the user intended.
   static let enToHe: [Character: Character] = [
     // letters lowercase
