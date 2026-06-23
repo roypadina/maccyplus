@@ -2,6 +2,20 @@ import AppKit
 import Defaults
 import Foundation
 
+// MARK: - Launch seam
+
+/// Injectable launch seam so unit tests can capture launches instead of performing them.
+@MainActor enum BuiltinLaunch {
+  static var open: (URL) -> Void = { NSWorkspace.shared.open($0) }
+  static var openInApp: (_ fileOrURL: URL, _ appURL: URL) -> Void = { fileOrURL, appURL in
+    _ = try? NSWorkspace.shared.open(
+      [fileOrURL],
+      withApplicationAt: appURL,
+      configuration: NSWorkspace.OpenConfiguration()
+    )
+  }
+}
+
 // MARK: - Condition providers
 
 /// Matches when the clipboard value is classified as the specified ValueKind.
@@ -152,7 +166,7 @@ struct OpenURLProvider: ActionProvider {
     guard let url = makeURL(from: input.string) else {
       throw ActionError.invalidURL
     }
-    NSWorkspace.shared.open(url)
+    BuiltinLaunch.open(url)
     return .sideEffect
   }
 }
@@ -194,11 +208,9 @@ struct OpenInAppProvider: ActionProvider {
     } else {
       throw ActionError.noValue
     }
-    _ = try await NSWorkspace.shared.open(
-      urls,
-      withApplicationAt: appURL,
-      configuration: NSWorkspace.OpenConfiguration()
-    )
+    for url in urls {
+      BuiltinLaunch.openInApp(url, appURL)
+    }
     return .sideEffect
   }
 }
@@ -241,7 +253,7 @@ struct WebSearchProvider: ActionProvider {
     guard let url = WebSearchProvider.buildSearchURL(template: template, query: input.string) else {
       throw ActionError.invalidURL
     }
-    NSWorkspace.shared.open(url)
+    BuiltinLaunch.open(url)
     return .sideEffect
   }
 }
@@ -281,7 +293,7 @@ struct RunShortcutProvider: ActionProvider {
       URLQueryItem(name: "text", value: input.string)
     ]
     guard let url = components.url else { throw ActionError.missingShortcut }
-    NSWorkspace.shared.open(url)
+    BuiltinLaunch.open(url)
     return .sideEffect
   }
 }

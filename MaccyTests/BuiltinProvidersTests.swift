@@ -4,10 +4,21 @@ import XCTest
 @MainActor
 final class BuiltinProvidersTests: XCTestCase {
 
+  private var originalOpen: ((URL) -> Void)!
+  private var originalOpenInApp: ((URL, URL) -> Void)!
+
   override func setUp() async throws {
     try await super.setUp()
+    originalOpen = BuiltinLaunch.open
+    originalOpenInApp = BuiltinLaunch.openInApp
     ProviderRegistry.shared.reset()
     BuiltinProviders.registerBuiltins(into: ProviderRegistry.shared)
+  }
+
+  override func tearDown() async throws {
+    BuiltinLaunch.open = originalOpen
+    BuiltinLaunch.openInApp = originalOpenInApp
+    try await super.tearDown()
   }
 
   // MARK: - Registry population
@@ -354,6 +365,8 @@ final class BuiltinProvidersTests: XCTestCase {
   }
 
   func testOpenURLReturnsSideEffect() async throws {
+    var capturedURL: URL?
+    BuiltinLaunch.open = { capturedURL = $0 }
     let provider = ProviderRegistry.shared.action("builtin.openURL")!
     let input = PluginInput(
       string: "https://example.com",
@@ -363,6 +376,7 @@ final class BuiltinProvidersTests: XCTestCase {
     )
     let outcome = try await provider.run(input, params: .emptyObject)
     XCTAssertEqual(outcome, .sideEffect)
+    XCTAssertEqual(capturedURL, URL(string: "https://example.com"))
   }
 
   func testOpenURLThrowsForNonURL() async {
@@ -404,6 +418,8 @@ final class BuiltinProvidersTests: XCTestCase {
   }
 
   func testWebSearchReturnsSideEffect() async throws {
+    var capturedURL: URL?
+    BuiltinLaunch.open = { capturedURL = $0 }
     let provider = ProviderRegistry.shared.action("builtin.webSearch")!
     let input = PluginInput(
       string: "swift programming",
@@ -416,6 +432,11 @@ final class BuiltinProvidersTests: XCTestCase {
       params: .object(["template": .string("https://example.com/search?q={query}")])
     )
     XCTAssertEqual(outcome, .sideEffect)
+    XCTAssertNotNil(capturedURL)
+    XCTAssertTrue(
+      capturedURL!.absoluteString.contains("swift") ||
+      capturedURL!.absoluteString.contains("swift%20programming")
+    )
   }
 
   func testWebSearchThrowsForEmptyString() async {
@@ -469,6 +490,8 @@ final class BuiltinProvidersTests: XCTestCase {
   }
 
   func testRunShortcutReturnsSideEffect() async throws {
+    var capturedURL: URL?
+    BuiltinLaunch.open = { capturedURL = $0 }
     let provider = ProviderRegistry.shared.action("builtin.runShortcut")!
     let input = PluginInput(
       string: "some text",
@@ -481,6 +504,11 @@ final class BuiltinProvidersTests: XCTestCase {
       params: .object(["shortcutName": .string("My Shortcut")])
     )
     XCTAssertEqual(outcome, .sideEffect)
+    XCTAssertNotNil(capturedURL)
+    XCTAssertEqual(capturedURL!.scheme, "shortcuts")
+    XCTAssertTrue(capturedURL!.absoluteString.contains("My%20Shortcut") ||
+                  capturedURL!.absoluteString.contains("My+Shortcut") ||
+                  capturedURL!.absoluteString.contains("My Shortcut"))
   }
 
   func testRunShortcutThrowsForMissingName() async {
