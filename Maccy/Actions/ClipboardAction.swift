@@ -2,8 +2,7 @@ import AppKit
 import Foundation
 
 // Runtime behaviour of an action. Built from an `ActionConfig` by `ActionFactory`.
-// New action types (including a future `SendToAndroidAction`) conform here and
-// the engine/UI pick them up without changes.
+// New action types conform here and the engine/UI pick them up without changes.
 @MainActor
 protocol ClipboardAction {
   var id: String { get }
@@ -36,8 +35,6 @@ enum ActionFactory {
     case .runShortcut:
       guard let name = config.shortcutName, !name.isEmpty else { return nil }
       return RunShortcutAction(shortcutName: name)
-    case .sendToAndroid:
-      return SendToAndroidAction()
     }
   }
 }
@@ -173,30 +170,5 @@ struct RunShortcutAction: ClipboardAction {
     ]
     guard let url = components.url else { throw ActionError.missingShortcut }
     NSWorkspace.shared.open(url)
-  }
-}
-
-// MARK: - Sync seam (Feature 1: Android clipboard sync)
-
-// Interface the action delegates to. `LanSyncService` is the concrete impl.
-@MainActor
-protocol SyncService {
-  func send(_ value: String) async throws
-}
-
-// Pushes the item's primary string to the paired phone. Background auto-sync
-// already mirrors copies; this is the explicit, rule/menu-triggered action.
-struct SendToAndroidAction: ClipboardAction {
-  let id = "sendToAndroid"
-  let title = "Send to Phone"
-  let systemImage = "iphone"
-
-  func canRun(on item: HistoryItem) -> Bool {
-    LanSyncService.shared.state == .connected
-  }
-
-  func run(on item: HistoryItem) async throws {
-    // Explicit send — pushes any kind (text/image/file) to the phone.
-    LanSyncService.shared.sendItem(item)
   }
 }

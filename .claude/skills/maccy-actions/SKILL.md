@@ -130,7 +130,6 @@ conditions never match.
 - `webSearch` — `searchTemplate` (use `{query}` placeholder)
 - `transform` — `transform`
 - `runShortcut` — `shortcutName`
-- `sendToAndroid` — (none)
 
 `TransformKinds`: `trim`, `uppercase`, `lowercase`, `stripFormatting`,
 `unwrap` (join soft-wrapped terminal lines into one ready-to-paste command),

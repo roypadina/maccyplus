@@ -27,7 +27,7 @@ unwrap rule via the CLI, dogfooding both.
   `.sourceApp(String)`. Currently uses Swift-synthesized Codable.
 - `ActionConfig` struct: `id`, `type: ActionType`, `appBundleID?`, `searchTemplate?`,
   `transform: TransformKind?`, `shortcutName?`. Named fields → already clean JSON.
-- `ActionType`: openURL, openInApp, webSearch, transform, runShortcut, sendToAndroid.
+- `ActionType`: openURL, openInApp, webSearch, transform, runShortcut.
 - `TransformKind`: trim, uppercase, lowercase, stripFormatting.
 - `ActionEngine` (`@MainActor @Observable`): `rules` is computed `{ Defaults[.actionRules] }`;
   `matches()` evaluates conditions; `handleNewCopy()` auto-runs the first matching
@@ -35,7 +35,7 @@ unwrap rule via the CLI, dogfooding both.
 - Global shortcut `runDefaultAction` (sindresorhus `KeyboardShortcuts`, no default binding)
   → `runDefaultActionForCurrent()`. Registered in `AppDelegate.applicationWillFinishLaunching`
   (`KeyboardShortcuts.onKeyDown(for: .runDefaultAction)`). Other shortcut names
-  (popup/pin/delete/togglePreview/showRemoteClipboard) live in
+  (popup/pin/delete/togglePreview) live in
   `Extensions/KeyboardShortcuts.Name+Shortcuts.swift`.
 - App entry: `MaccyApp` is a SwiftUI `@main` App with `MenuBarExtra`; `AppDelegate`
   via `@NSApplicationDelegateAdaptor`. `applicationWillFinishLaunching` parses

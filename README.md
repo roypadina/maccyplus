@@ -82,8 +82,7 @@ command), and **from a terminal** (the copy came from a configured terminal app)
 matches when *all* or *any* of its conditions hold.
 
 **Actions** — open as URL, open in a specific app, web search, **transform text**
-(trim, UPPERCASE, lowercase, strip formatting, **unwrap**), run a macOS Shortcut, and
-send to a paired phone.
+(trim, UPPERCASE, lowercase, strip formatting, **unwrap**), and run a macOS Shortcut.
 
 ### Unwrap soft-wrapped terminal commands
 

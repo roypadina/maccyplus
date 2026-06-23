@@ -371,7 +371,7 @@ enum ActionsCLI {
         if (action.shortcutName ?? "").isEmpty {
           return "Action of type 'runShortcut' requires a non-empty 'shortcutName'."
         }
-      case .openURL, .sendToAndroid:
+      case .openURL:
         break
       }
       if let spec = action.shortcut, ShortcutSpec.parse(spec) == nil {

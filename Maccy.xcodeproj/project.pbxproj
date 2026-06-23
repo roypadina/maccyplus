@@ -83,16 +83,6 @@
 		46E3E69420099E35E5F692B6 /* ClipboardAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE0B38EFABD011A73D5FCB44 /* ClipboardAction.swift */; };
 		7E83EFFB3CF1961302CE5103 /* ActionEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01C1EF123742089F4AFE3304 /* ActionEngine.swift */; };
 		8C72DC6D885AB242ABCBCE3A /* ActionsSettingsPane.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B55E2F80FC91A915D8A2669 /* ActionsSettingsPane.swift */; };
-		627BFCD2B3014B629BB66BA9 /* SyncProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = A81630B19B504C51B4BA9F22 /* SyncProtocol.swift */; };
-		0A0193F067B242CAB8795183 /* SyncCrypto.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AA0AB4313BF4126ACC763A1 /* SyncCrypto.swift */; };
-		43E7DB68660847F1A81CF717 /* SyncSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8C351C7B9D04272BEF51D25 /* SyncSettings.swift */; };
-		4D128706BB474AD0A5E50043 /* RemoteClipStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60FB19BCBBE942429CAFBA2E /* RemoteClipStore.swift */; };
-		ED3961B818B34C14ABDEE34F /* PeerConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 992C1357988A41F5B06BEE15 /* PeerConnection.swift */; };
-		12E23DE6E59D4C88A4E31858 /* SyncContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = D142E893B49241078A48AB5C /* SyncContent.swift */; };
-		65A60CEF98EC4DE1BCAE1779 /* LanSyncService.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC6454C5DF504B789FC3478E /* LanSyncService.swift */; };
-		8E0EFD9A1EC544FCA61334A4 /* RemoteClipboardPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 882581AE93F74A31B957C318 /* RemoteClipboardPanel.swift */; };
-		E440FA7092FD4BCC9799D2D8 /* RemoteClipboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50BFFA27216D4060A6DF9DFB /* RemoteClipboardView.swift */; };
-		18C9CA69442C400D932594B7 /* SyncSettingsPane.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C85B98200E5477F99FE904A /* SyncSettingsPane.swift */; };
 		DA360DB31E3DF137005C6F6B /* HistoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA360DB21E3DF137005C6F6B /* HistoryTests.swift */; };
 		DA384E86232746D800603999 /* SearchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA384E85232746D800603999 /* SearchTests.swift */; };
 		DA3BCB8E2C3E015000B01BC1 /* ModifierFlags.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA3BCB8D2C3E015000B01BC1 /* ModifierFlags.swift */; };
@@ -166,7 +156,6 @@
 		DAEE38471E3DBEB100DD2966 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DAEE38461E3DBEB100DD2966 /* AppDelegate.swift */; };
 		DAFE2DDA268A521B00990986 /* String+Shortened.swift in Sources */ = {isa = PBXBuildFile; fileRef = DAFE2DD9268A521A00990986 /* String+Shortened.swift */; };
 		DAFE2DE9268A9B1B00990986 /* HistoryItemTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DAFE2DE8268A9B1B00990986 /* HistoryItemTests.swift */; };
-		6E6A2E681A8545BEA2B0A52F /* SyncTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9E741FE9A564C01A9D53549 /* SyncTests.swift */; };
 		DAFEF0B8249D7DEE006029E8 /* KeyboardShortcuts.Name+Shortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = DAFEF0B7249D7DEE006029E8 /* KeyboardShortcuts.Name+Shortcuts.swift */; };
 /* End PBXBuildFile section */
 
@@ -305,16 +294,6 @@
 		CE0B38EFABD011A73D5FCB44 /* ClipboardAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Actions/ClipboardAction.swift; sourceTree = "<group>"; };
 		01C1EF123742089F4AFE3304 /* ActionEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Actions/ActionEngine.swift; sourceTree = "<group>"; };
 		1B55E2F80FC91A915D8A2669 /* ActionsSettingsPane.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings/ActionsSettingsPane.swift; sourceTree = "<group>"; };
-		A81630B19B504C51B4BA9F22 /* SyncProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sync/SyncProtocol.swift; sourceTree = "<group>"; };
-		0AA0AB4313BF4126ACC763A1 /* SyncCrypto.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sync/SyncCrypto.swift; sourceTree = "<group>"; };
-		B8C351C7B9D04272BEF51D25 /* SyncSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sync/SyncSettings.swift; sourceTree = "<group>"; };
-		60FB19BCBBE942429CAFBA2E /* RemoteClipStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sync/RemoteClipStore.swift; sourceTree = "<group>"; };
-		992C1357988A41F5B06BEE15 /* PeerConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sync/PeerConnection.swift; sourceTree = "<group>"; };
-		D142E893B49241078A48AB5C /* SyncContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sync/SyncContent.swift; sourceTree = "<group>"; };
-		EC6454C5DF504B789FC3478E /* LanSyncService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sync/LanSyncService.swift; sourceTree = "<group>"; };
-		882581AE93F74A31B957C318 /* RemoteClipboardPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sync/RemoteClipboardPanel.swift; sourceTree = "<group>"; };
-		50BFFA27216D4060A6DF9DFB /* RemoteClipboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/RemoteClipboardView.swift; sourceTree = "<group>"; };
-		3C85B98200E5477F99FE904A /* SyncSettingsPane.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings/SyncSettingsPane.swift; sourceTree = "<group>"; };
 		DA2595D82CBC44BD00A0A7F2 /* lt */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = lt; path = lt.lproj/AdvancedSettings.strings; sourceTree = "<group>"; };
 		DA2595D92CBC44BD00A0A7F2 /* lt */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = lt; path = lt.lproj/AppearanceSettings.strings; sourceTree = "<group>"; };
 		DA2595DA2CBC44BD00A0A7F2 /* lt */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = lt; path = lt.lproj/GeneralSettings.strings; sourceTree = "<group>"; };
@@ -599,7 +578,6 @@
 		DAF750022C517B400027DBCE /* pt-BR */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "pt-BR"; path = "pt-BR.lproj/StorageSettings.strings"; sourceTree = "<group>"; };
 		DAFE2DD9268A521A00990986 /* String+Shortened.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+Shortened.swift"; sourceTree = "<group>"; };
 		DAFE2DE8268A9B1B00990986 /* HistoryItemTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryItemTests.swift; sourceTree = "<group>"; };
-		E9E741FE9A564C01A9D53549 /* SyncTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncTests.swift; sourceTree = "<group>"; };
 		DAFEF0B7249D7DEE006029E8 /* KeyboardShortcuts.Name+Shortcuts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "KeyboardShortcuts.Name+Shortcuts.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -767,7 +745,6 @@
 				DA360DB21E3DF137005C6F6B /* HistoryTests.swift */,
 				DA1EDE422045B35300479723 /* HistoryDecoratorTests.swift */,
 				DAFE2DE8268A9B1B00990986 /* HistoryItemTests.swift */,
-				E9E741FE9A564C01A9D53549 /* SyncTests.swift */,
 				DA384E85232746D800603999 /* SearchTests.swift */,
 				DA696BD12401EEE900DE80CF /* SorterTests.swift */,
 				AA01C0DE00000000000000B1 /* KeyboardLayoutTests.swift */,
@@ -896,16 +873,6 @@
 				CE0B38EFABD011A73D5FCB44 /* ClipboardAction.swift */,
 				01C1EF123742089F4AFE3304 /* ActionEngine.swift */,
 				1B55E2F80FC91A915D8A2669 /* ActionsSettingsPane.swift */,
-				A81630B19B504C51B4BA9F22 /* SyncProtocol.swift */,
-				0AA0AB4313BF4126ACC763A1 /* SyncCrypto.swift */,
-				B8C351C7B9D04272BEF51D25 /* SyncSettings.swift */,
-				60FB19BCBBE942429CAFBA2E /* RemoteClipStore.swift */,
-				992C1357988A41F5B06BEE15 /* PeerConnection.swift */,
-				D142E893B49241078A48AB5C /* SyncContent.swift */,
-				EC6454C5DF504B789FC3478E /* LanSyncService.swift */,
-				882581AE93F74A31B957C318 /* RemoteClipboardPanel.swift */,
-				50BFFA27216D4060A6DF9DFB /* RemoteClipboardView.swift */,
-				3C85B98200E5477F99FE904A /* SyncSettingsPane.swift */,
 				DA81D673252A056B009977BC /* Throttler.swift */,
 				DAB8CE4024E3677F00A2500E /* Maccy.entitlements */,
 				DAEE384D1E3DBEB100DD2966 /* Info.plist */,
@@ -1127,7 +1094,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				DAFE2DE9268A9B1B00990986 /* HistoryItemTests.swift in Sources */,
-				6E6A2E681A8545BEA2B0A52F /* SyncTests.swift in Sources */,
 				DA3CE8001E44A62500B3AA98 /* ClipboardTests.swift in Sources */,
 				DA1EDE432045B35300479723 /* HistoryDecoratorTests.swift in Sources */,
 				DAE2850223225BD90080E394 /* ColorImageTests.swift in Sources */,
@@ -1166,16 +1132,6 @@
 				46E3E69420099E35E5F692B6 /* ClipboardAction.swift in Sources */,
 				7E83EFFB3CF1961302CE5103 /* ActionEngine.swift in Sources */,
 				8C72DC6D885AB242ABCBCE3A /* ActionsSettingsPane.swift in Sources */,
-				627BFCD2B3014B629BB66BA9 /* SyncProtocol.swift in Sources */,
-				0A0193F067B242CAB8795183 /* SyncCrypto.swift in Sources */,
-				43E7DB68660847F1A81CF717 /* SyncSettings.swift in Sources */,
-				4D128706BB474AD0A5E50043 /* RemoteClipStore.swift in Sources */,
-				ED3961B818B34C14ABDEE34F /* PeerConnection.swift in Sources */,
-				12E23DE6E59D4C88A4E31858 /* SyncContent.swift in Sources */,
-				65A60CEF98EC4DE1BCAE1779 /* LanSyncService.swift in Sources */,
-				8E0EFD9A1EC544FCA61334A4 /* RemoteClipboardPanel.swift in Sources */,
-				E440FA7092FD4BCC9799D2D8 /* RemoteClipboardView.swift in Sources */,
-				18C9CA69442C400D932594B7 /* SyncSettingsPane.swift in Sources */,
 				2F0EC7812E773F1D003E2EA9 /* PasteStack.swift in Sources */,
 				DA5078992CF2676B00215488 /* MouseMovedViewModifer.swift in Sources */,
 				DA19690E2C3EEFA900258481 /* KeyboardShortcutView.swift in Sources */,

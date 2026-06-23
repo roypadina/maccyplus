@@ -39,10 +39,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     Clipboard.shared.onNewCopy { History.shared.add($0) }
     Clipboard.shared.onNewCopy { ActionEngine.shared.handleNewCopy($0) }
-    Clipboard.shared.onNewCopy { LanSyncService.shared.pushClip($0) }
     Clipboard.shared.start()
-
-    LanSyncService.shared.start()
 
     KeyboardShortcuts.onKeyDown(for: .runDefaultAction) {
       ActionEngine.shared.runDefaultActionForCurrent()
@@ -56,9 +53,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
       forName: .init(ActionsCLI.rulesChangedNotification), object: nil, queue: .main) { _ in
         MainActor.assumeIsolated { ActionEngine.shared.reloadRules() }
     }
-
-    // Phone clips now merge into the main popup (badged), so the separate phone
-    // panel + its ⌃⇧V shortcut are retired.
 
     Task {
       for await _ in Defaults.updates(.clipboardCheckInterval, initial: false) {

@@ -2,15 +2,13 @@ import AppKit
 import Defaults
 import Foundation
 
-// What an action does. `sendToAndroid` is reserved for the future clipboard-sync
-// feature and is hidden/disabled in v1.
+// What an action does.
 enum ActionType: String, Codable, CaseIterable, Identifiable {
   case openURL
   case openInApp
   case webSearch
   case transform
   case runShortcut
-  case sendToAndroid
 
   var id: String { rawValue }
 
@@ -21,7 +19,6 @@ enum ActionType: String, Codable, CaseIterable, Identifiable {
     case .webSearch: return "Web search"
     case .transform: return "Transform text"
     case .runShortcut: return "Run Shortcut"
-    case .sendToAndroid: return "Send to Android"
     }
   }
 
@@ -32,7 +29,6 @@ enum ActionType: String, Codable, CaseIterable, Identifiable {
     case .webSearch: return "magnifyingglass"
     case .transform: return "textformat"
     case .runShortcut: return "wand.and.stars"
-    case .sendToAndroid: return "iphone"
     }
   }
 
