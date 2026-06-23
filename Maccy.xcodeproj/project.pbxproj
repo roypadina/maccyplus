@@ -95,6 +95,8 @@
 		DA3F1B452C90084600267632 /* Sauce+KeyboardShortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA3F1B442C90083800267632 /* Sauce+KeyboardShortcuts.swift */; };
 		DA44C5E42C1C858400819834 /* StorageSettingsPane.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA44C5E32C1C858400819834 /* StorageSettingsPane.swift */; };
 		DA48AE892A5F0548006D4894 /* guy.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = DA48AE882A5F0548006D4894 /* guy.jpeg */; };
+		25C11C5F8F9747BBBEB2160A /* marketplace.json in Resources */ = {isa = PBXBuildFile; fileRef = EFC6ACAC3FC640269661CEED /* marketplace.json */; };
+		FB7FBDD86BDE44E4A6CE71FA /* MarketplaceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F662E734665549759A0017AB /* MarketplaceTests.swift */; };
 		DA49EE7528B59468002752E0 /* NSRect+Centered.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA49EE7428B59468002752E0 /* NSRect+Centered.swift */; };
 		DA49EE7928B594DC002752E0 /* NSRunningApplication+WindowFrame.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA49EE7828B594DC002752E0 /* NSRunningApplication+WindowFrame.swift */; };
 		DA5078992CF2676B00215488 /* MouseMovedViewModifer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA5078982CF2676400215488 /* MouseMovedViewModifer.swift */; };
@@ -174,6 +176,7 @@
 		0ACD9256CF3449E18F793B8A /* PluginManifestTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3F64E658C6846848A1074C7 /* PluginManifestTests.swift */; };
 		EF644DB4D6E543BAB26ED7AB /* DeclarativeEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29F892DE26D74479963E5C1D /* DeclarativeEngineTests.swift */; };
 		822871D044B1473E81561D14 /* PluginLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89511667CC824F8FBA11BE5B /* PluginLoader.swift */; };
+		93476DE1F90B450382165729 /* Marketplace.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F501DC15AAC4B789B933AB8 /* Marketplace.swift */; };
 		222FEA966F73421F9F9D1F29 /* PluginLoaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DFF153E47774D76AB45AC87 /* PluginLoaderTests.swift */; };
 		5252F5CC3D734D7C828BBC46 /* BundledPluginsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD12F4C8233345078B12E60F /* BundledPluginsTests.swift */; };
 /* End PBXBuildFile section */
@@ -352,6 +355,8 @@
 		DA4566C82CB0320200059A82 /* pl */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = pl; path = pl.lproj/PreviewItemView.strings; sourceTree = "<group>"; };
 		DA4566C92CB0320200059A82 /* pl */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = pl; path = pl.lproj/Localizable.strings; sourceTree = "<group>"; };
 		DA48AE882A5F0548006D4894 /* guy.jpeg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = guy.jpeg; sourceTree = "<group>"; };
+		EFC6ACAC3FC640269661CEED /* marketplace.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = marketplace.json; sourceTree = "<group>"; };
+		F662E734665549759A0017AB /* MarketplaceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarketplaceTests.swift; sourceTree = "<group>"; };
 		DA49EE7428B59468002752E0 /* NSRect+Centered.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSRect+Centered.swift"; sourceTree = "<group>"; };
 		DA49EE7828B594DC002752E0 /* NSRunningApplication+WindowFrame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSRunningApplication+WindowFrame.swift"; sourceTree = "<group>"; };
 		DA4B706A271B7B5300FF324C /* it */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = it; path = it.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -450,6 +455,7 @@
 		1F3894DDE2444398A4F91F54 /* DeclarativeEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plugins/DeclarativeEngine.swift; sourceTree = "<group>"; };
 		CE09118DBFE84F8A913227DA /* JSPluginRuntime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plugins/JSPluginRuntime.swift; sourceTree = "<group>"; };
 		89511667CC824F8FBA11BE5B /* PluginLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plugins/PluginLoader.swift; sourceTree = "<group>"; };
+		2F501DC15AAC4B789B933AB8 /* Marketplace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plugins/Marketplace.swift; sourceTree = "<group>"; };
 		5DFF153E47774D76AB45AC87 /* PluginLoaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PluginLoaderTests.swift; sourceTree = "<group>"; };
 		DD12F4C8233345078B12E60F /* BundledPluginsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BundledPluginsTests.swift; sourceTree = "<group>"; };
 		0BF249BA3CB847E896F5CB62 /* BundledPlugins */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Resources/BundledPlugins; sourceTree = "<group>"; };
@@ -796,6 +802,7 @@
 				16F1601C15344D979FAB63B1 /* JSPluginRuntimeTests.swift */,
 				5DFF153E47774D76AB45AC87 /* PluginLoaderTests.swift */,
 				DD12F4C8233345078B12E60F /* BundledPluginsTests.swift */,
+				F662E734665549759A0017AB /* MarketplaceTests.swift */,
 				DA360DB41E3DF137005C6F6B /* Info.plist */,
 			);
 			path = MaccyTests;
@@ -821,6 +828,7 @@
 			isa = PBXGroup;
 			children = (
 				DA48AE882A5F0548006D4894 /* guy.jpeg */,
+				EFC6ACAC3FC640269661CEED /* marketplace.json */,
 			);
 			path = Fixtures;
 			sourceTree = "<group>";
@@ -927,6 +935,7 @@
 				1F3894DDE2444398A4F91F54 /* DeclarativeEngine.swift */,
 				CE09118DBFE84F8A913227DA /* JSPluginRuntime.swift */,
 				89511667CC824F8FBA11BE5B /* PluginLoader.swift */,
+				2F501DC15AAC4B789B933AB8 /* Marketplace.swift */,
 				01C1EF123742089F4AFE3304 /* ActionEngine.swift */,
 				1B55E2F80FC91A915D8A2669 /* ActionsSettingsPane.swift */,
 				DA81D673252A056B009977BC /* Throttler.swift */,
@@ -1111,6 +1120,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				DA48AE892A5F0548006D4894 /* guy.jpeg in Resources */,
+				25C11C5F8F9747BBBEB2160A /* marketplace.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1168,6 +1178,7 @@
 				3D631C6E751644348016503A /* JSPluginRuntimeTests.swift in Sources */,
 				222FEA966F73421F9F9D1F29 /* PluginLoaderTests.swift in Sources */,
 				5252F5CC3D734D7C828BBC46 /* BundledPluginsTests.swift in Sources */,
+				FB7FBDD86BDE44E4A6CE71FA /* MarketplaceTests.swift in Sources */,
 				DA360DB31E3DF137005C6F6B /* HistoryTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1300,6 +1311,7 @@
 				0BFBE928043C4291A2BDDFD9 /* DeclarativeEngine.swift in Sources */,
 				0C07719C05ED4B6A9E4EF21C /* JSPluginRuntime.swift in Sources */,
 				822871D044B1473E81561D14 /* PluginLoader.swift in Sources */,
+				93476DE1F90B450382165729 /* Marketplace.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

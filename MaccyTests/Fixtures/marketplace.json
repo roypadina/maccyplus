@@ -1,0 +1,39 @@
+{
+  "id": "maccay-official",
+  "name": "Maccay Official",
+  "version": "1",
+  "description": "First-party Maccay plugins",
+  "maintainer": "royp",
+  "plugins": [
+    {
+      "id": "example-base64",
+      "name": "Base64 encode",
+      "description": "Base64-encode the copied text",
+      "version": "1.0.0",
+      "minAppVersion": "2.6.0",
+      "kind": "action",
+      "tags": ["encoding", "text"],
+      "source": {
+        "type": "github",
+        "repo": "royp/maccay-plugins",
+        "ref": "main",
+        "path": "plugins/example-base64"
+      },
+      "sha256": "abc123"
+    },
+    {
+      "id": "example-reverse",
+      "name": "Reverse text condition",
+      "description": "Matches when the text reversed equals itself",
+      "version": "1.0.0",
+      "minAppVersion": null,
+      "kind": "condition",
+      "tags": null,
+      "source": {
+        "type": "url",
+        "url": "https://plugins.example.com/example-reverse"
+      },
+      "sha256": "def456"
+    }
+  ]
+}
