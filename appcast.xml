@@ -1,28 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" xmlns:dc="http://purl.org/dc/elements/1.1/">
   <channel>
-    <title>Maccy</title>
-    <link>https://raw.githubusercontent.com/p0deje/Maccy/master/appcast.xml</link>
+    <title>Maccy Actions</title>
+    <link>https://raw.githubusercontent.com/roypadina/maccy-actions/main/appcast.xml</link>
     <description>Most recent changes with links to updates.</description>
     <language>en</language>
     <item>
-      <title>2.6.1</title>
+      <title>2.6.2</title>
       <description>
         <![CDATA[
           <ul>
-            <li>Fixed a crash when copying on macOS 14.</li>
-            <li>Fixed a text beam cursor when hovering a header with a hidden search field.</li>
+            <li>New clipboard action: <strong>Fix keyboard layout (EN ⇄ HE)</strong> — re-maps text typed in the wrong active layout between US-QWERTY and Israeli SI-1452, with direction auto-detected.</li>
           </ul>
         ]]>
       </description>
-      <pubDate>2025-11-27</pubDate>
-      <releaseNotesLink>https://github.com/p0deje/Maccy/releases/tag/2.6.1</releaseNotesLink>
+      <pubDate>Tue, 23 Jun 2026 14:15:56 +0300</pubDate>
+      <releaseNotesLink>https://github.com/roypadina/maccy-actions/releases/tag/v2.6.2</releaseNotesLink>
       <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
       <enclosure
-        url="https://github.com/p0deje/Maccy/releases/download/2.6.1/Maccy.app.zip"
-        sparkle:version="60"
-        sparkle:shortVersionString="2.6.1"
-        length="0"
+        url="https://github.com/roypadina/maccy-actions/releases/download/v2.6.2/MaccyActions.zip"
+        sparkle:version="61"
+        sparkle:shortVersionString="2.6.2"
+        length="4148841"
         type="application/octet-stream"
       />
     </item>

@@ -35,7 +35,7 @@
 	<key>SUEnableInstallerLauncherService</key>
 	<true/>
 	<key>SUFeedURL</key>
-	<string>https://raw.githubusercontent.com/royp/maccy-actions/master/appcast.xml</string>
+	<string>https://raw.githubusercontent.com/roypadina/maccy-actions/main/appcast.xml</string>
 	<key>SUEnableAutomaticChecks</key>
 	<false/>
 </dict>
