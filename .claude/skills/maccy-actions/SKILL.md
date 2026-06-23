@@ -133,7 +133,8 @@ conditions never match.
 - `sendToAndroid` — (none)
 
 `TransformKinds`: `trim`, `uppercase`, `lowercase`, `stripFormatting`,
-`unwrap` (join soft-wrapped terminal lines into one ready-to-paste command).
+`unwrap` (join soft-wrapped terminal lines into one ready-to-paste command),
+`fixKeyboardLayout` (re-map text typed in the wrong layout, EN ⇄ HE; direction auto-detected).
 
 ### Per-action shortcut grammar (`shortcut` field)
 

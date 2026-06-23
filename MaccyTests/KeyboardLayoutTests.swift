@@ -34,4 +34,11 @@ final class KeyboardLayoutTests: XCTestCase {
   func testEmptyInput() {
     XCTAssertEqual(KeyboardLayoutFixer.fix(""), "")
   }
+
+  // The transform is registered and labeled, so it propagates to the CLI
+  // capabilities list and the Settings picker (both iterate allCases).
+  func testTransformKindRegistered() {
+    XCTAssertTrue(TransformKind.allCases.contains(.fixKeyboardLayout))
+    XCTAssertEqual(TransformKind.fixKeyboardLayout.label, "Fix keyboard layout (EN ⇄ HE)")
+  }
 }

@@ -144,6 +144,7 @@ struct TransformAction: ClipboardAction {
     case .lowercase: result = value.lowercased()
     case .stripFormatting: result = value // already the plain-string representation
     case .unwrap: result = TextUnwrap.unwrap(value)
+    case .fixKeyboardLayout: result = KeyboardLayoutFixer.fix(value)
     }
     // Record the output so the clipboard poller's echo doesn't auto-trigger again.
     ActionEngine.shared.noteAutoOutput(result)

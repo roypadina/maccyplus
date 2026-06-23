@@ -47,6 +47,7 @@ enum TransformKind: String, Codable, CaseIterable, Identifiable {
   case lowercase
   case stripFormatting
   case unwrap
+  case fixKeyboardLayout
 
   var id: String { rawValue }
 
@@ -57,6 +58,7 @@ enum TransformKind: String, Codable, CaseIterable, Identifiable {
     case .lowercase: return "lowercase"
     case .stripFormatting: return "Strip formatting"
     case .unwrap: return "Unwrap (join wrapped lines)"
+    case .fixKeyboardLayout: return "Fix keyboard layout (EN ⇄ HE)"
     }
   }
 }
