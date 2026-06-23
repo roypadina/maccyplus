@@ -160,6 +160,13 @@ class AppState: Sendable {
             toolbarIcon: NSImage(systemSymbolName: "bolt.fill", accessibilityDescription: nil) ?? NSImage()
           ) {
             ActionsSettingsPane()
+          },
+          Settings.Pane(
+            identifier: Settings.PaneIdentifier.plugins,
+            title: "Plugins",
+            toolbarIcon: NSImage(systemSymbolName: "puzzlepiece.extension.fill", accessibilityDescription: nil) ?? NSImage()
+          ) {
+            PluginsSettingsPane()
           }
         ]
       )

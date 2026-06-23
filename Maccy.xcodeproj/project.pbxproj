@@ -85,6 +85,8 @@
 		46E3E69420099E35E5F692B6 /* ClipboardAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE0B38EFABD011A73D5FCB44 /* ClipboardAction.swift */; };
 		7E83EFFB3CF1961302CE5103 /* ActionEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01C1EF123742089F4AFE3304 /* ActionEngine.swift */; };
 		8C72DC6D885AB242ABCBCE3A /* ActionsSettingsPane.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B55E2F80FC91A915D8A2669 /* ActionsSettingsPane.swift */; };
+		8132212A31CB46BB80BD0308 /* PluginsSettingsLogicTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF3278099ACA4CC884BEA407 /* PluginsSettingsLogicTests.swift */; };
+		F7A2E6CEF5414B869372784B /* PluginsSettingsPane.swift in Sources */ = {isa = PBXBuildFile; fileRef = 607BE44564C14504B7B59B04 /* PluginsSettingsPane.swift */; };
 		DA360DB31E3DF137005C6F6B /* HistoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA360DB21E3DF137005C6F6B /* HistoryTests.swift */; };
 		DA384E86232746D800603999 /* SearchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA384E85232746D800603999 /* SearchTests.swift */; };
 		DA3BCB8E2C3E015000B01BC1 /* ModifierFlags.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA3BCB8D2C3E015000B01BC1 /* ModifierFlags.swift */; };
@@ -321,6 +323,8 @@
 		CE0B38EFABD011A73D5FCB44 /* ClipboardAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Actions/ClipboardAction.swift; sourceTree = "<group>"; };
 		01C1EF123742089F4AFE3304 /* ActionEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Actions/ActionEngine.swift; sourceTree = "<group>"; };
 		1B55E2F80FC91A915D8A2669 /* ActionsSettingsPane.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings/ActionsSettingsPane.swift; sourceTree = "<group>"; };
+		BF3278099ACA4CC884BEA407 /* PluginsSettingsLogicTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PluginsSettingsLogicTests.swift; sourceTree = "<group>"; };
+		607BE44564C14504B7B59B04 /* PluginsSettingsPane.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings/PluginsSettingsPane.swift; sourceTree = "<group>"; };
 		DA2595D82CBC44BD00A0A7F2 /* lt */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = lt; path = lt.lproj/AdvancedSettings.strings; sourceTree = "<group>"; };
 		DA2595D92CBC44BD00A0A7F2 /* lt */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = lt; path = lt.lproj/AppearanceSettings.strings; sourceTree = "<group>"; };
 		DA2595DA2CBC44BD00A0A7F2 /* lt */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = lt; path = lt.lproj/GeneralSettings.strings; sourceTree = "<group>"; };
@@ -813,6 +817,7 @@
 				F662E734665549759A0017AB /* MarketplaceTests.swift */,
 				F4A401A9814849FF869A8F44 /* MarketplaceStoreTests.swift */,
 				C4CF289D88564240B630E4FC /* CapabilityManagerTests.swift */,
+				BF3278099ACA4CC884BEA407 /* PluginsSettingsLogicTests.swift */,
 				DA360DB41E3DF137005C6F6B /* Info.plist */,
 			);
 			path = MaccyTests;
@@ -950,6 +955,7 @@
 				C62F70F50DE34AC39AE0A4F0 /* CapabilityManager.swift */,
 				01C1EF123742089F4AFE3304 /* ActionEngine.swift */,
 				1B55E2F80FC91A915D8A2669 /* ActionsSettingsPane.swift */,
+				607BE44564C14504B7B59B04 /* PluginsSettingsPane.swift */,
 				DA81D673252A056B009977BC /* Throttler.swift */,
 				DAB8CE4024E3677F00A2500E /* Maccy.entitlements */,
 				DAEE384D1E3DBEB100DD2966 /* Info.plist */,
@@ -1193,6 +1199,7 @@
 				FB7FBDD86BDE44E4A6CE71FA /* MarketplaceTests.swift in Sources */,
 				7D793CBDB51345F080B6D904 /* MarketplaceStoreTests.swift in Sources */,
 				2BAFEB039C2D4D6F906C5EA2 /* CapabilityManagerTests.swift in Sources */,
+				8132212A31CB46BB80BD0308 /* PluginsSettingsLogicTests.swift in Sources */,
 				DA360DB31E3DF137005C6F6B /* HistoryTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1225,6 +1232,7 @@
 				46E3E69420099E35E5F692B6 /* ClipboardAction.swift in Sources */,
 				7E83EFFB3CF1961302CE5103 /* ActionEngine.swift in Sources */,
 				8C72DC6D885AB242ABCBCE3A /* ActionsSettingsPane.swift in Sources */,
+				F7A2E6CEF5414B869372784B /* PluginsSettingsPane.swift in Sources */,
 				2F0EC7812E773F1D003E2EA9 /* PasteStack.swift in Sources */,
 				DA5078992CF2676B00215488 /* MouseMovedViewModifer.swift in Sources */,
 				DA19690E2C3EEFA900258481 /* KeyboardShortcutView.swift in Sources */,
