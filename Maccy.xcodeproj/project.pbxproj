@@ -70,6 +70,7 @@
 		DA20FA722B082DD600056DD5 /* Notifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA20FA712B082DD600056DD5 /* Notifier.swift */; };
 		DA20FA742B082E0100056DD5 /* Knock.caf in Resources */ = {isa = PBXBuildFile; fileRef = DA20FA732B082E0100056DD5 /* Knock.caf */; };
 		DA20FA762B082E0800056DD5 /* Write.caf in Resources */ = {isa = PBXBuildFile; fileRef = DA20FA752B082E0800056DD5 /* Write.caf */; };
+		DFFFA3D6A2E9475C8FA9B5C1 /* BundledPlugins in Resources */ = {isa = PBXBuildFile; fileRef = 0BF249BA3CB847E896F5CB62 /* BundledPlugins */; };
 		DA20FA782B082E1A00056DD5 /* NSSound+Named.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA20FA772B082E1A00056DD5 /* NSSound+Named.swift */; };
 		DA243D122C2F64830012A27F /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA243D112C2F64820012A27F /* ContentView.swift */; };
 		DA243D142C2F66DD0012A27F /* Storage.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA243D132C2F66DD0012A27F /* Storage.swift */; };
@@ -174,6 +175,7 @@
 		EF644DB4D6E543BAB26ED7AB /* DeclarativeEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29F892DE26D74479963E5C1D /* DeclarativeEngineTests.swift */; };
 		822871D044B1473E81561D14 /* PluginLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89511667CC824F8FBA11BE5B /* PluginLoader.swift */; };
 		222FEA966F73421F9F9D1F29 /* PluginLoaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DFF153E47774D76AB45AC87 /* PluginLoaderTests.swift */; };
+		5252F5CC3D734D7C828BBC46 /* BundledPluginsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD12F4C8233345078B12E60F /* BundledPluginsTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -449,6 +451,8 @@
 		CE09118DBFE84F8A913227DA /* JSPluginRuntime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plugins/JSPluginRuntime.swift; sourceTree = "<group>"; };
 		89511667CC824F8FBA11BE5B /* PluginLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plugins/PluginLoader.swift; sourceTree = "<group>"; };
 		5DFF153E47774D76AB45AC87 /* PluginLoaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PluginLoaderTests.swift; sourceTree = "<group>"; };
+		DD12F4C8233345078B12E60F /* BundledPluginsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BundledPluginsTests.swift; sourceTree = "<group>"; };
+		0BF249BA3CB847E896F5CB62 /* BundledPlugins */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Resources/BundledPlugins; sourceTree = "<group>"; };
 		E3F64E658C6846848A1074C7 /* PluginManifestTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PluginManifestTests.swift; sourceTree = "<group>"; };
 		29F892DE26D74479963E5C1D /* DeclarativeEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeclarativeEngineTests.swift; sourceTree = "<group>"; };
 		DA6D98E12AEABE03008A77CE /* Accessibility.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Accessibility.swift; sourceTree = "<group>"; };
@@ -791,6 +795,7 @@
 				29F892DE26D74479963E5C1D /* DeclarativeEngineTests.swift */,
 				16F1601C15344D979FAB63B1 /* JSPluginRuntimeTests.swift */,
 				5DFF153E47774D76AB45AC87 /* PluginLoaderTests.swift */,
+				DD12F4C8233345078B12E60F /* BundledPluginsTests.swift */,
 				DA360DB41E3DF137005C6F6B /* Info.plist */,
 			);
 			path = MaccyTests;
@@ -928,6 +933,7 @@
 				DAB8CE4024E3677F00A2500E /* Maccy.entitlements */,
 				DAEE384D1E3DBEB100DD2966 /* Info.plist */,
 				DA6373971E4AB9BB00263391 /* Assets.xcassets */,
+				0BF249BA3CB847E896F5CB62 /* BundledPlugins */,
 				4762D6992467226100B3A2BA /* Localizable.strings */,
 			);
 			path = Maccy;
@@ -1126,6 +1132,7 @@
 				DA5E62802C39E53F00F4C710 /* PreviewItemView.strings in Resources */,
 				DA009932256411F90030E697 /* README.md in Resources */,
 				DA9C3C4A2C20D4B40056795D /* IgnoreSettings.strings in Resources */,
+				DFFFA3D6A2E9475C8FA9B5C1 /* BundledPlugins in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1160,6 +1167,7 @@
 				EF644DB4D6E543BAB26ED7AB /* DeclarativeEngineTests.swift in Sources */,
 				3D631C6E751644348016503A /* JSPluginRuntimeTests.swift in Sources */,
 				222FEA966F73421F9F9D1F29 /* PluginLoaderTests.swift in Sources */,
+				5252F5CC3D734D7C828BBC46 /* BundledPluginsTests.swift in Sources */,
 				DA360DB31E3DF137005C6F6B /* HistoryTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

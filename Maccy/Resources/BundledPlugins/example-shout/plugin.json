@@ -1,0 +1,14 @@
+{
+  "id": "com.maccay.example.shout",
+  "name": "Shout",
+  "version": "1.0.0",
+  "description": "Uppercases the clipboard text and prepends SHOUT:.",
+  "kind": "action",
+  "engine": "declarative",
+  "declarative": {
+    "transform": [
+      { "op": "case", "value": "upper" },
+      { "op": "prepend", "text": "SHOUT: " }
+    ]
+  }
+}

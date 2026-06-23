@@ -107,15 +107,14 @@ enum PluginLoader {
   // MARK: - Single plugin load
 
   /// Parses `plugin.json` in `folder`, validates the manifest, builds the
-  /// appropriate provider, and returns its descriptor — without registering anywhere.
-  /// Use this when you only need the descriptor (e.g., for preview / validation).
+  /// appropriate provider, registers it into `ProviderRegistry.shared`, and
+  /// returns its descriptor.
   ///
   /// Throws if the manifest is missing, malformed, fails `validate()`, or if the
   /// engine-specific setup fails (e.g., a JS syntax error).
   @discardableResult
   static func loadPlugin(at folder: URL, source: ProviderSource) throws -> [ProviderDescriptor] {
-    let scratch = ProviderRegistry()
-    return try loadPlugin(at: folder, source: source, into: scratch)
+    return try loadPlugin(at: folder, source: source, into: .shared)
   }
 
   // Internal variant used by loadAll: parses, builds, registers, and returns
