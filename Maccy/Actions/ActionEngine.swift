@@ -30,7 +30,7 @@ final class ActionEngine {
   // edits/reloads without re-registering (which would clobber other handlers).
   private var registeredActionShortcutNames = Set<String>()
 
-  // Set once the built-in + first-party providers have been registered, so a
+  // Set once the built-in providers + bundled plugins have been registered, so a
   // second init (or an explicit registerProviders() call) is a cheap no-op.
   private var providersRegistered = false
 
@@ -38,16 +38,19 @@ final class ActionEngine {
     registerProviders()
   }
 
-  // Idempotently register the native built-in and first-party providers into
-  // the shared registry. Built-ins: builtin.kind/regex/contains/sourceApp +
-  // builtin.openURL/openInApp/webSearch/runShortcut. First-party:
-  // com.maccay.soft-wrap/terminal-source + the six transform actions.
+  // Idempotently register the native built-in providers, then load folder
+  // plugins. Built-ins: builtin.kind/regex/contains/sourceApp +
+  // builtin.openURL/openInApp/webSearch/runShortcut. The former native
+  // first-party providers (com.maccay.soft-wrap/terminal-source/unwrap + the
+  // text transforms) now ship as bundled package plugins under
+  // Resources/BundledPlugins, loaded by PluginLoader.loadAll below.
   func registerProviders() {
     guard !providersRegistered else { return }
     providersRegistered = true
     BuiltinProviders.registerBuiltins(into: .shared)
-    FirstPartyProviders.registerFirstParty(into: .shared)
     // Load folder plugins (bundled + Application Support + user local folders).
+    // The bundled packages supply the com.maccay.* condition/action ids that
+    // presets reference.
     PluginLoader.loadAll(into: .shared, extraFolders: MarketplaceStore.shared.localFolders())
   }
 

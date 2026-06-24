@@ -235,8 +235,8 @@ struct ProviderDescriptor: Identifiable, Hashable {
   var isVerified: Bool { source.isVerified }
 
   /// Trailing `pluginID`/`pluginName` default to nil so existing call sites
-  /// (BuiltinProviders, FirstPartyProviders, tests) construct unchanged and
-  /// read as having no owning package.
+  /// (BuiltinProviders, tests) construct unchanged and read as having no
+  /// owning package.
   init(
     id: String,
     name: String,

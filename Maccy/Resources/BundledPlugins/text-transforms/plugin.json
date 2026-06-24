@@ -1,0 +1,51 @@
+{
+  "id": "com.maccay.text-transforms",
+  "name": "Text transforms",
+  "version": "1.0.0",
+  "author": { "name": "Maccay" },
+  "description": "Everyday clipboard text transforms: trim, UPPERCASE, lowercase, strip formatting, and fix keyboard layout.",
+  "capabilities": [],
+  "providers": [
+    {
+      "id": "com.maccay.trim",
+      "name": "Trim whitespace",
+      "description": "Removes leading and trailing whitespace and newlines from the clipboard text.",
+      "kind": "action",
+      "engine": "declarative",
+      "declarative": { "transform": [ { "op": "trim" } ] }
+    },
+    {
+      "id": "com.maccay.uppercase",
+      "name": "UPPERCASE",
+      "description": "Converts the clipboard text to uppercase.",
+      "kind": "action",
+      "engine": "declarative",
+      "declarative": { "transform": [ { "op": "case", "value": "upper" } ] }
+    },
+    {
+      "id": "com.maccay.lowercase",
+      "name": "lowercase",
+      "description": "Converts the clipboard text to lowercase.",
+      "kind": "action",
+      "engine": "declarative",
+      "declarative": { "transform": [ { "op": "case", "value": "lower" } ] }
+    },
+    {
+      "id": "com.maccay.strip-formatting",
+      "name": "Strip formatting",
+      "description": "Strips rich text formatting from the clipboard, leaving only the plain text.",
+      "kind": "action",
+      "engine": "declarative",
+      "declarative": { "transform": [] }
+    },
+    {
+      "id": "com.maccay.fix-keyboard-layout",
+      "name": "Fix keyboard layout (EN ⇄ HE)",
+      "description": "Corrects text typed in the wrong layout by re-mapping between US-QWERTY and Israeli SI-1452. Direction auto-detected.",
+      "kind": "action",
+      "engine": "javascript",
+      "entry": "main.js",
+      "function": "transformFixLayout"
+    }
+  ]
+}

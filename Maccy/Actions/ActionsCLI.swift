@@ -31,19 +31,18 @@ enum ActionsCLI {
     }
   }
 
-  // Register the native condition/action providers into the shared registry so
-  // the headless CLI's `describe` catalog (and any registry-backed validation)
-  // matches the running app. `ProviderRegistry` is @MainActor; the CLI has no
-  // run loop, so we enter the actor synchronously (same pattern AppDelegate uses
-  // for the distributed-notification reload).
-  //
-  // Milestone A: native providers only. Milestones B/C add a
-  // `PluginLoader.loadAll(into:extraFolders:)` call here so the CLI catalog also
-  // includes folder-loaded plugins.
+  // Register the native built-in providers and load the folder plugins (bundled
+  // packages + Application Support + user local folders) into the shared registry
+  // so the headless CLI's `describe` catalog (and any registry-backed validation)
+  // matches the running app. The former native first-party providers
+  // (com.maccay.soft-wrap/terminal-source/unwrap + text transforms) now ship as
+  // bundled package plugins, picked up by PluginLoader.loadAll. `ProviderRegistry`
+  // is @MainActor; the CLI has no run loop, so we enter the actor synchronously
+  // (same pattern AppDelegate uses for the distributed-notification reload).
   private static func registerProviders() {
     MainActor.assumeIsolated {
       BuiltinProviders.registerBuiltins(into: .shared)
-      FirstPartyProviders.registerFirstParty(into: .shared)
+      PluginLoader.loadAll(into: .shared, extraFolders: MarketplaceStore.shared.localFolders())
     }
   }
 

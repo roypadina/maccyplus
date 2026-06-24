@@ -35,14 +35,28 @@ final class KeyboardLayoutTests: XCTestCase {
     XCTAssertEqual(KeyboardLayoutFixer.fix(""), "")
   }
 
-  // Was: asserted TransformKind.allCases — the layout fixer is now a registry provider.
+  // Was: asserted TransformKind.allCases — the layout fixer is now a registry
+  // provider, shipped by the bundled text-transforms package plugin.
   @MainActor
-  func testFixKeyboardLayoutProviderRegistered() {
+  func testFixKeyboardLayoutProviderRegistered() throws {
     ProviderRegistry.shared.reset()
     BuiltinProviders.registerBuiltins(into: .shared)
-    FirstPartyProviders.registerFirstParty(into: .shared)
+    _ = try PluginLoader.loadPlugin(at: Self.textTransformsURL, source: .bundled)
     let provider = ProviderRegistry.shared.action("com.maccay.fix-keyboard-layout")
     XCTAssertNotNil(provider)
     XCTAssertEqual(provider?.descriptor.id, "com.maccay.fix-keyboard-layout")
   }
+
+  // Resolve the bundled text-transforms package from the source tree via
+  // #filePath so the fix-keyboard-layout provider loads without a packaged bundle.
+  private static let textTransformsURL: URL = {
+    let thisFile = URL(fileURLWithPath: #filePath)       // .../MaccyTests/KeyboardLayoutTests.swift
+    let testsDir = thisFile.deletingLastPathComponent()  // .../MaccyTests/
+    let repoRoot = testsDir.deletingLastPathComponent()  // .../Maccay/
+    return repoRoot
+      .appendingPathComponent("Maccy")
+      .appendingPathComponent("Resources")
+      .appendingPathComponent("BundledPlugins")
+      .appendingPathComponent("text-transforms")
+  }()
 }

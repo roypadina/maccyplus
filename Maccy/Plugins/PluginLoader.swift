@@ -44,8 +44,10 @@ enum PluginLoader {
   static func loadAll(into registry: ProviderRegistry, extraFolders: [URL]) {
     // Remove every provider that came from a folder source so stale plugins
     // from a previous load cycle cannot linger after their folder is deleted.
-    // .builtin providers (registered by BuiltinProviders / FirstPartyProviders)
-    // are left in place — they are not folder-loaded and must not be cleared.
+    // .builtin providers (registered by BuiltinProviders) are left in place —
+    // they are not folder-loaded and must not be cleared. The former native
+    // first-party providers now ship as .bundled package plugins and ARE
+    // reloaded by this rescan.
     registry.removeAll { source in
       switch source {
       case .bundled, .marketplace, .local: return true
