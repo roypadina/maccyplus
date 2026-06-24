@@ -17,6 +17,8 @@ struct PluginsSettingsPane: View {
   @State private var newMarketplaceURL = ""
   @State private var addMarketplaceError: String?
 
+  @State private var installError: String?
+
   @State private var consentEntry: MarketplaceEntry?
   @State private var consentMarketplaceID: String?
   @State private var consentCapabilities: [Capability] = []
@@ -43,6 +45,14 @@ struct PluginsSettingsPane: View {
     .task { await reloadEverything() }
     .sheet(isPresented: $showingAddMarketplace) { addMarketplaceSheet }
     .sheet(item: $consentEntry) { entry in consentSheet(for: entry) }
+    .alert("Install failed", isPresented: Binding(
+      get: { installError != nil },
+      set: { if !$0 { installError = nil } }
+    )) {
+      Button("OK") { installError = nil }
+    } message: {
+      Text(installError ?? "")
+    }
   }
 
   // MARK: Search
@@ -426,8 +436,10 @@ struct PluginsSettingsPane: View {
   /// True when `url` is the unconfigured official marketplace placeholder (host
   /// still contains the "OWNER" token). Such URLs must not be fetched or shown
   /// as an error — they get a muted "not configured yet" row instead.
+  /// Only matches the known constant, so a user-supplied URL that happens to
+  /// contain "OWNER" is never mistakenly treated as unconfigured.
   static func isUnconfiguredOfficial(_ url: URL) -> Bool {
-    url.absoluteString.contains("OWNER")
+    url == kMaccayOfficialMarketplaceURL && url.absoluteString.contains("OWNER")
   }
 
   // MARK: - Derived data
@@ -566,8 +578,9 @@ struct PluginsSettingsPane: View {
         try await store.install(entry, marketplaceID: marketplaceID)
         PluginLoader.loadAll(into: registry, extraFolders: store.localFolders())
         reloadDescriptors()
+        installError = nil
       } catch {
-        failedMarketplaces.append((URL(string: "about:blank")!, "Install failed: \(error.localizedDescription)"))
+        installError = "Install failed: \(error.localizedDescription)"
       }
     }
   }
