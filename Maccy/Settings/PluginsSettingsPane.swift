@@ -7,10 +7,11 @@ struct PluginsSettingsPane: View {
   @Default(.localMarketplaceFolders) private var localFolderPaths
 
   // Transient UI state.
+  @State private var allDescriptors: [ProviderDescriptor] = []
   @State private var marketplaces: [Marketplace] = []
-  @State private var installedDescriptors: [ProviderDescriptor] = []
+  @State private var failedMarketplaces: [(url: URL, message: String)] = []
   @State private var isRefreshing = false
-  @State private var refreshError: String?
+  @State private var searchText = ""
 
   @State private var showingAddMarketplace = false
   @State private var newMarketplaceURL = ""
@@ -29,17 +30,86 @@ struct PluginsSettingsPane: View {
   var body: some View {
     ScrollView {
       VStack(alignment: .leading, spacing: 16) {
+        searchField
+        builtinBox
+        pluginsBox
         marketplacesBox
         availableBox
-        installedBox
         localFoldersBox
       }
       .padding(20)
     }
-    .frame(width: 760, height: 520)
+    .frame(width: 760, height: 600)
     .task { await reloadEverything() }
     .sheet(isPresented: $showingAddMarketplace) { addMarketplaceSheet }
     .sheet(item: $consentEntry) { entry in consentSheet(for: entry) }
+  }
+
+  // MARK: Search
+
+  private var searchField: some View {
+    HStack(spacing: 6) {
+      Image(systemName: "magnifyingglass")
+        .foregroundStyle(.secondary)
+      TextField("Filter providers by name or description", text: $searchText)
+        .textFieldStyle(.plain)
+      if !searchText.isEmpty {
+        Button {
+          searchText = ""
+        } label: {
+          Image(systemName: "xmark.circle.fill")
+            .foregroundStyle(.secondary)
+        }
+        .buttonStyle(.borderless)
+      }
+    }
+    .padding(8)
+    .background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 8))
+  }
+
+  // MARK: Built-in section
+
+  private var builtinBox: some View {
+    GroupBox {
+      VStack(alignment: .leading, spacing: 8) {
+        let providers = filtered(Self.builtins(allDescriptors))
+        if providers.isEmpty {
+          emptyHint("No built-in providers match your search.")
+        }
+        ForEach(providers) { descriptor in
+          ProviderRowView(descriptor: descriptor)
+          if descriptor.id != providers.last?.id {
+            Divider()
+          }
+        }
+      }
+      .padding(6)
+    } label: {
+      sectionHeader("Built-in", count: Self.builtins(allDescriptors).count,
+                    help: "Core conditions and actions that ship with Maccay. Always available.")
+    }
+  }
+
+  // MARK: Plugins section (grouped by package)
+
+  private var pluginsBox: some View {
+    GroupBox {
+      VStack(alignment: .leading, spacing: 12) {
+        let groups = filteredGroups(Self.groupedPlugins(allDescriptors))
+        if groups.isEmpty {
+          emptyHint("No plugins installed yet. Browse a marketplace below to add some.")
+        }
+        ForEach(groups, id: \.package.id) { group in
+          PackageGroupView(group: group) {
+            remove(package: group.package)
+          }
+        }
+      }
+      .padding(6)
+    } label: {
+      sectionHeader("Plugins", count: Self.groupedPlugins(allDescriptors).count,
+                    help: "Providers supplied by installed plugin packages, grouped by package.")
+    }
   }
 
   // MARK: Marketplaces section
@@ -48,19 +118,10 @@ struct PluginsSettingsPane: View {
     GroupBox {
       VStack(alignment: .leading, spacing: 8) {
         ForEach(store.registeredMarketplaceURLs(), id: \.absoluteString) { url in
-          HStack {
-            Image(systemName: "globe")
-              .foregroundStyle(.secondary)
-            Text(url.absoluteString)
-              .lineLimit(1)
-              .truncationMode(.middle)
-            Spacer()
-          }
+          marketplaceRow(url)
         }
         if store.registeredMarketplaceURLs().isEmpty {
-          Text("No marketplaces yet. Add one to browse plugins.")
-            .font(.caption)
-            .foregroundStyle(.secondary)
+          emptyHint("No marketplaces yet. Add one to browse plugins.")
         }
 
         Divider()
@@ -86,18 +147,44 @@ struct PluginsSettingsPane: View {
           }
 
           Spacer()
-
-          if let refreshError {
-            Text(refreshError)
-              .font(.caption)
-              .foregroundStyle(.red)
-              .lineLimit(1)
-          }
         }
       }
-      .padding(4)
+      .padding(6)
     } label: {
       Text("Marketplaces").font(.headline)
+    }
+  }
+
+  @ViewBuilder
+  private func marketplaceRow(_ url: URL) -> some View {
+    if Self.isUnconfiguredOfficial(url) {
+      // The official marketplace placeholder — not yet pointed at a real index.
+      // Show a muted informational row instead of attempting a fetch / red error.
+      HStack(spacing: 6) {
+        Image(systemName: "star")
+          .foregroundStyle(.secondary)
+        Text("Official marketplace — not configured yet")
+          .foregroundStyle(.secondary)
+        Spacer()
+      }
+    } else {
+      VStack(alignment: .leading, spacing: 2) {
+        HStack(spacing: 6) {
+          Image(systemName: "globe")
+            .foregroundStyle(.secondary)
+          Text(url.absoluteString)
+            .lineLimit(1)
+            .truncationMode(.middle)
+          Spacer()
+        }
+        // Only a genuinely failing USER-ADDED marketplace gets a compact inline warning.
+        if let failure = failedMarketplaces.first(where: { $0.url == url }) {
+          Label(failure.message, systemImage: "exclamationmark.triangle.fill")
+            .font(.caption)
+            .foregroundStyle(.orange)
+            .lineLimit(2)
+        }
+      }
     }
   }
 
@@ -106,12 +193,11 @@ struct PluginsSettingsPane: View {
   private var availableBox: some View {
     GroupBox {
       VStack(alignment: .leading, spacing: 8) {
-        if availableEntries.isEmpty {
-          Text("Refresh a marketplace to see available plugins.")
-            .font(.caption)
-            .foregroundStyle(.secondary)
+        let entries = filteredAvailable(availableEntries)
+        if entries.isEmpty {
+          emptyHint("Refresh a marketplace to see available plugins.")
         }
-        ForEach(availableEntries, id: \.entry.id) { row in
+        ForEach(entries, id: \.entry.id) { row in
           HStack(spacing: 8) {
             VStack(alignment: .leading, spacing: 2) {
               HStack(spacing: 6) {
@@ -138,65 +224,9 @@ struct PluginsSettingsPane: View {
           .padding(.vertical, 2)
         }
       }
-      .padding(4)
+      .padding(6)
     } label: {
       Text("Available plugins").font(.headline)
-    }
-  }
-
-  private var unverifiedBadge: some View {
-    Text("Unverified source")
-      .font(.caption2)
-      .fontWeight(.semibold)
-      .padding(.horizontal, 6)
-      .padding(.vertical, 2)
-      .background(Color.orange.opacity(0.2), in: Capsule())
-      .foregroundStyle(.orange)
-      .help("This plugin comes from a source Maccay can't verify. Review its requested capabilities before installing.")
-  }
-
-  // MARK: Installed plugins section
-
-  private var installedBox: some View {
-    GroupBox {
-      VStack(alignment: .leading, spacing: 8) {
-        if installedDescriptors.isEmpty {
-          Text("No plugins installed.")
-            .font(.caption)
-            .foregroundStyle(.secondary)
-        }
-        ForEach(installedDescriptors) { descriptor in
-          HStack(spacing: 8) {
-            VStack(alignment: .leading, spacing: 2) {
-              HStack(spacing: 6) {
-                Text(descriptor.name)
-                  .fontWeight(.medium)
-                if !descriptor.isVerified {
-                  unverifiedBadge
-                }
-              }
-              Text(descriptor.description)
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .lineLimit(2)
-            }
-            .help(descriptor.description)
-
-            Spacer()
-
-            Button(role: .destructive) {
-              remove(pluginID: descriptor.id)
-            } label: {
-              Image(systemName: "trash")
-            }
-            .buttonStyle(.borderless)
-          }
-          .padding(.vertical, 2)
-        }
-      }
-      .padding(4)
-    } label: {
-      Text("Installed plugins").font(.headline)
     }
   }
 
@@ -216,9 +246,7 @@ struct PluginsSettingsPane: View {
           }
         }
         if localFolderPaths.isEmpty {
-          Text("Add a folder to load plugins from disk during development.")
-            .font(.caption)
-            .foregroundStyle(.secondary)
+          emptyHint("Add a folder to load plugins from disk during development.")
         }
 
         Divider()
@@ -229,13 +257,46 @@ struct PluginsSettingsPane: View {
           Label("Add folder…", systemImage: "plus")
         }
       }
-      .padding(4)
+      .padding(6)
     } label: {
-      Text("Local folders").font(.headline)
+      Text("Local folders (dev)").font(.headline)
     }
   }
 
-  // MARK: Add-marketplace sheet
+  // MARK: Shared row chrome
+
+  private func sectionHeader(_ title: String, count: Int, help: String) -> some View {
+    HStack(spacing: 6) {
+      Text(title).font(.headline)
+      Text("\(count)")
+        .font(.caption)
+        .fontWeight(.semibold)
+        .padding(.horizontal, 6)
+        .padding(.vertical, 1)
+        .background(Color.secondary.opacity(0.18), in: Capsule())
+        .foregroundStyle(.secondary)
+    }
+    .help(help)
+  }
+
+  private func emptyHint(_ text: String) -> some View {
+    Text(text)
+      .font(.caption)
+      .foregroundStyle(.secondary)
+  }
+
+  private var unverifiedBadge: some View {
+    Text("Unverified source")
+      .font(.caption2)
+      .fontWeight(.semibold)
+      .padding(.horizontal, 6)
+      .padding(.vertical, 2)
+      .background(Color.orange.opacity(0.2), in: Capsule())
+      .foregroundStyle(.orange)
+      .help("This plugin comes from a source Maccay can't verify. Review its requested capabilities before installing.")
+  }
+
+  // MARK: - Add-marketplace sheet
 
   private var addMarketplaceSheet: some View {
     VStack(alignment: .leading, spacing: 16) {
@@ -264,7 +325,7 @@ struct PluginsSettingsPane: View {
     .frame(width: 440)
   }
 
-  // MARK: Consent sheet
+  // MARK: - Consent sheet
 
   private func consentSheet(for entry: MarketplaceEntry) -> some View {
     VStack(alignment: .leading, spacing: 16) {
@@ -319,6 +380,56 @@ struct PluginsSettingsPane: View {
     return manager.needsConsent(pluginID: pluginID, declared: declared)
   }
 
+  /// A plugin package (install/manage unit) collected from its providers.
+  struct PluginPackage: Hashable {
+    let id: String
+    let name: String
+    let source: ProviderSource
+    var isVerified: Bool { source.isVerified }
+  }
+
+  /// One package header plus its providers (already sorted by name).
+  struct PluginGroup: Hashable {
+    let package: PluginPackage
+    let providers: [ProviderDescriptor]
+  }
+
+  /// Core built-ins: providers with no owning package, sorted by name.
+  static func builtins(_ descriptors: [ProviderDescriptor]) -> [ProviderDescriptor] {
+    descriptors
+      .filter { $0.pluginID == nil }
+      .sorted { $0.name < $1.name }
+  }
+
+  /// Plugin-supplied providers grouped by their owning package.
+  /// Packages sorted by name; providers within each package sorted by name.
+  /// The package's source/verification is taken from its first provider (all
+  /// providers in one package share a source).
+  static func groupedPlugins(_ descriptors: [ProviderDescriptor]) -> [PluginGroup] {
+    let owned = descriptors.filter { $0.pluginID != nil }
+    let byPackage = Dictionary(grouping: owned) { $0.pluginID! }
+    return byPackage.values.compactMap { providers -> PluginGroup? in
+      guard let first = providers.first else { return nil }
+      let package = PluginPackage(
+        id: first.pluginID!,
+        name: first.pluginName ?? first.pluginID!,
+        source: first.source
+      )
+      return PluginGroup(
+        package: package,
+        providers: providers.sorted { $0.name < $1.name }
+      )
+    }
+    .sorted { $0.package.name < $1.package.name }
+  }
+
+  /// True when `url` is the unconfigured official marketplace placeholder (host
+  /// still contains the "OWNER" token). Such URLs must not be fetched or shown
+  /// as an error — they get a muted "not configured yet" row instead.
+  static func isUnconfiguredOfficial(_ url: URL) -> Bool {
+    url.absoluteString.contains("OWNER")
+  }
+
   // MARK: - Derived data
 
   private struct AvailableRow {
@@ -340,41 +451,71 @@ struct PluginsSettingsPane: View {
   }
 
   private func isInstalled(_ pluginID: String) -> Bool {
-    installedDescriptors.contains { $0.id == pluginID }
+    allDescriptors.contains { $0.pluginID == pluginID }
+  }
+
+  // MARK: - Search filtering
+
+  private func matches(_ descriptor: ProviderDescriptor) -> Bool {
+    let query = searchText.trimmingCharacters(in: .whitespaces).lowercased()
+    guard !query.isEmpty else { return true }
+    return descriptor.name.lowercased().contains(query)
+      || descriptor.description.lowercased().contains(query)
+  }
+
+  private func filtered(_ descriptors: [ProviderDescriptor]) -> [ProviderDescriptor] {
+    descriptors.filter(matches)
+  }
+
+  private func filteredGroups(_ groups: [PluginGroup]) -> [PluginGroup] {
+    let query = searchText.trimmingCharacters(in: .whitespaces).lowercased()
+    guard !query.isEmpty else { return groups }
+    return groups.compactMap { group in
+      // Keep a package if its name matches, or any provider matches.
+      if group.package.name.lowercased().contains(query) { return group }
+      let kept = group.providers.filter(matches)
+      return kept.isEmpty ? nil : PluginGroup(package: group.package, providers: kept)
+    }
+  }
+
+  private func filteredAvailable(_ rows: [AvailableRow]) -> [AvailableRow] {
+    let query = searchText.trimmingCharacters(in: .whitespaces).lowercased()
+    guard !query.isEmpty else { return rows }
+    return rows.filter {
+      $0.entry.name.lowercased().contains(query)
+        || $0.entry.description.lowercased().contains(query)
+    }
   }
 
   // MARK: - Actions
 
   private func reloadEverything() async {
+    reloadDescriptors()
     await refresh()
-    reloadInstalled()
   }
 
-  private func reloadInstalled() {
-    installedDescriptors = registry.descriptors().filter { descriptor in
-      switch descriptor.source {
-      case .builtin, .bundled:
-        return false
-      case .marketplace, .local:
-        return true
-      }
-    }
+  private func reloadDescriptors() {
+    allDescriptors = registry.descriptors()
   }
 
   private func refresh() async {
     isRefreshing = true
-    refreshError = nil
+    failedMarketplaces = []
     defer { isRefreshing = false }
     await store.refreshAll()
     var loaded: [Marketplace] = []
+    var failures: [(url: URL, message: String)] = []
     for url in store.registeredMarketplaceURLs() {
+      // The unconfigured official placeholder is never fetched.
+      if Self.isUnconfiguredOfficial(url) { continue }
       do {
         loaded.append(try await MarketplaceResolver.fetchIndex(url))
       } catch {
-        refreshError = "Couldn't load \(url.lastPathComponent): \(error.localizedDescription)"
+        failures.append((url, "Couldn't load this marketplace: \(error.localizedDescription)"))
       }
     }
     marketplaces = loaded
+    failedMarketplaces = failures
   }
 
   private func addMarketplace() {
@@ -424,18 +565,20 @@ struct PluginsSettingsPane: View {
       do {
         try await store.install(entry, marketplaceID: marketplaceID)
         PluginLoader.loadAll(into: registry, extraFolders: store.localFolders())
-        reloadInstalled()
+        reloadDescriptors()
       } catch {
-        refreshError = "Install failed: \(error.localizedDescription)"
+        failedMarketplaces.append((URL(string: "about:blank")!, "Install failed: \(error.localizedDescription)"))
       }
     }
   }
 
-  private func remove(pluginID: String) {
-    store.remove(pluginID: pluginID)
-    capabilities.revokeAll(pluginID: pluginID)
+  /// Removes an installed package (marketplace/local source only). `remove(pluginID:)`
+  /// takes the installed-folder id, which equals the package id.
+  private func remove(package: PluginPackage) {
+    store.remove(pluginID: package.id)
+    capabilities.revokeAll(pluginID: package.id)
     PluginLoader.loadAll(into: registry, extraFolders: store.localFolders())
-    reloadInstalled()
+    reloadDescriptors()
   }
 
   private func addLocalFolder() {
@@ -446,10 +589,10 @@ struct PluginsSettingsPane: View {
     guard panel.runModal() == .OK, let url = panel.url else { return }
     store.addLocalFolder(url)
     PluginLoader.loadAll(into: registry, extraFolders: store.localFolders())
-    reloadInstalled()
+    reloadDescriptors()
   }
 
-  /// Declared capabilities for an entry. The marketplace index doesn't carry the
+  /// Declared capabilities for an entry. The marketplace index doesn't always carry the
   /// capability list; it is read from the already-registered descriptor when present,
   /// otherwise treated as empty (consent will be re-checked at load time).
   private func capabilitiesDeclared(by entry: MarketplaceEntry) -> [Capability] {
@@ -457,7 +600,153 @@ struct PluginsSettingsPane: View {
     // sheet fires pre-download — even for a network/FS plugin from the verified
     // marketplace). Fall back to the registered descriptor for already-installed plugins.
     if let caps = entry.capabilities { return caps }
-    return registry.descriptors().first { $0.id == entry.id }?.capabilities ?? []
+    return allDescriptors.first { $0.id == entry.id }?.capabilities ?? []
+  }
+}
+
+// MARK: - Provider row
+
+/// One provider line: name, Condition/Action chip, engine chip, secondary
+/// description, and an ⓘ popover for longHelp when present.
+private struct ProviderRowView: View {
+  let descriptor: ProviderDescriptor
+  @State private var showingLongHelp = false
+
+  var body: some View {
+    HStack(alignment: .top, spacing: 8) {
+      VStack(alignment: .leading, spacing: 3) {
+        HStack(spacing: 6) {
+          Text(descriptor.name)
+            .fontWeight(.medium)
+          kindChip
+          engineChip
+          if let longHelp = descriptor.longHelp {
+            Button {
+              showingLongHelp.toggle()
+            } label: {
+              Image(systemName: "info.circle")
+                .foregroundStyle(.secondary)
+            }
+            .buttonStyle(.borderless)
+            .popover(isPresented: $showingLongHelp) {
+              Text(longHelp)
+                .padding()
+                .frame(maxWidth: 320)
+            }
+          }
+        }
+        Text(descriptor.description)
+          .font(.caption)
+          .foregroundStyle(.secondary)
+          .lineLimit(2)
+      }
+      Spacer(minLength: 0)
+    }
+    .padding(.vertical, 2)
+  }
+
+  private var kindChip: some View {
+    let isCondition = descriptor.kind == .condition
+    return Text(isCondition ? "Condition" : "Action")
+      .font(.caption2)
+      .fontWeight(.semibold)
+      .padding(.horizontal, 6)
+      .padding(.vertical, 1)
+      .background((isCondition ? Color.blue : Color.green).opacity(0.18), in: Capsule())
+      .foregroundStyle(isCondition ? Color.blue : Color.green)
+  }
+
+  private var engineChip: some View {
+    Text(engineLabel)
+      .font(.caption2)
+      .padding(.horizontal, 6)
+      .padding(.vertical, 1)
+      .background(Color.secondary.opacity(0.15), in: Capsule())
+      .foregroundStyle(.secondary)
+  }
+
+  private var engineLabel: String {
+    switch descriptor.engine {
+    case .native:      return "Native"
+    case .declarative: return "Declarative"
+    case .javascript:  return "JavaScript"
+    }
+  }
+}
+
+// MARK: - Package group
+
+/// A plugin package header (name + source badge + unverified badge) with its
+/// providers listed beneath, plus a Remove button for removable sources.
+private struct PackageGroupView: View {
+  let group: PluginsSettingsPane.PluginGroup
+  let onRemove: () -> Void
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: 6) {
+      HStack(spacing: 6) {
+        Text(group.package.name)
+          .fontWeight(.semibold)
+        sourceBadge
+        if !group.package.isVerified {
+          unverifiedBadge
+        }
+        Spacer()
+        if isRemovable {
+          Button(role: .destructive, action: onRemove) {
+            Label("Remove", systemImage: "trash")
+              .font(.caption)
+          }
+          .buttonStyle(.borderless)
+        }
+      }
+
+      VStack(alignment: .leading, spacing: 4) {
+        ForEach(group.providers) { descriptor in
+          ProviderRowView(descriptor: descriptor)
+        }
+      }
+      .padding(.leading, 10)
+    }
+    .padding(8)
+    .background(Color.secondary.opacity(0.06), in: RoundedRectangle(cornerRadius: 8))
+  }
+
+  private var isRemovable: Bool {
+    switch group.package.source {
+    case .marketplace, .local: return true
+    case .builtin, .bundled:   return false
+    }
+  }
+
+  private var sourceBadgeLabel: String {
+    switch group.package.source {
+    case .bundled:     return "Bundled"
+    case .marketplace: return "Installed"
+    case .local:       return "Local"
+    case .builtin:     return "Built-in"
+    }
+  }
+
+  private var sourceBadge: some View {
+    Text(sourceBadgeLabel)
+      .font(.caption2)
+      .fontWeight(.semibold)
+      .padding(.horizontal, 6)
+      .padding(.vertical, 1)
+      .background(Color.accentColor.opacity(0.18), in: Capsule())
+      .foregroundStyle(Color.accentColor)
+  }
+
+  private var unverifiedBadge: some View {
+    Text("Unverified source")
+      .font(.caption2)
+      .fontWeight(.semibold)
+      .padding(.horizontal, 6)
+      .padding(.vertical, 2)
+      .background(Color.orange.opacity(0.2), in: Capsule())
+      .foregroundStyle(.orange)
+      .help("This plugin comes from a source Maccay can't verify.")
   }
 }
 
