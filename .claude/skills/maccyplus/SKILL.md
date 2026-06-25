@@ -1,35 +1,35 @@
 ---
-name: maccy-actions
+name: maccyplus
 description: >-
-  Configure Maccy Actions clipboard rules and actions from the command line —
+  Configure MaccyPlus clipboard rules and actions from the command line —
   no GUI, no recompile. Use when asked to create/edit/list/remove a Maccy rule
   or action, set up an auto-transform on copy (e.g. unwrap/trim/uppercase a
   copied value), bind a keyboard shortcut to a specific action, manage the list
   of terminal apps, or otherwise program Maccy's clipboard automation. Also use
-  when the user mentions "Maccy Actions", "clipboard rules", or asks an agent to
+  when the user mentions "MaccyPlus", "clipboard rules", or asks an agent to
   set up clipboard behavior on this Mac.
 ---
 
-# Maccy Actions CLI
+# MaccyPlus CLI
 
-Maccy Actions is a macOS clipboard manager whose **rules** run **actions** on
+MaccyPlus is a macOS clipboard manager whose **rules** run **actions** on
 copied values — automatically on copy, from the popup's right-click menu, via a
 global shortcut, or via a per-action shortcut. This skill drives the app's
 headless CLI so an agent can fully configure rules/actions without the GUI.
 
 ## 1. Find the binary
 
-Bundle id: `com.royp.MaccyActions`. The executable name contains a space, so
+Bundle id: `com.royp.MaccyPlus`. The executable name contains a space, so
 **always quote the path**.
 
 ```bash
-APP=$(mdfind "kMDItemCFBundleIdentifier == 'com.royp.MaccyActions'" | head -1)
-BIN="$APP/Contents/MacOS/Maccy Actions"
+APP=$(mdfind "kMDItemCFBundleIdentifier == 'com.royp.MaccyPlus'" | head -1)
+BIN="$APP/Contents/MacOS/MaccyPlus"
 "$BIN" rules describe        # prove it works; prints the live schema catalog
 ```
 
 If `mdfind` returns nothing, the app may be a fresh Debug build under
-`~/Library/Developer/.../Build/Products/Debug/Maccy Actions.app`. Ask the user
+`~/Library/Developer/.../Build/Products/Debug/MaccyPlus.app`. Ask the user
 where it's installed if you can't locate it.
 
 The CLI works whether or not the GUI is running. **When the GUI is running it

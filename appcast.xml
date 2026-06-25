@@ -1,27 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" xmlns:dc="http://purl.org/dc/elements/1.1/">
   <channel>
-    <title>Maccy Actions</title>
-    <link>https://raw.githubusercontent.com/roypadina/maccy-actions/main/appcast.xml</link>
+    <title>MaccyPlus</title>
+    <link>https://raw.githubusercontent.com/roypadina/maccyplus/main/appcast.xml</link>
     <description>Most recent changes with links to updates.</description>
     <language>en</language>
     <item>
-      <title>2.6.2</title>
+      <title>2.6.3</title>
       <description>
         <![CDATA[
           <ul>
-            <li>New clipboard action: <strong>Fix keyboard layout (EN ⇄ HE)</strong> — re-maps text typed in the wrong active layout between US-QWERTY and Israeli SI-1452, with direction auto-detected.</li>
+            <li>Plugin system: declarative + JavaScript clipboard conditions/actions, installable from the official marketplace.</li>
+            <li>Install/uninstall plugin packages from Settings → Plugins.</li>
+            <li>Faster popup rendering.</li>
           </ul>
         ]]>
       </description>
-      <pubDate>Tue, 23 Jun 2026 14:15:56 +0300</pubDate>
-      <releaseNotesLink>https://github.com/roypadina/maccy-actions/releases/tag/v2.6.2</releaseNotesLink>
+      <pubDate>Wed, 25 Jun 2026 23:00:00 +0300</pubDate>
+      <releaseNotesLink>https://github.com/roypadina/maccyplus/releases/tag/v2.6.3</releaseNotesLink>
       <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
       <enclosure
-        url="https://github.com/roypadina/maccy-actions/releases/download/v2.6.2/MaccyActions.zip"
-        sparkle:version="61"
-        sparkle:shortVersionString="2.6.2"
-        length="4148841"
+        url="https://github.com/roypadina/maccyplus/releases/download/v2.6.3/MaccyPlus.zip"
+        sparkle:version="62"
+        sparkle:shortVersionString="2.6.3"
+        length="4182739"
         type="application/octet-stream"
       />
     </item>

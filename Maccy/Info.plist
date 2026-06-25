@@ -13,7 +13,7 @@
 	<key>CFBundleName</key>
 	<string>$(PRODUCT_NAME)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Maccy Actions</string>
+	<string>MaccyPlus</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -35,7 +35,7 @@
 	<key>SUEnableInstallerLauncherService</key>
 	<true/>
 	<key>SUFeedURL</key>
-	<string>https://raw.githubusercontent.com/roypadina/maccy-actions/main/appcast.xml</string>
+	<string>https://raw.githubusercontent.com/roypadina/maccyplus/main/appcast.xml</string>
 	<key>SUEnableAutomaticChecks</key>
 	<false/>
 </dict>

@@ -111,14 +111,13 @@ Edit the list under Preferences → Actions → "Terminal apps…", or from the 
 
 ### Configure actions from the command line
 
-Maccy Actions ships a headless CLI so rules, actions, the terminal-app list, and per-action
+MaccyPlus ships a headless CLI so rules, actions, the terminal-app list, and per-action
 shortcuts can be managed without the GUI — useful for scripting and for AI coding agents.
 The running app picks up changes immediately.
 
 ```sh
-# the executable name contains a space, so quote it
-APP=$(mdfind "kMDItemCFBundleIdentifier == 'com.royp.MaccyActions'" | head -1)
-BIN="$APP/Contents/MacOS/Maccy Actions"
+APP=$(mdfind "kMDItemCFBundleIdentifier == 'com.royp.MaccyPlus'" | head -1)
+BIN="$APP/Contents/MacOS/MaccyPlus"
 
 "$BIN" rules describe          # live JSON schema: condition/action/transform catalog
 "$BIN" rules list              # all rules as JSON
@@ -128,7 +127,7 @@ BIN="$APP/Contents/MacOS/Maccy Actions"
 
 All commands take and emit JSON and validate input before writing. For the full schema,
 command reference, and recipes — including how an agent should drive it — see the bundled
-skill at [`.claude/skills/maccy-actions/SKILL.md`](.claude/skills/maccy-actions/SKILL.md).
+skill at [`.claude/skills/maccyplus/SKILL.md`](.claude/skills/maccyplus/SKILL.md).
 
 ## Advanced
 

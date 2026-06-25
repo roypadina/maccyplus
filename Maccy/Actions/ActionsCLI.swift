@@ -10,7 +10,7 @@ import Foundation
 // non-zero on error. After any successful mutation it posts a distributed
 // notification so a running GUI reloads (see `AppDelegate`).
 enum ActionsCLI {
-  static let rulesChangedNotification = "com.royp.MaccyActions.rulesChanged"
+  static let rulesChangedNotification = "com.royp.MaccyPlus.rulesChanged"
 
   // MARK: Entry point
 

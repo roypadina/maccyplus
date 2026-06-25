@@ -1664,7 +1664,7 @@
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CODE_SIGN_IDENTITY = "MaccyActions-Dev";
+				CODE_SIGN_IDENTITY = "KeyLayoutSwitcher Dev";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEAD_CODE_STRIPPING = YES;
@@ -1691,7 +1691,7 @@
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CODE_SIGN_IDENTITY = "MaccyActions-Dev";
+				CODE_SIGN_IDENTITY = "KeyLayoutSwitcher Dev";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEAD_CODE_STRIPPING = YES;
@@ -1716,7 +1716,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_IDENTITY = "MaccyActions-Dev";
+				CODE_SIGN_IDENTITY = "KeyLayoutSwitcher Dev";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEAD_CODE_STRIPPING = YES;
@@ -1732,7 +1732,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Maccy Actions.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Maccy Actions";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/MaccyPlus.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/MaccyPlus";
 			};
 			name = Debug;
 		};
@@ -1740,7 +1740,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_IDENTITY = "MaccyActions-Dev";
+				CODE_SIGN_IDENTITY = "KeyLayoutSwitcher Dev";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEAD_CODE_STRIPPING = YES;
@@ -1756,7 +1756,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Maccy Actions.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Maccy Actions";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/MaccyPlus.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/MaccyPlus";
 			};
 			name = Release;
 		};
@@ -1886,8 +1886,8 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Maccy/Maccy.entitlements;
-				CODE_SIGN_IDENTITY = "MaccyActions-Dev";
-				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "MaccyActions-Dev";
+				CODE_SIGN_IDENTITY = "KeyLayoutSwitcher Dev";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "KeyLayoutSwitcher Dev";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 62;
@@ -1907,8 +1907,8 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 2.6.3;
-				PRODUCT_BUNDLE_IDENTIFIER = com.royp.MaccyActions;
-				PRODUCT_NAME = "Maccy Actions";
+				PRODUCT_BUNDLE_IDENTIFIER = com.royp.MaccyPlus;
+				PRODUCT_NAME = "MaccyPlus";
 				PRODUCT_MODULE_NAME = Maccy;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -1923,8 +1923,8 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Maccy/Maccy.entitlements;
-				CODE_SIGN_IDENTITY = "MaccyActions-Dev";
-				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "MaccyActions-Dev";
+				CODE_SIGN_IDENTITY = "KeyLayoutSwitcher Dev";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "KeyLayoutSwitcher Dev";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 62;
@@ -1944,8 +1944,8 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 2.6.3;
-				PRODUCT_BUNDLE_IDENTIFIER = com.royp.MaccyActions;
-				PRODUCT_NAME = "Maccy Actions";
+				PRODUCT_BUNDLE_IDENTIFIER = com.royp.MaccyPlus;
+				PRODUCT_NAME = "MaccyPlus";
 				PRODUCT_MODULE_NAME = Maccy;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 5.0;
