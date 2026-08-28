@@ -6,6 +6,27 @@
     <description>Most recent changes with links to updates.</description>
     <language>en</language>
     <item>
+      <title>2.6.7</title>
+      <description>
+        <![CDATA[
+          <ul>
+            <li>New built-in action "Reveal in Finder": copy a local path — a folder opens in Finder, a file is selected inside its folder.</li>
+            <li>Accepts absolute and ~/ paths, file:// URLs and copied Finder items.</li>
+          </ul>
+        ]]>
+      </description>
+      <pubDate>Fri, 28 Aug 2026 18:46:21 +0300</pubDate>
+      <releaseNotesLink>https://github.com/roypadina/maccyplus/releases/tag/v2.6.7</releaseNotesLink>
+      <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+      <enclosure
+        url="https://github.com/roypadina/maccyplus/releases/download/v2.6.7/MaccyPlus.zip"
+        sparkle:version="66"
+        sparkle:shortVersionString="2.6.7"
+        length="4279679"
+        type="application/octet-stream"
+      />
+    </item>
+    <item>
       <title>2.6.6</title>
       <description>
         <![CDATA[
