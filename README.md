@@ -23,6 +23,7 @@ Requires macOS Sonoma 14 or later.
 * [Usage](#usage)
 * [Actions](#actions)
   * [Unwrap soft-wrapped terminal commands](#unwrap-soft-wrapped-terminal-commands)
+  * [Reveal local paths in Finder](#reveal-local-paths-in-finder)
   * [Per-action shortcuts](#per-action-shortcuts)
   * [Terminal apps](#terminal-apps)
   * [Configure actions from the command line](#configure-actions-from-the-command-line)
@@ -99,8 +100,9 @@ contains-text, source app, **soft-wrapped** (the value looks like a wrapped term
 command), and **from a terminal** (the copy came from a configured terminal app). A rule
 matches when *all* or *any* of its conditions hold.
 
-**Actions** — open as URL, open in a specific app, web search, **transform text**
-(trim, UPPERCASE, lowercase, strip formatting, **unwrap**), and run a macOS Shortcut.
+**Actions** — open as URL, open in a specific app, web search, **reveal in Finder**,
+**transform text** (trim, UPPERCASE, lowercase, strip formatting, **unwrap**), and run a
+macOS Shortcut.
 
 ### Unwrap soft-wrapped terminal commands
 
@@ -114,6 +116,24 @@ The built-in **"Unwrap terminal command"** rule does this automatically: when a 
 removed (the original command is reconstructed exactly — no merged tokens, no spurious
 spaces). Genuine multi-line scripts are left untouched. You can also trigger unwrap
 manually by giving the action a [per-action shortcut](#per-action-shortcuts).
+
+### Reveal local paths in Finder
+
+Copy a local path — `~/Projects/app/`, `/var/log/system.log`, a `file://` URL, or a file
+from Finder — and the **Reveal in Finder** action shows it: a folder path opens that folder;
+a file path opens the containing folder with the file selected. Pair it with the **file path**
+kind condition. Tip: put that rule *above* any "kind = text" rule so the global default-action
+shortcut prefers it (rules are matched top to bottom):
+
+```sh
+"$BIN" rules add --json '{"name":"Reveal local path in Finder",
+  "conditions":[{"id":"'"$(uuidgen)"'","provider":"builtin.kind","params":{"kind":"filePath"}}],
+  "actions":[{"provider":"builtin.revealInFinder","params":{}}]}'
+"$BIN" rules move <rule-id> 0
+```
+
+Opening a folder asks Finder via Apple Events, so macOS shows a one-time
+"MaccyPlus wants to control Finder" prompt.
 
 ### Per-action shortcuts
 

@@ -238,6 +238,10 @@ conditions never match.
 - `openURL` — (none)
 - `openInApp` — `appBundleID`
 - `webSearch` — `searchTemplate` (use `{query}` placeholder)
+- `revealInFinder` — (none); folder path → opens that folder in Finder, file path → opens
+  the containing folder with the file selected. Accepts `/abs`, `~/rel`, `file://` URLs and
+  copied Finder items. Pair with `{"type":"kind","kind":"filePath"}` and place the rule
+  above any `kind = text` rule so the global default-action shortcut prefers it.
 - `transform` — `transform`
 - `runShortcut` — `shortcutName`
 

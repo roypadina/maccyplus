@@ -14,6 +14,30 @@ import Foundation
       configuration: NSWorkspace.OpenConfiguration()
     )
   }
+  /// Folder → open its own Finder window; file → open the parent and select it.
+  /// The sandbox has no read access to arbitrary paths, so Launch Services refuses
+  /// to open folders (-54); Finder is asked directly via Apple Events instead
+  /// (entitlement: temporary-exception.apple-events → com.apple.finder). Revealing
+  /// needs no file access, so it doubles as the fallback.
+  static var reveal: (URL) -> Void = { url in
+    if url.hasDirectoryPath, openFolderInFinder(url) { return }
+    NSWorkspace.shared.activateFileViewerSelecting([url])
+  }
+
+  private static func openFolderInFinder(_ url: URL) -> Bool {
+    let quoted = url.path
+      .replacingOccurrences(of: "\\", with: "\\\\")
+      .replacingOccurrences(of: "\"", with: "\\\"")
+    let source = """
+      tell application "Finder"
+        open POSIX file "\(quoted)"
+        activate
+      end tell
+      """
+    var error: NSDictionary?
+    NSAppleScript(source: source)?.executeAndReturnError(&error)
+    return error == nil
+  }
 }
 
 // MARK: - Condition providers
@@ -258,6 +282,48 @@ struct WebSearchProvider: ActionProvider {
   }
 }
 
+/// Reveals a copied local path in Finder: folders open, files get selected in their folder.
+struct RevealInFinderProvider: ActionProvider {
+
+  let descriptor = ProviderDescriptor(
+    id: "builtin.revealInFinder",
+    name: "Reveal in Finder",
+    description: "Shows the copied local path in Finder. Folders open; files are selected inside their folder.",
+    longHelp: "No setup needed. Works with copied files and with plain-text paths such as /Users/me/Documents or ~/Downloads/report.pdf. A folder path opens that folder in Finder; a file path opens the containing folder with the file selected. Fails if the text is not a local path.",
+    kind: .action,
+    engine: .native,
+    params: [],
+    capabilities: [],
+    source: .builtin
+  )
+
+  /// The real user home, even inside the app sandbox (where `NSHomeDirectory()`
+  /// points at the container).
+  static let realHome: String = {
+    if let dir = getpwuid(getuid())?.pointee.pw_dir { return String(cString: dir) }
+    return NSHomeDirectory()
+  }()
+
+  /// Copied file URLs win; otherwise the text must be an absolute, `~`-prefixed
+  /// or `file://` path. Returns `nil` for anything else (URLs, plain text).
+  static func resolveFileURL(from input: PluginInput) -> URL? {
+    if let url = input.fileURLs.first { return url }
+    var path = input.string.trimmingCharacters(in: .whitespacesAndNewlines)
+    if let url = URL(string: path), url.isFileURL { return url }
+    if path == "~" || path.hasPrefix("~/") { path = realHome + path.dropFirst() }
+    guard path.hasPrefix("/") else { return nil }
+    return URL(fileURLWithPath: path)
+  }
+
+  func run(_ input: PluginInput, params: JSONValue) async throws -> ActionOutcome {
+    guard let url = RevealInFinderProvider.resolveFileURL(from: input) else {
+      throw ActionError.noValue
+    }
+    await MainActor.run { BuiltinLaunch.reveal(url) }
+    return .sideEffect
+  }
+}
+
 /// Runs a named Apple Shortcut with the clipboard text as input.
 struct RunShortcutProvider: ActionProvider {
 
@@ -301,7 +367,7 @@ struct RunShortcutProvider: ActionProvider {
 // MARK: - Registration
 
 enum BuiltinProviders {
-  /// Registers all eight built-in native providers into `registry`.
+  /// Registers all nine built-in native providers into `registry`.
   /// Call once at boot (from `ActionEngine.init`) before any rule evaluation.
   @MainActor
   static func registerBuiltins(into registry: ProviderRegistry) {
@@ -312,6 +378,7 @@ enum BuiltinProviders {
     registry.register(action: OpenURLProvider())
     registry.register(action: OpenInAppProvider())
     registry.register(action: WebSearchProvider())
+    registry.register(action: RevealInFinderProvider())
     registry.register(action: RunShortcutProvider())
   }
 }

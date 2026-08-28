@@ -40,6 +40,7 @@ final class BuiltinProvidersTests: XCTestCase {
     XCTAssertTrue(ids.contains("builtin.openURL"))
     XCTAssertTrue(ids.contains("builtin.openInApp"))
     XCTAssertTrue(ids.contains("builtin.webSearch"))
+    XCTAssertTrue(ids.contains("builtin.revealInFinder"))
     XCTAssertTrue(ids.contains("builtin.runShortcut"))
   }
 
@@ -538,6 +539,54 @@ final class BuiltinProvidersTests: XCTestCase {
     do {
       _ = try await provider.run(input, params: .object(["shortcutName": .string("")]))
       XCTFail("Expected throw for empty shortcut name")
+    } catch {
+      // expected
+    }
+  }
+
+  // MARK: - RevealInFinderProvider
+
+  private func textInput(_ string: String, fileURLs: [URL] = []) -> PluginInput {
+    PluginInput(string: string, kinds: [.filePath, .text], sourceAppBundleID: nil, fileURLs: fileURLs)
+  }
+
+  func testRevealInFinderResolvesTildeToRealHome() {
+    let url = RevealInFinderProvider.resolveFileURL(from: textInput("  ~/Library/  \n"))
+    XCTAssertEqual(url?.path, RevealInFinderProvider.realHome + "/Library")
+    XCTAssertTrue(url?.hasDirectoryPath ?? false)
+  }
+
+  func testRevealInFinderResolvesAbsoluteFileAndFileScheme() {
+    XCTAssertEqual(RevealInFinderProvider.resolveFileURL(from: textInput("/etc/hosts"))?.path, "/etc/hosts")
+    XCTAssertEqual(
+      RevealInFinderProvider.resolveFileURL(from: textInput("file:///etc/hosts"))?.path, "/etc/hosts")
+  }
+
+  func testRevealInFinderPrefersCopiedFileURLs() {
+    let copied = URL(fileURLWithPath: "/tmp")
+    XCTAssertEqual(RevealInFinderProvider.resolveFileURL(from: textInput("ignored", fileURLs: [copied])), copied)
+  }
+
+  func testRevealInFinderRejectsNonPaths() {
+    XCTAssertNil(RevealInFinderProvider.resolveFileURL(from: textInput("https://example.com/a/b")))
+    XCTAssertNil(RevealInFinderProvider.resolveFileURL(from: textInput("just some text")))
+    XCTAssertNil(RevealInFinderProvider.resolveFileURL(from: textInput("")))
+  }
+
+  func testRevealInFinderRunsThroughSeamAndThrowsOnNonPath() async throws {
+    let provider = ProviderRegistry.shared.action("builtin.revealInFinder")!
+    let original = BuiltinLaunch.reveal
+    defer { BuiltinLaunch.reveal = original }
+    var revealed: URL?
+    BuiltinLaunch.reveal = { revealed = $0 }
+
+    let outcome = try await provider.run(textInput("~/Downloads/report.pdf"), params: .emptyObject)
+    XCTAssertEqual(outcome, .sideEffect)
+    XCTAssertEqual(revealed?.path, RevealInFinderProvider.realHome + "/Downloads/report.pdf")
+
+    do {
+      _ = try await provider.run(textInput("not a path"), params: .emptyObject)
+      XCTFail("Expected throw for non-path text")
     } catch {
       // expected
     }

@@ -26,6 +26,8 @@
 	<string>$(MACOSX_DEPLOYMENT_TARGET)</string>
 	<key>LSUIElement</key>
 	<true/>
+	<key>NSAppleEventsUsageDescription</key>
+	<string>MaccyPlus asks Finder to open the folder for a copied path (Reveal in Finder action).</string>
 	<key>NSHumanReadableCopyright</key>
 	<string>Copyright © Alexey Rodionov</string>
 	<key>NSPrincipalClass</key>
