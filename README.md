@@ -149,6 +149,9 @@ Give it a per-action shortcut so opening and revealing sit on different keys:
   "actions":[{"provider":"builtin.openFile","params":{},"shortcut":"ctrl+opt+cmd+o"}]}'
 ```
 
+MaccyPlus is sandboxed and holds a **read-only** exception for the filesystem, so a file it
+opens this way may be read-only in the receiving app if that app has no access of its own.
+
 ### Tell files and folders apart
 
 The **Path type** condition (`builtin.pathType`, `file` or `folder`) checks the copied path

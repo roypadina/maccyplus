@@ -247,7 +247,8 @@ conditions never match.
   the containing folder with the file selected. Accepts `/abs`, `~/rel`, `file://` URLs and
   copied Finder items. Pair with `{"type":"kind","kind":"filePath"}` and place the rule
   above any `kind = text` rule so the global default-action shortcut prefers it.
-- `openFile` — (none); opens the copied path with its default app (folder path → opens that
+- `openFile` — (none); opens the copied path with its default app (read-only sandbox
+  exception, so the receiving app may not be able to save back); (folder path → opens that
   folder in Finder). Same path forms as `revealInFinder`. Needs no setup; give it its own
   `shortcut` to keep it separate from the reveal action.
 - `transform` — `transform`
