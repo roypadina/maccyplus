@@ -31,6 +31,7 @@ final class BuiltinProvidersTests: XCTestCase {
     XCTAssertTrue(ids.contains("builtin.regex"))
     XCTAssertTrue(ids.contains("builtin.contains"))
     XCTAssertTrue(ids.contains("builtin.sourceApp"))
+    XCTAssertTrue(ids.contains("builtin.pathType"))
   }
 
   func testRegisterBuiltinsPopulatesActions() {
@@ -610,6 +611,37 @@ final class BuiltinProvidersTests: XCTestCase {
     } catch {
       // expected
     }
+  }
+
+  // MARK: - Path type condition
+
+  func testPathTypeConditionMatchesFileAndFolder() throws {
+    let condition = ProviderRegistry.shared.condition("builtin.pathType")!
+    let dir = URL(fileURLWithPath: NSTemporaryDirectory())
+      .appendingPathComponent("maccy-pathtype-\(UUID().uuidString)")
+    try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+    defer { try? FileManager.default.removeItem(at: dir) }
+    let file = dir.appendingPathComponent("note.txt")
+    try "hi".write(to: file, atomically: true, encoding: .utf8)
+
+    let fileParams = JSONValue.object(["type": .string("file")])
+    let folderParams = JSONValue.object(["type": .string("folder")])
+
+    XCTAssertTrue(try condition.evaluate(textInput(file.path), params: fileParams))
+    XCTAssertFalse(try condition.evaluate(textInput(file.path), params: folderParams))
+    XCTAssertTrue(try condition.evaluate(textInput(dir.path), params: folderParams))
+    XCTAssertFalse(try condition.evaluate(textInput(dir.path), params: fileParams))
+  }
+
+  func testPathTypeConditionRejectsMissingPathsAndBadParams() {
+    let condition = ProviderRegistry.shared.condition("builtin.pathType")!
+    let fileParams = JSONValue.object(["type": .string("file")])
+
+    XCTAssertFalse(try condition.evaluate(textInput("/no/such/path/here"), params: fileParams))
+    XCTAssertFalse(try condition.evaluate(textInput("just some text"), params: fileParams))
+    XCTAssertThrowsError(try condition.evaluate(textInput("/tmp"), params: .emptyObject))
+    XCTAssertThrowsError(
+      try condition.evaluate(textInput("/tmp"), params: .object(["type": .string("socket")])))
   }
 
   // MARK: - ProviderSource verified flag

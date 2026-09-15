@@ -6,6 +6,21 @@
     <description>Most recent changes with links to updates.</description>
     <language>en</language>
     <item>
+      <title>2.6.9</title>
+      <description>
+        <![CDATA[
+          <ul>
+            <li>New condition "Path type": match only file paths, or only folder paths — the path is checked on disk.</li>
+            <li>Lets one rule open files in their app while another opens folders in Finder.</li>
+          </ul>
+        ]]>
+      </description>
+      <pubDate>Tue, 15 Sep 2026 22:36:11 +0300</pubDate>
+      <releaseNotesLink>https://github.com/roypadina/maccyplus/releases/tag/v2.6.9</releaseNotesLink>
+      <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+      <enclosure url="https://github.com/roypadina/maccyplus/releases/download/v2.6.9/MaccyPlus.zip" length="4288961" type="application/octet-stream" sparkle:version="68" sparkle:shortVersionString="2.6.9"/>
+    </item>
+    <item>
       <title>2.6.8</title>
       <description>
         <![CDATA[

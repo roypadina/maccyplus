@@ -217,6 +217,11 @@ Omitted fields get struct defaults (`enabled:true`, `matchMode:"all"`,
 
 `ValueKinds`: `url`, `email`, `phone`, `filePath`, `colorHex`, `image`, `text`.
 
+Provider form only (no tagged equivalent): `builtin.pathType` with
+`{"type": "file"}` or `{"type": "folder"}` — looks the copied path up on disk, so a
+path that does not exist matches neither. Use it with `kind = filePath` to split a
+path rule into a file rule and a folder rule.
+
 A rule matches when its conditions satisfy `matchMode` (all/any). Empty
 conditions never match.
 

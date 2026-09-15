@@ -95,7 +95,8 @@ Actions let MaccyPlus *do something* with a copied value instead of just storing
 from a per-action shortcut, or automatically the moment a matching value is copied.
 Rules are edited under Preferences → Actions.
 
-**Conditions** — kind (URL, email, phone, file path, color hex, image, text), regex,
+**Conditions** — kind (URL, email, phone, file path, color hex, image, text), **path type
+(file or folder)**, regex,
 contains-text, source app, **soft-wrapped** (the value looks like a wrapped terminal
 command), and **from a terminal** (the copy came from a configured terminal app). A rule
 matches when *all* or *any* of its conditions hold.
@@ -147,6 +148,21 @@ Give it a per-action shortcut so opening and revealing sit on different keys:
   "conditions":[{"id":"'"$(uuidgen)"'","provider":"builtin.kind","params":{"kind":"filePath"}}],
   "actions":[{"provider":"builtin.openFile","params":{},"shortcut":"ctrl+opt+cmd+o"}]}'
 ```
+
+### Tell files and folders apart
+
+The **Path type** condition (`builtin.pathType`, `file` or `folder`) checks the copied path
+on disk, so one rule can handle files and another handle folders — for example open files in
+their app while folders open in Finder:
+
+```sh
+"$BIN" rules add --json '{"name":"Open local file",
+  "conditions":[{"id":"'"$(uuidgen)"'","provider":"builtin.kind","params":{"kind":"filePath"}},
+                {"id":"'"$(uuidgen)"'","provider":"builtin.pathType","params":{"type":"file"}}],
+  "actions":[{"provider":"builtin.openFile","params":{}}]}'
+```
+
+A path that does not exist matches neither type.
 
 ### Per-action shortcuts
 

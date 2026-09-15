@@ -278,6 +278,11 @@ private struct ConditionRow: View {
         ForEach(ValueKind.allCases) { Text($0.label).tag($0) }
       }
       .labelsHidden()
+    case .pathType:
+      Picker("", selection: stringParam($condition.params, spec.key)) {
+        ForEach(PathType.allCases) { Text($0.label).tag($0.rawValue) }
+      }
+      .labelsHidden()
     case .bundleID:
       HStack {
         TextField(spec.placeholder ?? spec.label, text: stringParam($condition.params, spec.key))
@@ -432,6 +437,11 @@ private struct ActionRow: View {
     case .valueKind:
       Picker("", selection: valueKindParam($action.params, spec.key)) {
         ForEach(ValueKind.allCases) { Text($0.label).tag($0) }
+      }
+      .labelsHidden()
+    case .pathType:
+      Picker("", selection: stringParam($action.params, spec.key)) {
+        ForEach(PathType.allCases) { Text($0.label).tag($0.rawValue) }
       }
       .labelsHidden()
     case .bundleID:

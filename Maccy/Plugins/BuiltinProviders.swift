@@ -182,6 +182,44 @@ struct SourceAppCondition: ConditionProvider {
   }
 }
 
+/// Matches when the copied path exists on disk and is a file (or a folder).
+struct PathTypeCondition: ConditionProvider {
+
+  let descriptor = ProviderDescriptor(
+    id: "builtin.pathType",
+    name: "Path type",
+    description: "Matches when the copied local path is a file, or when it is a folder.",
+    longHelp: "Pick File or Folder. The path is looked up on disk, so a path that does not exist matches neither. Pair it with the file path kind condition to split one rule into a file rule and a folder rule — for example open files in their app, but open folders in Finder.",
+    kind: .condition,
+    engine: .native,
+    params: [
+      ParamSpec(
+        key: "type",
+        label: "Path type",
+        kind: .pathType,
+        placeholder: PathType.file.rawValue
+      )
+    ],
+    capabilities: [],
+    source: .builtin
+  )
+
+  func evaluate(_ input: PluginInput, params: JSONValue) throws -> Bool {
+    guard let raw = params["type"]?.stringValue else {
+      throw BuiltinProviderError.missingParam("type")
+    }
+    guard let wanted = PathType(rawValue: raw) else {
+      throw BuiltinProviderError.invalidParam("type", value: raw)
+    }
+    guard let url = RevealInFinderProvider.resolveFileURL(from: input) else { return false }
+    var isDirectory: ObjCBool = false
+    guard FileManager.default.fileExists(atPath: url.path, isDirectory: &isDirectory) else {
+      return false
+    }
+    return isDirectory.boolValue == (wanted == .folder)
+  }
+}
+
 // MARK: - Action providers
 
 /// Opens the clipboard text as a URL in the default browser or associated app.
@@ -404,7 +442,7 @@ struct RunShortcutProvider: ActionProvider {
 // MARK: - Registration
 
 enum BuiltinProviders {
-  /// Registers all ten built-in native providers into `registry`.
+  /// Registers all eleven built-in native providers into `registry`.
   /// Call once at boot (from `ActionEngine.init`) before any rule evaluation.
   @MainActor
   static func registerBuiltins(into registry: ProviderRegistry) {
@@ -412,6 +450,7 @@ enum BuiltinProviders {
     registry.register(condition: RegexCondition())
     registry.register(condition: ContainsCondition())
     registry.register(condition: SourceAppCondition())
+    registry.register(condition: PathTypeCondition())
     registry.register(action: OpenURLProvider())
     registry.register(action: OpenInAppProvider())
     registry.register(action: WebSearchProvider())

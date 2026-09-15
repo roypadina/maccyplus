@@ -203,6 +203,22 @@ enum ParamKind: String, Codable, Hashable {
   case text
   case valueKind
   case bundleID
+  /// Picker over `PathType` — a copied path that is a file vs one that is a folder.
+  case pathType
+}
+
+/// Whether a copied local path points at a regular file or at a folder.
+enum PathType: String, Codable, CaseIterable, Identifiable {
+  case file
+  case folder
+
+  var id: String { rawValue }
+  var label: String {
+    switch self {
+    case .file: return "File"
+    case .folder: return "Folder"
+    }
+  }
 }
 
 struct ParamSpec: Codable, Hashable, Identifiable {
