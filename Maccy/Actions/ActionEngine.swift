@@ -193,9 +193,11 @@ final class ActionEngine {
   // at fire time, while `setShortcut` is updated to reflect the latest binding.
   // Never calls `removeAllHandlers()` (that would clobber popup/pin/etc.).
   func registerShortcuts() {
+    var live = Set<String>()
     for rule in Defaults[.actionRules] {
       for config in rule.actions {
         let name = KeyboardShortcuts.Name("action_\(config.id.uuidString)")
+        live.insert(name.rawValue)
         if let spec = config.shortcut, let parsed = ShortcutSpec.parse(spec) {
           KeyboardShortcuts.setShortcut(parsed, for: name)
         } else {
@@ -208,6 +210,22 @@ final class ActionEngine {
           }
         }
       }
+    }
+    unregisterOrphanShortcuts(keeping: live)
+  }
+
+  // Editing or deleting an action mints a new action id, so the old id's hotkey
+  // would stay registered for the life of the install: a real system-wide key
+  // grab whose handler resolves to nothing (it beeps), and which blocks that
+  // combination from being used again. Drop every stored action shortcut whose
+  // action is no longer in any rule.
+  private func unregisterOrphanShortcuts(keeping live: Set<String>) {
+    let prefix = "KeyboardShortcuts_action_"
+    let stored = UserDefaults.standard.dictionaryRepresentation().keys
+      .filter { $0.hasPrefix(prefix) }
+      .map { String($0.dropFirst("KeyboardShortcuts_".count)) }
+    for rawName in stored where !live.contains(rawName) {
+      KeyboardShortcuts.setShortcut(nil, for: KeyboardShortcuts.Name(rawName))
     }
   }
 

@@ -6,6 +6,20 @@
     <description>Most recent changes with links to updates.</description>
     <language>en</language>
     <item>
+      <title>2.6.10</title>
+      <description>
+        <![CDATA[
+          <ul>
+            <li>Fixed: editing or deleting an action left its keyboard shortcut registered system-wide, firing a handler that resolved to nothing and blocking that key combination from being reused.</li>
+          </ul>
+        ]]>
+      </description>
+      <pubDate>Tue, 15 Sep 2026 22:51:30 +0300</pubDate>
+      <releaseNotesLink>https://github.com/roypadina/maccyplus/releases/tag/v2.6.10</releaseNotesLink>
+      <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+      <enclosure url="https://github.com/roypadina/maccyplus/releases/download/v2.6.10/MaccyPlus.zip" length="4290237" type="application/octet-stream" sparkle:version="69" sparkle:shortVersionString="2.6.10"/>
+    </item>
+    <item>
       <title>2.6.9</title>
       <description>
         <![CDATA[
