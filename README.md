@@ -101,6 +101,7 @@ command), and **from a terminal** (the copy came from a configured terminal app)
 matches when *all* or *any* of its conditions hold.
 
 **Actions** — open as URL, open in a specific app, web search, **reveal in Finder**,
+**open a local file**,
 **transform text** (trim, UPPERCASE, lowercase, strip formatting, **unwrap**), and run a
 macOS Shortcut.
 
@@ -134,6 +135,18 @@ shortcut prefers it (rules are matched top to bottom):
 
 Opening a folder asks Finder via Apple Events, so macOS shows a one-time
 "MaccyPlus wants to control Finder" prompt.
+
+### Open local files
+
+The **Open file** action opens the copied path with whatever app macOS normally uses for it;
+a folder path opens that folder in Finder. It takes the same path forms as *Reveal in Finder*.
+Give it a per-action shortcut so opening and revealing sit on different keys:
+
+```sh
+"$BIN" rules add --json '{"name":"Open local file",
+  "conditions":[{"id":"'"$(uuidgen)"'","provider":"builtin.kind","params":{"kind":"filePath"}}],
+  "actions":[{"provider":"builtin.openFile","params":{},"shortcut":"ctrl+opt+cmd+o"}]}'
+```
 
 ### Per-action shortcuts
 

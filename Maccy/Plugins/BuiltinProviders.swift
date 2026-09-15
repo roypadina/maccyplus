@@ -20,11 +20,24 @@ import Foundation
   /// (entitlement: temporary-exception.apple-events → com.apple.finder). Revealing
   /// needs no file access, so it doubles as the fallback.
   static var reveal: (URL) -> Void = { url in
-    if url.hasDirectoryPath, openFolderInFinder(url) { return }
+    if url.hasDirectoryPath, openViaFinder(url) { return }
     NSWorkspace.shared.activateFileViewerSelecting([url])
   }
 
-  private static func openFolderInFinder(_ url: URL) -> Bool {
+  /// Opens a path with its default app. Launch Services handles files; folders
+  /// need Finder (Launch Services answers -54 for a directory the sandbox cannot
+  /// read). Finder is the fallback, but it can only open a *folder* for us — it
+  /// refuses a file it got no sandbox extension for ("does not have permission
+  /// to open …").
+  static var openFile: (URL) -> Void = { url in
+    if !url.hasDirectoryPath, NSWorkspace.shared.open(url) { return }
+    if openViaFinder(url) { return }
+    NSWorkspace.shared.activateFileViewerSelecting([url])
+  }
+
+  /// Asks Finder to open `url`: a file launches in its default app, a folder
+  /// opens its own window.
+  private static func openViaFinder(_ url: URL) -> Bool {
     let quoted = url.path
       .replacingOccurrences(of: "\\", with: "\\\\")
       .replacingOccurrences(of: "\"", with: "\\\"")
@@ -324,6 +337,30 @@ struct RevealInFinderProvider: ActionProvider {
   }
 }
 
+/// Opens a copied local path with its default app; folders open in Finder.
+struct OpenFileProvider: ActionProvider {
+
+  let descriptor = ProviderDescriptor(
+    id: "builtin.openFile",
+    name: "Open file",
+    description: "Opens the copied local path with its default app. Folder paths open in Finder.",
+    longHelp: "No setup needed. Works with copied files and with plain-text paths such as /var/log/system.log or ~/Downloads/report.pdf. The file opens in whichever app macOS normally uses for it; a folder path opens that folder in Finder. Fails if the text is not a local path.",
+    kind: .action,
+    engine: .native,
+    params: [],
+    capabilities: [],
+    source: .builtin
+  )
+
+  func run(_ input: PluginInput, params: JSONValue) async throws -> ActionOutcome {
+    guard let url = RevealInFinderProvider.resolveFileURL(from: input) else {
+      throw ActionError.noValue
+    }
+    await MainActor.run { BuiltinLaunch.openFile(url) }
+    return .sideEffect
+  }
+}
+
 /// Runs a named Apple Shortcut with the clipboard text as input.
 struct RunShortcutProvider: ActionProvider {
 
@@ -367,7 +404,7 @@ struct RunShortcutProvider: ActionProvider {
 // MARK: - Registration
 
 enum BuiltinProviders {
-  /// Registers all nine built-in native providers into `registry`.
+  /// Registers all ten built-in native providers into `registry`.
   /// Call once at boot (from `ActionEngine.init`) before any rule evaluation.
   @MainActor
   static func registerBuiltins(into registry: ProviderRegistry) {
@@ -379,6 +416,7 @@ enum BuiltinProviders {
     registry.register(action: OpenInAppProvider())
     registry.register(action: WebSearchProvider())
     registry.register(action: RevealInFinderProvider())
+    registry.register(action: OpenFileProvider())
     registry.register(action: RunShortcutProvider())
   }
 }

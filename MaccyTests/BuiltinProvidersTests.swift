@@ -41,6 +41,7 @@ final class BuiltinProvidersTests: XCTestCase {
     XCTAssertTrue(ids.contains("builtin.openInApp"))
     XCTAssertTrue(ids.contains("builtin.webSearch"))
     XCTAssertTrue(ids.contains("builtin.revealInFinder"))
+    XCTAssertTrue(ids.contains("builtin.openFile"))
     XCTAssertTrue(ids.contains("builtin.runShortcut"))
   }
 
@@ -583,6 +584,25 @@ final class BuiltinProvidersTests: XCTestCase {
     let outcome = try await provider.run(textInput("~/Downloads/report.pdf"), params: .emptyObject)
     XCTAssertEqual(outcome, .sideEffect)
     XCTAssertEqual(revealed?.path, RevealInFinderProvider.realHome + "/Downloads/report.pdf")
+
+    do {
+      _ = try await provider.run(textInput("not a path"), params: .emptyObject)
+      XCTFail("Expected throw for non-path text")
+    } catch {
+      // expected
+    }
+  }
+
+  func testOpenFileRunsThroughSeamAndThrowsOnNonPath() async throws {
+    let provider = ProviderRegistry.shared.action("builtin.openFile")!
+    let original = BuiltinLaunch.openFile
+    defer { BuiltinLaunch.openFile = original }
+    var opened: URL?
+    BuiltinLaunch.openFile = { opened = $0 }
+
+    let outcome = try await provider.run(textInput("~/Downloads/report.pdf"), params: .emptyObject)
+    XCTAssertEqual(outcome, .sideEffect)
+    XCTAssertEqual(opened?.path, RevealInFinderProvider.realHome + "/Downloads/report.pdf")
 
     do {
       _ = try await provider.run(textInput("not a path"), params: .emptyObject)
