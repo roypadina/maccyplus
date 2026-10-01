@@ -160,7 +160,7 @@ final class ActionEngine {
         switch outcome {
         case .replace(let value):
           ActionEngine.shared.noteAutoOutput(value)
-          Clipboard.shared.copy(value)
+          Clipboard.shared.copyInMaccy(value)
         case .sideEffect, .none:
           break
         }
@@ -269,7 +269,7 @@ final class ActionEngine {
     let text = ValueClassifier.primaryString(of: item)
 
     // Swallow the echo of a value we just produced via an auto transform
-    // (Clipboard.copy(string) doesn't set the fromMaccy marker).
+    // (Clipboard.copyInMaccy doesn't set the fromMaccy marker).
     if let last = lastAutoOutput, last == text {
       lastAutoOutput = nil
       return

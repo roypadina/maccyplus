@@ -1,3 +1,5 @@
+> [!WARNING]
+> **Beware of fake websites impersonating Maccy.** Malicious sites (such as `maccyapp.net` and `maccyapp.com`) distribute malware disguised as Maccy. [**maccy.app**](https://maccy.app) is the **only** official website.
 
 <img width="128px" src="app-icon.png" alt="MaccyPlus icon" />
 
