@@ -16,6 +16,8 @@ copy. MaccyPlus keeps all of that and adds an automation layer on top:
 * **Plugins** — extend conditions & actions with declarative or JavaScript plugins,
   installable from a marketplace (or drop your own folder in — no rebuild)
 
+MaccyPlus tracks upstream Maccy and is currently synced with **Maccy 2.7.1**.
+
 Requires macOS Sonoma 14 or later.
 
 <!-- vim-markdown-toc GFM -->

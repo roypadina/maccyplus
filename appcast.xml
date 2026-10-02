@@ -6,6 +6,25 @@
     <description>Most recent changes with links to updates.</description>
     <language>en</language>
     <item>
+      <title>2.7.0</title>
+      <description>
+        <![CDATA[
+          <ul>
+            <li>Synced with upstream Maccy 2.7.1.</li>
+            <li>New: copy text from images (OCR button in preview), image dimensions in preview, HEX color swatches, toggle to open preview automatically.</li>
+            <li>New: Liquid Glass app icon, long text rendered with a native text view, VoiceOver improvements.</li>
+            <li>Fixed: hang on macOS 26 when titles contain U+FFFC, crash when copying the bottom-most pinned item at full capacity, wrong selection after deleting the first unpinned item, orphaned history content left in storage.</li>
+            <li>Fixed: popup now stays on the active screen and above Chrome autofill; minimum popup height of 3 items.</li>
+            <li>New and updated translations (Khmer, Finnish, Portuguese and more).</li>
+          </ul>
+        ]]>
+      </description>
+      <pubDate>Fri, 02 Oct 2026 15:36:15 +0300</pubDate>
+      <releaseNotesLink>https://github.com/roypadina/maccyplus/releases/tag/v2.7.0</releaseNotesLink>
+      <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+      <enclosure url="https://github.com/roypadina/maccyplus/releases/download/v2.7.0/MaccyPlus.zip" length="5381209" type="application/octet-stream" sparkle:version="70" sparkle:shortVersionString="2.7.0"/>
+    </item>
+    <item>
       <title>2.6.10</title>
       <description>
         <![CDATA[
