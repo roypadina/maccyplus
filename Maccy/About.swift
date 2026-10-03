@@ -22,17 +22,23 @@ class About {
     return string
   }
 
+  // MaccyPlus additions, shown below upstream Maccy's original credits.
   private var maccyPlusCredits: NSMutableAttributedString {
     let string = NSMutableAttributedString(
-      string: "MaccyPlus — made by Roy Padina\n\n" +
+      string: "MaccyPlus by Roy Padina\n" +
         "I'm a software engineer from Israel who builds small, focused Mac tools to fix the little " +
         "annoyances in my own day — then shares them free and open source.\n\n" +
         "If this app saves you time, a coffee on Ko-fi keeps the next one coming. ☕\n\n" +
-        "Support on Ko-fi ☕│GitHub",
-      attributes: [NSAttributedString.Key.foregroundColor: NSColor.labelColor]
+        "Support on Ko-fi│GitHub",
+      attributes: [
+        NSAttributedString.Key.foregroundColor: NSColor.labelColor,
+        NSAttributedString.Key.font: NSFont.systemFont(ofSize: NSFont.smallSystemFontSize)
+      ]
     )
     let text = string.string as NSString
-    string.addAttribute(.link, value: "https://ko-fi.com/roypadina", range: text.range(of: "Support on Ko-fi ☕"))
+    string.addAttribute(.font, value: NSFont.boldSystemFont(ofSize: NSFont.systemFontSize),
+                        range: text.range(of: "MaccyPlus by Roy Padina"))
+    string.addAttribute(.link, value: "https://ko-fi.com/roypadina", range: text.range(of: "Support on Ko-fi"))
     string.addAttribute(.link, value: "https://github.com/roypadina/maccyplus", range: text.range(of: "GitHub"))
     return string
   }
@@ -40,13 +46,13 @@ class About {
   private var credits: NSMutableAttributedString {
     let credits = NSMutableAttributedString(string: "",
                                             attributes: [NSAttributedString.Key.foregroundColor: NSColor.labelColor])
-    credits.append(maccyPlusCredits)
-    credits.append(NSAttributedString(string: "\n\nBased on Maccy by Alex Rodionov\n"))
     credits.append(links)
     credits.append(NSAttributedString(string: "\n\n"))
     credits.append(kossCredits)
     credits.append(NSAttributedString(string: "\n"))
     credits.append(familyCredits)
+    credits.append(NSAttributedString(string: "\n\n───────\n\n"))
+    credits.append(maccyPlusCredits)
     credits.setAlignment(.center, range: NSRange(location: 0, length: credits.length))
     return credits
   }
