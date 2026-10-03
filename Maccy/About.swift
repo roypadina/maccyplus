@@ -1,65 +1,81 @@
 import Cocoa
+import SwiftUI
 
+// MaccyPlus: custom About window (the standard panel's fixed-height credits box clipped our text).
+// MaccyPlus credits lead; upstream Maccy credits stay, smaller, at the bottom.
 class About {
-  private let familyCredits = NSAttributedString(
-    string: "Special thank you to Tonia, Anna & Guy! ❤️",
-    attributes: [NSAttributedString.Key.foregroundColor: NSColor.labelColor]
-  )
-
-  private var kossCredits: NSMutableAttributedString {
-    let string = NSMutableAttributedString(string: "Kudos to Sasha Koss for help! 🏂",
-                                           attributes: [NSAttributedString.Key.foregroundColor: NSColor.labelColor])
-    string.addAttribute(.link, value: "https://koss.nocorp.me", range: NSRange(location: 9, length: 10))
-    return string
-  }
-
-  private var links: NSMutableAttributedString {
-    let string = NSMutableAttributedString(string: "Website│GitHub│Support",
-                                           attributes: [NSAttributedString.Key.foregroundColor: NSColor.labelColor])
-    string.addAttribute(.link, value: "https://maccy.app", range: NSRange(location: 0, length: 7))
-    string.addAttribute(.link, value: "https://github.com/p0deje/Maccy", range: NSRange(location: 8, length: 6))
-    string.addAttribute(.link, value: "mailto:support@maccy.app", range: NSRange(location: 15, length: 7))
-    return string
-  }
-
-  // MaccyPlus additions, shown below upstream Maccy's original credits.
-  private var maccyPlusCredits: NSMutableAttributedString {
-    let string = NSMutableAttributedString(
-      string: "MaccyPlus by Roy Padina\n" +
-        "I'm a software engineer from Israel who builds small, focused Mac tools to fix the little " +
-        "annoyances in my own day — then shares them free and open source.\n\n" +
-        "If this app saves you time, a coffee on Ko-fi keeps the next one coming. ☕\n\n" +
-        "Support on Ko-fi│GitHub",
-      attributes: [
-        NSAttributedString.Key.foregroundColor: NSColor.labelColor,
-        NSAttributedString.Key.font: NSFont.systemFont(ofSize: NSFont.smallSystemFontSize)
-      ]
-    )
-    let text = string.string as NSString
-    string.addAttribute(.font, value: NSFont.boldSystemFont(ofSize: NSFont.systemFontSize),
-                        range: text.range(of: "MaccyPlus by Roy Padina"))
-    string.addAttribute(.link, value: "https://ko-fi.com/roypadina", range: text.range(of: "Support on Ko-fi"))
-    string.addAttribute(.link, value: "https://github.com/roypadina/maccyplus", range: text.range(of: "GitHub"))
-    return string
-  }
-
-  private var credits: NSMutableAttributedString {
-    let credits = NSMutableAttributedString(string: "",
-                                            attributes: [NSAttributedString.Key.foregroundColor: NSColor.labelColor])
-    credits.append(links)
-    credits.append(NSAttributedString(string: "\n\n"))
-    credits.append(kossCredits)
-    credits.append(NSAttributedString(string: "\n"))
-    credits.append(familyCredits)
-    credits.append(NSAttributedString(string: "\n\n───────\n\n"))
-    credits.append(maccyPlusCredits)
-    credits.setAlignment(.center, range: NSRange(location: 0, length: credits.length))
-    return credits
-  }
+  private var window: NSWindow?
 
   @objc
   func openAbout(_ sender: NSMenuItem?) {
+    if window == nil {
+      let window = NSWindow(contentViewController: NSHostingController(rootView: AboutView()))
+      window.title = "About MaccyPlus"
+      window.styleMask = [.titled, .closable]
+      window.isReleasedWhenClosed = false
+      window.center()
+      self.window = window
+    }
     NSApp.activate(ignoringOtherApps: true)
-    NSApp.orderFrontStandardAboutPanel(options: [NSApplication.AboutPanelOptionKey.credits: credits])
+    window?.makeKeyAndOrderFront(nil)
+  }
+}
+
+private struct AboutView: View {
+  private let info = Bundle.main.infoDictionary ?? [:]
+
+  var body: some View {
+    VStack(spacing: 12) {
+      Image(nsImage: NSApp.applicationIconImage)
+        .resizable()
+        .frame(width: 96, height: 96)
+
+      VStack(spacing: 2) {
+        Text("MaccyPlus").font(.title.bold())
+        Text("Version \(info["CFBundleShortVersionString"] as? String ?? "") (\(info["CFBundleVersion"] as? String ?? ""))")
+          .font(.callout)
+          .foregroundStyle(.secondary)
+      }
+
+      VStack(spacing: 8) {
+        Text("Made by Roy Padina").font(.headline)
+        Text("I'm a software engineer from Israel who builds small, focused Mac tools to fix the little annoyances in my own day — then shares them free and open source.")
+        Text("If this app saves you time, a coffee on Ko-fi keeps the next one coming. ☕")
+      }
+      .multilineTextAlignment(.center)
+      .fixedSize(horizontal: false, vertical: true)
+
+      HStack {
+        Link(destination: URL(string: "https://ko-fi.com/roypadina")!) {
+          Text("Support on Ko-fi ☕").frame(minWidth: 140)
+        }
+        .buttonStyle(.borderedProminent)
+        .controlSize(.large)
+
+        Link(destination: URL(string: "https://github.com/roypadina/maccyplus")!) {
+          Text("GitHub").frame(minWidth: 70)
+        }
+        .buttonStyle(.bordered)
+        .controlSize(.large)
+      }
+
+      Link("Report an issue", destination: URL(string: "https://github.com/roypadina/maccyplus/issues")!)
+        .font(.callout)
+
+      Divider().padding(.vertical, 4)
+
+      VStack(spacing: 3) {
+        Text("Based on [Maccy](https://github.com/p0deje/Maccy) by Alexey Rodionov · [maccy.app](https://maccy.app)")
+        Text("Kudos to [Sasha Koss](https://koss.nocorp.me) for help! 🏂")
+        Text("Special thank you to Tonia, Anna & Guy! ❤️")
+        Text("MaccyPlus © Roy Padina · Maccy © Alexey Rodionov · MIT")
+      }
+      .font(.caption)
+      .foregroundStyle(.secondary)
+      .multilineTextAlignment(.center)
+      .fixedSize(horizontal: false, vertical: true)
+    }
+    .padding(24)
+    .frame(width: 380)
   }
 }
