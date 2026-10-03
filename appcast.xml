@@ -6,6 +6,20 @@
     <description>Most recent changes with links to updates.</description>
     <language>en</language>
     <item>
+      <title>2.7.1</title>
+      <description>
+        <![CDATA[
+          <ul>
+            <li>New: About panel credits Roy Padina and links to Ko-fi and GitHub.</li>
+          </ul>
+        ]]>
+      </description>
+      <pubDate>Sat, 03 Oct 2026 22:07:22 +0300</pubDate>
+      <releaseNotesLink>https://github.com/roypadina/maccyplus/releases/tag/v2.7.1</releaseNotesLink>
+      <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+      <enclosure url="https://github.com/roypadina/maccyplus/releases/download/v2.7.1/MaccyPlus.zip" length="5382496" type="application/octet-stream" sparkle:version="71" sparkle:shortVersionString="2.7.1"/>
+    </item>
+    <item>
       <title>2.7.0</title>
       <description>
         <![CDATA[

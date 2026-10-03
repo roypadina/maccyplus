@@ -22,9 +22,26 @@ class About {
     return string
   }
 
+  private var maccyPlusCredits: NSMutableAttributedString {
+    let string = NSMutableAttributedString(
+      string: "MaccyPlus — made by Roy Padina\n\n" +
+        "I'm a software engineer from Israel who builds small, focused Mac tools to fix the little " +
+        "annoyances in my own day — then shares them free and open source.\n\n" +
+        "If this app saves you time, a coffee on Ko-fi keeps the next one coming. ☕\n\n" +
+        "Support on Ko-fi ☕│GitHub",
+      attributes: [NSAttributedString.Key.foregroundColor: NSColor.labelColor]
+    )
+    let text = string.string as NSString
+    string.addAttribute(.link, value: "https://ko-fi.com/roypadina", range: text.range(of: "Support on Ko-fi ☕"))
+    string.addAttribute(.link, value: "https://github.com/roypadina/maccyplus", range: text.range(of: "GitHub"))
+    return string
+  }
+
   private var credits: NSMutableAttributedString {
     let credits = NSMutableAttributedString(string: "",
                                             attributes: [NSAttributedString.Key.foregroundColor: NSColor.labelColor])
+    credits.append(maccyPlusCredits)
+    credits.append(NSAttributedString(string: "\n\nBased on Maccy by Alex Rodionov\n"))
     credits.append(links)
     credits.append(NSAttributedString(string: "\n\n"))
     credits.append(kossCredits)

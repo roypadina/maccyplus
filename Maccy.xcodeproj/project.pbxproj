@@ -1959,7 +1959,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "KeyLayoutSwitcher Dev";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 70;
+				CURRENT_PROJECT_VERSION = 71;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -1976,7 +1976,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 2.7.0;
+				MARKETING_VERSION = 2.7.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.royp.MaccyPlus;
 				PRODUCT_NAME = "MaccyPlus";
 				PRODUCT_MODULE_NAME = Maccy;
@@ -1997,7 +1997,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "KeyLayoutSwitcher Dev";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 70;
+				CURRENT_PROJECT_VERSION = 71;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -2013,7 +2013,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 2.7.0;
+				MARKETING_VERSION = 2.7.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.royp.MaccyPlus;
 				PRODUCT_NAME = "MaccyPlus";
 				PRODUCT_MODULE_NAME = Maccy;

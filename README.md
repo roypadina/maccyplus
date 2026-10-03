@@ -5,6 +5,8 @@
 
 # MaccyPlus
 
+[![Ko-fi](https://img.shields.io/badge/Ko--fi-support-F16061?logo=ko-fi&logoColor=white)](https://ko-fi.com/roypadina)
+
 **MaccyPlus** is a clipboard-automation fork of [Maccy](https://maccy.app) — **macOS only**.
 
 Maccy is a lightweight clipboard manager that keeps a searchable history of everything you
@@ -44,6 +46,7 @@ Requires macOS Sonoma 14 or later.
   * [My keyboard shortcut stopped working in password fields. How do I fix this?](#my-keyboard-shortcut-stopped-working-in-password-fields-how-do-i-fix-this)
 * [Translations](#translations)
 * [Motivation](#motivation)
+* [Support](#support)
 * [License](#license)
 
 <!-- vim-markdown-toc -->
@@ -337,6 +340,13 @@ but I couldn't. So I've decided to build one.
 
 Also, I wanted to learn Swift and get acquainted with macOS application development.
 
+## Support
+
+If MaccyPlus saves you time with your clipboard, you can support its development — it's optional and always appreciated.
+
+[![Support me on Ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/roypadina)
+
+A ⭐ on the repo helps just as much.
 
 ## License
 
