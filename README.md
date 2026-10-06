@@ -51,6 +51,8 @@ Requires macOS Sonoma 14 or later.
 
 <!-- vim-markdown-toc -->
 
+📖 **Full documentation is in the [Wiki](https://github.com/roypadina/maccyplus/wiki)** — actions and rules, plugins, the command line, permissions, troubleshooting.
+
 ## Features
 
 * Lightweight and fast
