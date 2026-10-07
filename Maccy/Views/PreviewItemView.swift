@@ -72,6 +72,19 @@ struct PreviewItemView: View {
       Divider()
         .padding(.bottom)
 
+      if let label = item.item.label {
+        HStack(spacing: 3) {
+          Text(verbatim: "Label")
+          Text(label).bold()
+        }
+      }
+
+      if let note = item.item.note {
+        Text(note)
+          .textSelection(.enabled)
+          .padding(.bottom, 4)
+      }
+
       if let application = item.application {
         HStack(spacing: 3) {
           Text("Application", tableName: "PreviewItemView")

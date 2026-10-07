@@ -101,6 +101,9 @@ class HistoryItemDecorator: Identifiable, Hashable, HasVisibility {
     } else {
       parts.append(title)
     }
+    if let label = item.label {
+      parts.insert(label, at: 0)
+    }
     if let application = application {
       parts.append(application)
     }

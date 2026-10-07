@@ -70,6 +70,11 @@ class HistoryItem {
   var numberOfCopies: Int = 1
   var pin: String?
   var title = ""
+  // Agent API (`MaccyPlus history …`): stable id across dedup, plus a short
+  // label (e.g. the Claude session name) and a free-text note shown to the user.
+  var uid: String?
+  var label: String?
+  var note: String?
 
   @Relationship(deleteRule: .cascade, inverse: \HistoryItemContent.item)
   var contents: [HistoryItemContent] = []
@@ -80,6 +85,7 @@ class HistoryItem {
     self.firstCopiedAt = firstCopiedAt
     self.lastCopiedAt = lastCopiedAt
     self.contents = contents
+    self.uid = UUID().uuidString
   }
 
   func supersedes(_ item: HistoryItem) -> Bool {

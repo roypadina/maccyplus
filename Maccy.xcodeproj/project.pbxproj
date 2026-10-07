@@ -85,6 +85,7 @@
 		E3C9CE28D35D727B6DE02737 /* ValueKind.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3814BCA873AD3C65CA3C959E /* ValueKind.swift */; };
 		5814D36CFE170B22555C0CA2 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B1B0633308B822BFE02D506 /* main.swift */; };
 		EF998E01F23B7C760B5CD492 /* ActionsCLI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D2A5EE4011F5F146A113A35 /* ActionsCLI.swift */; };
+		DE7B3DD742D6F1B75D06B8CC /* HistoryAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 611E001DFA6DDD285F4369FD /* HistoryAPI.swift */; };
 		7DBDB4C7CEB950911B8F9123 /* ShortcutSpec.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC85A4FAE8F5B1F38650F06A /* ShortcutSpec.swift */; };
 		E5697889E51C0335BF905695 /* TextUnwrap.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54E5B26E2EE4F1B9E04D38DE /* TextUnwrap.swift */; };
 		AA01C0DE00000000000000A2 /* KeyboardLayoutFixer.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA01C0DE00000000000000A1 /* KeyboardLayoutFixer.swift */; };
@@ -344,6 +345,7 @@
 		3814BCA873AD3C65CA3C959E /* ValueKind.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Actions/ValueKind.swift; sourceTree = "<group>"; };
 		3B1B0633308B822BFE02D506 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		5D2A5EE4011F5F146A113A35 /* ActionsCLI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Actions/ActionsCLI.swift; sourceTree = "<group>"; };
+		611E001DFA6DDD285F4369FD /* HistoryAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Actions/HistoryAPI.swift; sourceTree = "<group>"; };
 		FC85A4FAE8F5B1F38650F06A /* ShortcutSpec.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Actions/ShortcutSpec.swift; sourceTree = "<group>"; };
 		54E5B26E2EE4F1B9E04D38DE /* TextUnwrap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Actions/TextUnwrap.swift; sourceTree = "<group>"; };
 		AA01C0DE00000000000000A1 /* KeyboardLayoutFixer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Actions/KeyboardLayoutFixer.swift; sourceTree = "<group>"; };
@@ -974,6 +976,7 @@
 				3814BCA873AD3C65CA3C959E /* ValueKind.swift */,
 				3B1B0633308B822BFE02D506 /* main.swift */,
 				5D2A5EE4011F5F146A113A35 /* ActionsCLI.swift */,
+				611E001DFA6DDD285F4369FD /* HistoryAPI.swift */,
 				FC85A4FAE8F5B1F38650F06A /* ShortcutSpec.swift */,
 				54E5B26E2EE4F1B9E04D38DE /* TextUnwrap.swift */,
 				AA01C0DE00000000000000A1 /* KeyboardLayoutFixer.swift */,
@@ -1269,6 +1272,7 @@
 				E3C9CE28D35D727B6DE02737 /* ValueKind.swift in Sources */,
 				5814D36CFE170B22555C0CA2 /* main.swift in Sources */,
 				EF998E01F23B7C760B5CD492 /* ActionsCLI.swift in Sources */,
+				DE7B3DD742D6F1B75D06B8CC /* HistoryAPI.swift in Sources */,
 				7DBDB4C7CEB950911B8F9123 /* ShortcutSpec.swift in Sources */,
 				E5697889E51C0335BF905695 /* TextUnwrap.swift in Sources */,
 				AA01C0DE00000000000000A2 /* KeyboardLayoutFixer.swift in Sources */,

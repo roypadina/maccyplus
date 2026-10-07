@@ -105,6 +105,12 @@ class History: ItemsContainer { // swiftlint:disable:this type_body_length
   func load() async throws {
     let descriptor = FetchDescriptor<HistoryItem>()
     let results = try Storage.shared.context.fetch(descriptor)
+    // Backfill agent-API ids for items stored before the `uid` field existed.
+    let missingUID = results.filter { $0.uid == nil }
+    if !missingUID.isEmpty {
+      missingUID.forEach { $0.uid = UUID().uuidString }
+      try? Storage.shared.context.save()
+    }
     all = sorter.sort(results).map { HistoryItemDecorator($0) }
     items = all
 
@@ -152,6 +158,9 @@ class History: ItemsContainer { // swiftlint:disable:this type_body_length
       item.numberOfCopies += existingHistoryItem.numberOfCopies
       item.pin = existingHistoryItem.pin
       item.title = existingHistoryItem.title
+      item.uid = existingHistoryItem.uid ?? item.uid
+      item.label = item.label ?? existingHistoryItem.label
+      item.note = item.note ?? existingHistoryItem.note
       if !item.fromMaccy {
         item.application = existingHistoryItem.application
       }

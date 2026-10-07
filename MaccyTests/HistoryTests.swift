@@ -57,6 +57,41 @@ class HistoryTests: XCTestCase { // swiftlint:disable:this type_body_length
     try assertStorageCounts(items: 1, contents: 1)
   }
 
+  func testAddingDuplicateKeepsAgentFields() {
+    let first = historyItem("foo")
+    first.label = "session-a"
+    first.note = "run in DataGrip"
+    history.add(first)
+    let uid = first.uid
+
+    let merged = history.add(historyItem("foo"))
+
+    XCTAssertNotNil(uid)
+    XCTAssertEqual(merged.item.uid, uid)
+    XCTAssertEqual(merged.item.label, "session-a")
+    XCTAssertEqual(merged.item.note, "run in DataGrip")
+  }
+
+  func testHistoryAPIAddUpdateListDelete() async throws {
+    let added = try await HistoryAPI.handle(
+      ["cmd": "add", "text": "SELECT 1;", "label": "session-a", "note": "dev db"]) as? [String: Any]
+    let id = try XCTUnwrap(added?["id"] as? String)
+    XCTAssertEqual(added?["label"] as? String, "session-a")
+
+    let updated = try await HistoryAPI.handle(["cmd": "update", "id": id, "note": ""]) as? [String: Any]
+    XCTAssertTrue(updated?["note"] is NSNull)
+
+    let listed = try await HistoryAPI.handle(["cmd": "list", "label": "SESSION"]) as? [[String: Any]]
+    XCTAssertEqual(listed?.map { $0["id"] as? String }, [id])
+
+    _ = try await HistoryAPI.handle(["cmd": "delete", "id": id])
+    XCTAssertEqual(history.all.count, 0)
+    do {
+      _ = try await HistoryAPI.handle(["cmd": "update", "id": id, "label": "x\ny"])
+      XCTFail("expected an error")
+    } catch {}
+  }
+
   func testAddingUnsavedDuplicate() throws {
     guard #available(macOS 15.0, *) else {
       throw XCTSkip("Incoming history items are inserted before add on macOS 14")

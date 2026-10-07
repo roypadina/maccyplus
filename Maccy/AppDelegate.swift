@@ -67,6 +67,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         MainActor.assumeIsolated { ActionEngine.shared.reloadRules() }
     }
 
+    // Agent clipboard-history API: a `MaccyPlus history …` CLI process posts a request id.
+    DistributedNotificationCenter.default().addObserver(
+      forName: .init(HistoryAPI.requestNotification), object: nil, queue: .main) { notification in
+        let reqID = notification.object as? String
+        MainActor.assumeIsolated { HistoryAPI.handleRequestNotification(reqID) }
+    }
+
     Task {
       for await _ in Defaults.updates(.clipboardCheckInterval, initial: false) {
         Clipboard.shared.restart()

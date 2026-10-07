@@ -54,8 +54,10 @@ struct HistoryItemView: View {
       rowActions: rowActions,
       isSelected: item.isSelected,
       selectionIndex: item.multiSelectionIndex,
+      help: item.item.note.map { LocalizedStringKey($0) },
       selectionAppearance: selectionAppearance,
-      accessibilityLabel: item.accessibilityLabel
+      accessibilityLabel: item.accessibilityLabel,
+      label: item.item.label
     ) {
       Text(verbatim: item.title)
     }

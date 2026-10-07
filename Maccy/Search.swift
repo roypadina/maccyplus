@@ -41,16 +41,28 @@ class Search {
       return within.map { SearchResult(object: $0) }
     }
 
+    var results: [SearchResult]
     switch Defaults[.searchMode] {
     case .mixed:
-      return mixedSearch(string: string, within: within)
+      results = mixedSearch(string: string, within: within)
     case .regexp:
-      return simpleSearch(string: string, within: within, options: .regularExpression)
+      results = simpleSearch(string: string, within: within, options: .regularExpression)
     case .fuzzy:
-      return fuzzySearch(string: string, within: within)
+      results = fuzzySearch(string: string, within: within)
     default:
-      return simpleSearch(string: string, within: within, options: .caseInsensitive)
+      results = simpleSearch(string: string, within: within, options: .caseInsensitive)
     }
+
+    // Also match agent-set labels/notes, so typing a session name finds its values.
+    let matched = Set(results.map(\.object.id))
+    results += within
+      .filter { item in
+        !matched.contains(item.id) && [item.item.label, item.item.note].contains {
+          $0?.localizedCaseInsensitiveContains(string) == true
+        }
+      }
+      .map { SearchResult(object: $0) }
+    return results
   }
 
   private func fuzzySearch(string: String, within: [Searchable]) -> [SearchResult] {

@@ -213,6 +213,21 @@ All commands take and emit JSON and validate input before writing. For the full 
 command reference, and recipes — including how an agent should drive it — see the bundled
 skill at [`.claude/skills/maccyplus/SKILL.md`](.claude/skills/maccyplus/SKILL.md).
 
+### Let AI agents leave values in your history
+
+Agents can add values to your clipboard history with a **label** (e.g. the session that
+produced it) and a **note** (what it is, where to run it), and read, pin, move, copy,
+relabel or delete items. Labels show as a chip on the row, notes on hover and in the
+preview, and the popup search matches both. Requires the app to be running.
+
+```sh
+printf 'SELECT 1;' | "$BIN" history add --label "orders-debug" --note "DataGrip → dev"
+"$BIN" history list --label orders-debug   # also: get/update/pin/unpin/top/copy/delete
+```
+
+`add` puts the value at the top of history without touching the live clipboard (`--copy`
+does both). Agent guide: [`.claude/skills/maccyplus-clipboard/SKILL.md`](.claude/skills/maccyplus-clipboard/SKILL.md).
+
 ## Plugins
 
 Conditions and actions aren't hard-coded — most ship as **plugins**, and you can add your

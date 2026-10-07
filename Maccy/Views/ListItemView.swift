@@ -51,6 +51,8 @@ struct ListItemView<Title: View, ID: Hashable>: View {
   var selectionAppearance: SelectionAppearance = .none
   // Complete description used when the row's visual content is hidden from accessibility.
   var accessibilityLabel: String = ""
+  // Agent-set label (e.g. the Claude session that left this value).
+  var label: String?
   @ViewBuilder var title: () -> Title
 
   @Default(.showApplicationIcons) private var showIcons
@@ -83,6 +85,18 @@ struct ListItemView<Title: View, ID: Hashable>: View {
           .accessibilityHidden(true)
           .padding(.trailing, 5)
           .padding(.vertical, 5)
+      }
+
+      if let label {
+        Text(label)
+          .font(.caption)
+          .lineLimit(1)
+          .padding(.horizontal, 5)
+          .padding(.vertical, 1)
+          .background(Color.accentColor.opacity(isSelected ? 0.6 : 0.2), in: Capsule())
+          .fixedSize()
+          .accessibilityHidden(true)
+          .padding(.trailing, 5)
       }
 
       if let image {
