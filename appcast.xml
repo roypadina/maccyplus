@@ -6,6 +6,21 @@
     <description>Most recent changes with links to updates.</description>
     <language>en</language>
     <item>
+      <title>2.8.0</title>
+      <description>
+        <![CDATA[
+          <ul>
+            <li>Agent clipboard API: AI agents can leave values in your history with a label (which session) and a note (where to run it), and read, pin, move, copy, relabel or delete items.</li>
+            <li>Labels show as a chip on the row, notes on hover and in the preview; search matches both.</li>
+          </ul>
+        ]]>
+      </description>
+      <pubDate>Wed, 07 Oct 2026 18:00:00 +0300</pubDate>
+      <releaseNotesLink>https://github.com/roypadina/maccyplus/releases/tag/v2.8.0</releaseNotesLink>
+      <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+      <enclosure url="https://github.com/roypadina/maccyplus/releases/download/v2.8.0/MaccyPlus.zip" length="5431237" type="application/octet-stream" sparkle:version="74" sparkle:shortVersionString="2.8.0"/>
+    </item>
+    <item>
       <title>2.7.3</title>
       <description>
         <![CDATA[
