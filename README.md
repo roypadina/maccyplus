@@ -226,7 +226,16 @@ printf 'SELECT 1;' | "$BIN" history add --label "orders-debug" --note "DataGrip 
 ```
 
 `add` puts the value at the top of history without touching the live clipboard (`--copy`
-does both). Agent guide: [`.claude/skills/maccyplus-clipboard/SKILL.md`](.claude/skills/maccyplus-clipboard/SKILL.md).
+does both). Full reference: [Agent clipboard API](https://github.com/roypadina/maccyplus/wiki/Agent-clipboard-API).
+
+For Claude Code, install the
+[`maccyplus-clipboard`](https://github.com/roypadina/padina-claude-code-plugins/tree/main/maccyplus-clipboard)
+plugin. It teaches Claude to label each value with its session name and a note on where to run it:
+
+```
+/plugin marketplace add roypadina/padina-claude-code-plugins
+/plugin install maccyplus-clipboard@padina
+```
 
 ## Plugins
 

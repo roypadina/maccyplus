@@ -7,9 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.8.0] - 2026-10-07
+
 ### Added
 - Agent clipboard API: `MaccyPlus history list|get|add|update|pin|unpin|top|copy|delete` lets AI agents leave values in history with a label and a note, and manage items like the user can.
 - History items show an agent-set label chip; the note appears on hover and in the preview; search matches labels and notes.
+- Claude Code plugin [`maccyplus-clipboard`](https://github.com/roypadina/padina-claude-code-plugins/tree/main/maccyplus-clipboard) teaches Claude to use it.
 
 ## [2.7.3] - 2026-10-03
 
