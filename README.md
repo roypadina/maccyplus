@@ -13,6 +13,7 @@ Rules that match what you copy, actions that do something with it, per-action ho
   <a href="https://github.com/roypadina/maccyplus/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/roypadina/maccyplus" /></a>
   <img alt="Homebrew cask" src="https://img.shields.io/badge/brew-roypadina%2Ftap%2Fmaccyplus-orange?logo=homebrew&logoColor=white" />
   <a href="./LICENSE"><img alt="MIT license" src="https://img.shields.io/github/license/roypadina/maccyplus" /></a>
+  <a href="https://apps.roypadina.synology.me/apps/maccyplus/"><img alt="Website" src="https://img.shields.io/badge/website-apps.roypadina-2F62E6" /></a>
   <a href="https://ko-fi.com/roypadina"><img alt="Ko-fi" src="https://img.shields.io/badge/Ko--fi-support-F16061?logo=ko-fi&logoColor=white" /></a>
 </p>
 
@@ -375,6 +376,15 @@ The translations are hosted in [Weblate](https://hosted.weblate.org/engage/maccy
 You can use it to suggest changes in translations and localize the application to a new language.
 
 [![Translation status](https://hosted.weblate.org/widget/maccy/multi-auto.svg)](https://hosted.weblate.org/engage/maccy/)
+
+## More Mac apps by Roy
+
+Free, open-source Mac menu-bar apps and terminal tools, all on one site: **[apps.roypadina.synology.me](https://apps.roypadina.synology.me/)**.
+
+- [NtfyBar](https://apps.roypadina.synology.me/apps/ntfybar/) — ntfy notifications on your Mac: popups that stay, rules, commands, plugins.
+- [Window Organizer](https://apps.roypadina.synology.me/apps/window-organizer/) — Clear the desk in one keystroke.
+- [SmartHiddenBar](https://apps.roypadina.synology.me/apps/smarthiddenbar/) — Hide the menu bar clutter. Reach it in one click.
+- [VaultBar](https://apps.roypadina.synology.me/apps/vaultbar/) — Your encrypted vaults, one click from the menu bar.
 
 ## Support
 
