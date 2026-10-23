@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.8.1] - 2026-10-23
+
+### Changed
+- Universal build: now runs on Intel Macs as well as Apple Silicon (Sparkle and its helpers included).
+- README rewritten around what MaccyPlus adds over Maccy, with screenshots, badges and macOS 15+ first-launch steps (Open Anyway).
+- Internal planning docs are no longer tracked in the repo.
+
 ## [2.8.0] - 2026-10-07
 
 ### Added

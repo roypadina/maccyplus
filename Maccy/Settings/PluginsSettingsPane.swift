@@ -3,6 +3,8 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 struct PluginsSettingsPane: View {
+  var height: CGFloat = 600
+
   // Persisted local-folder marketplace paths (read for display; mutated via the store).
   @Default(.localMarketplaceFolders) private var localFolderPaths
 
@@ -41,7 +43,7 @@ struct PluginsSettingsPane: View {
       }
       .padding(20)
     }
-    .frame(width: 760, height: 600)
+    .frame(width: 760, height: height)
     .task { await reloadEverything() }
     .sheet(isPresented: $showingAddMarketplace) { addMarketplaceSheet }
     .sheet(item: $consentEntry) { entry in consentSheet(for: entry) }

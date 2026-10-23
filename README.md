@@ -1,65 +1,53 @@
-> [!WARNING]
-> **Beware of fake websites impersonating Maccy.** Malicious sites (such as `maccyapp.net` and `maccyapp.com`) distribute malware disguised as Maccy. [**maccy.app**](https://maccy.app) is the **only** official website.
+<p align="center">
+  <img width="128px" src="app-icon.png" alt="MaccyPlus icon" />
+</p>
 
-<img width="128px" src="app-icon.png" alt="MaccyPlus icon" />
+<h1 align="center">MaccyPlus</h1>
 
-# MaccyPlus
+<p align="center"><b>The Maccy clipboard manager, plus automation.</b><br/>
+Rules that match what you copy, actions that do something with it, per-action hotkeys, plugins, and a CLI for AI agents.</p>
 
-[![Ko-fi](https://img.shields.io/badge/Ko--fi-support-F16061?logo=ko-fi&logoColor=white)](https://ko-fi.com/roypadina)
+<p align="center">
+  <img alt="macOS 14+" src="https://img.shields.io/badge/macOS-14%2B-blue?logo=apple&logoColor=white" />
+  <img alt="Universal: Apple Silicon and Intel" src="https://img.shields.io/badge/universal-Apple%20Silicon%20%7C%20Intel-lightgrey" />
+  <a href="https://github.com/roypadina/maccyplus/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/roypadina/maccyplus" /></a>
+  <img alt="Homebrew cask" src="https://img.shields.io/badge/brew-roypadina%2Ftap%2Fmaccyplus-orange?logo=homebrew&logoColor=white" />
+  <a href="./LICENSE"><img alt="MIT license" src="https://img.shields.io/github/license/roypadina/maccyplus" /></a>
+  <a href="https://ko-fi.com/roypadina"><img alt="Ko-fi" src="https://img.shields.io/badge/Ko--fi-support-F16061?logo=ko-fi&logoColor=white" /></a>
+</p>
 
-**MaccyPlus** is a clipboard-automation fork of [Maccy](https://maccy.app) — **macOS only**.
+```sh
+brew install --cask roypadina/tap/maccyplus
+```
 
-Maccy is a lightweight clipboard manager that keeps a searchable history of everything you
-copy. MaccyPlus keeps all of that and adds an automation layer on top:
+**MaccyPlus** is a fork of [Maccy](https://maccy.app), the fast, keyboard-first, private clipboard manager. It keeps everything Maccy does and adds an automation layer on top. Copy a Jira key, a URL, a file path or a wrapped terminal command and MaccyPlus can act on it with one keystroke, or on its own.
 
-* **Conditions** — match what you copied (URL, email, Jira key, regex, source app, …)
-* **Actions** — act on it (open in an app, web search, transform text, run a Shortcut, …)
-* **Per-action shortcuts** — bind any action to a hotkey, or auto-run it the moment you copy
-* **Plugins** — extend conditions & actions with declarative or JavaScript plugins,
-  installable from a marketplace (or drop your own folder in — no rebuild)
+![Rules and actions editor](docs/screenshots/actions-rules.png)
 
-MaccyPlus tracks upstream Maccy and is currently synced with **Maccy 2.7.1**.
+## What MaccyPlus adds over Maccy
 
-Requires macOS Sonoma 14 or later.
+| | Maccy | MaccyPlus |
+|---|:---:|:---:|
+| Searchable clipboard history, keyboard-first, private | yes | yes |
+| **Rules**: match a copy by kind, regex, text, source app, file or folder | | yes |
+| **Actions**: open in an app, web search, reveal in Finder, transform text, run a Shortcut | | yes |
+| **Per-action global shortcuts**, and auto-run on copy | | yes |
+| **Plugins**: declarative or JavaScript, from a marketplace or a drop-in folder | | yes |
+| **Agent clipboard API**: `MaccyPlus history ...` for scripts and AI agents | | yes |
 
-<!-- vim-markdown-toc GFM -->
+* **Rules (conditions)**: match what you copied: URL, email, Jira key, regex, file or folder path, source app, a soft-wrapped terminal command, and more.
+* **Actions**: act on it: open in an app, web search with any URL template, reveal in Finder, transform text (trim, UPPERCASE, strip formatting, unwrap), or run a macOS Shortcut.
+* **Per-action shortcuts**: bind any action to its own global hotkey, or run it automatically the moment you copy.
+* **Plugins**: add conditions and actions without rebuilding the app. See [Plugins](#plugins).
+* **Agent clipboard API**: scripts and AI agents can read your history and leave values in it. See [Let AI agents leave values in your history](#let-ai-agents-leave-values-in-your-history).
 
-* [Features](#features)
-* [Install](#install)
-* [Usage](#usage)
-* [Actions](#actions)
-  * [Unwrap soft-wrapped terminal commands](#unwrap-soft-wrapped-terminal-commands)
-  * [Reveal local paths in Finder](#reveal-local-paths-in-finder)
-  * [Per-action shortcuts](#per-action-shortcuts)
-  * [Terminal apps](#terminal-apps)
-  * [Configure actions from the command line](#configure-actions-from-the-command-line)
-* [Plugins](#plugins)
-* [Advanced](#advanced)
-  * [Ignore Copied Items](#ignore-copied-items)
-  * [Ignore Custom Copy Types](#ignore-custom-copy-types)
-  * [Speed up Clipboard Check Interval](#speed-up-clipboard-check-interval)
-* [FAQ](#faq)
-  * [Why doesn't it paste when I select an item in history?](#why-doesnt-it-paste-when-i-select-an-item-in-history)
-  * [When assigning a hotkey to open Maccy, it says that this hotkey is already used in some system setting.](#when-assigning-a-hotkey-to-open-maccy-it-says-that-this-hotkey-is-already-used-in-some-system-setting)
-  * [How to restore hidden footer?](#how-to-restore-hidden-footer)
-  * [How to ignore copies from Universal Clipboard?](#how-to-ignore-copies-from-universal-clipboard)
-  * [My keyboard shortcut stopped working in password fields. How do I fix this?](#my-keyboard-shortcut-stopped-working-in-password-fields-how-do-i-fix-this)
-* [Translations](#translations)
-* [Motivation](#motivation)
-* [Support](#support)
-* [License](#license)
+![Plugins settings](docs/screenshots/plugins.png)
 
-<!-- vim-markdown-toc -->
+MaccyPlus tracks upstream Maccy and is currently synced with **Maccy 2.7.1**. Full documentation is in the [Wiki](https://github.com/roypadina/maccyplus/wiki): actions and rules, plugins, the command line, permissions, troubleshooting.
 
-📖 **Full documentation is in the [Wiki](https://github.com/roypadina/maccyplus/wiki)** — actions and rules, plugins, the command line, permissions, troubleshooting.
+## Requirements
 
-## Features
-
-* Lightweight and fast
-* Keyboard-first
-* Secure and private
-* Native UI
-* Open source and free
+macOS 14 Sonoma or later · Apple Silicon and Intel (universal binary)
 
 ## Install
 
@@ -69,19 +57,36 @@ MaccyPlus is distributed through a [Homebrew](https://brew.sh/) tap:
 brew install --cask roypadina/tap/maccyplus
 ```
 
-…or download the `.zip` from the [latest release](https://github.com/roypadina/maccyplus/releases/latest).
+...or download the `.zip` from the [latest release](https://github.com/roypadina/maccyplus/releases/latest).
 
-MaccyPlus is self-signed (not notarized), so on first launch macOS may block it. Right-click
-**MaccyPlus** in `/Applications` → **Open** (once), or run:
+MaccyPlus is self-signed (not notarized), so macOS blocks it on first launch. Open it once, then go to **System Settings → Privacy & Security** and click **Open Anyway** (macOS 15 and later; right-click → Open no longer works there). Or clear the quarantine flag instead:
 
 ```sh
 xattr -dr com.apple.quarantine "/Applications/MaccyPlus.app"
 ```
 
-It's a menu-bar app (no Dock icon). On first launch, grant Accessibility when prompted
-(System Settings → Privacy & Security → Accessibility) so paste works.
+It's a menu-bar app (no Dock icon). On first launch, grant Accessibility when prompted (System Settings → Privacy & Security → Accessibility) so paste works.
 
-## Usage
+> [!WARNING]
+> **Beware of fake websites impersonating Maccy.** Malicious sites (such as `maccyapp.net` and `maccyapp.com`) distribute malware disguised as Maccy. [**maccy.app**](https://maccy.app) is the **only** official website for Maccy. MaccyPlus is only distributed from this repo and the `roypadina/tap` Homebrew tap.
+
+<!-- vim-markdown-toc GFM -->
+
+* [What MaccyPlus adds over Maccy](#what-maccyplus-adds-over-maccy)
+* [Requirements](#requirements)
+* [Install](#install)
+* [Using the popup](#using-the-popup)
+* [Actions](#actions)
+* [Plugins](#plugins)
+* [Advanced](#advanced)
+* [FAQ](#faq)
+* [Translations](#translations)
+* [Support](#support)
+* [License](#license)
+
+<!-- vim-markdown-toc -->
+
+## Using the popup
 
 1. <kbd>SHIFT (⇧)</kbd> + <kbd>COMMAND (⌘)</kbd> + <kbd>C</kbd> to popup MaccyPlus or click on its icon in the menu bar.
 2. Type what you want to find.
@@ -356,15 +361,6 @@ The translations are hosted in [Weblate](https://hosted.weblate.org/engage/maccy
 You can use it to suggest changes in translations and localize the application to a new language.
 
 [![Translation status](https://hosted.weblate.org/widget/maccy/multi-auto.svg)](https://hosted.weblate.org/engage/maccy/)
-
-## Motivation
-
-There are dozens of similar applications out there, so why build another?
-Over the past years since I moved from Linux to macOS, I struggled to find
-a clipboard manager that is as free and simple as [Parcellite](http://parcellite.sourceforge.net),
-but I couldn't. So I've decided to build one.
-
-Also, I wanted to learn Swift and get acquainted with macOS application development.
 
 ## Support
 

@@ -8,13 +8,20 @@ struct ActionsSettingsPane: View {
   @State private var selection: ActionRule.ID?
   @State private var showingTerminalApps = false
 
+  private var height: CGFloat
+
+  init(initialSelection: ActionRule.ID? = nil, height: CGFloat = 520) {
+    _selection = State(initialValue: initialSelection)
+    self.height = height
+  }
+
   var body: some View {
     HStack(spacing: 0) {
       sidebar
       Divider()
       detail
     }
-    .frame(width: 760, height: 520)
+    .frame(width: 760, height: height)
     .sheet(isPresented: $showingTerminalApps) {
       TerminalAppsEditor()
     }

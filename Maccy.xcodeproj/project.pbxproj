@@ -95,6 +95,7 @@
 		7E83EFFB3CF1961302CE5103 /* ActionEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01C1EF123742089F4AFE3304 /* ActionEngine.swift */; };
 		8C72DC6D885AB242ABCBCE3A /* ActionsSettingsPane.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B55E2F80FC91A915D8A2669 /* ActionsSettingsPane.swift */; };
 		8132212A31CB46BB80BD0308 /* PluginsSettingsLogicTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF3278099ACA4CC884BEA407 /* PluginsSettingsLogicTests.swift */; };
+		B20A5F562D4D36C16C77C082 /* ScreenshotRenderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D0D57B2D755174C9873B839 /* ScreenshotRenderTests.swift */; };
 		F7A2E6CEF5414B869372784B /* PluginsSettingsPane.swift in Sources */ = {isa = PBXBuildFile; fileRef = 607BE44564C14504B7B59B04 /* PluginsSettingsPane.swift */; };
 		DA360DB31E3DF137005C6F6B /* HistoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA360DB21E3DF137005C6F6B /* HistoryTests.swift */; };
 		DA384E86232746D800603999 /* SearchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA384E85232746D800603999 /* SearchTests.swift */; };
@@ -355,6 +356,7 @@
 		01C1EF123742089F4AFE3304 /* ActionEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Actions/ActionEngine.swift; sourceTree = "<group>"; };
 		1B55E2F80FC91A915D8A2669 /* ActionsSettingsPane.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings/ActionsSettingsPane.swift; sourceTree = "<group>"; };
 		BF3278099ACA4CC884BEA407 /* PluginsSettingsLogicTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PluginsSettingsLogicTests.swift; sourceTree = "<group>"; };
+		7D0D57B2D755174C9873B839 /* ScreenshotRenderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenshotRenderTests.swift; sourceTree = "<group>"; };
 		607BE44564C14504B7B59B04 /* PluginsSettingsPane.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings/PluginsSettingsPane.swift; sourceTree = "<group>"; };
 		DA2595D82CBC44BD00A0A7F2 /* lt */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = lt; path = lt.lproj/AdvancedSettings.strings; sourceTree = "<group>"; };
 		DA2595D92CBC44BD00A0A7F2 /* lt */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = lt; path = lt.lproj/AppearanceSettings.strings; sourceTree = "<group>"; };
@@ -858,6 +860,7 @@
 				F4A401A9814849FF869A8F44 /* MarketplaceStoreTests.swift */,
 				C4CF289D88564240B630E4FC /* CapabilityManagerTests.swift */,
 				BF3278099ACA4CC884BEA407 /* PluginsSettingsLogicTests.swift */,
+				7D0D57B2D755174C9873B839 /* ScreenshotRenderTests.swift */,
 				DA360DB41E3DF137005C6F6B /* Info.plist */,
 			);
 			path = MaccyTests;
@@ -1245,6 +1248,7 @@
 				7D793CBDB51345F080B6D904 /* MarketplaceStoreTests.swift in Sources */,
 				2BAFEB039C2D4D6F906C5EA2 /* CapabilityManagerTests.swift in Sources */,
 				8132212A31CB46BB80BD0308 /* PluginsSettingsLogicTests.swift in Sources */,
+				B20A5F562D4D36C16C77C082 /* ScreenshotRenderTests.swift in Sources */,
 				CA110ED10000000000000001 /* CollectionSurroundingTests.swift in Sources */,
 				C0FFEE000000000000000003 /* ShortenedTests.swift in Sources */,
 				FFFC00000000000000000003 /* UnsafeForTitleLayoutTests.swift in Sources */,
@@ -1963,7 +1967,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "KeyLayoutSwitcher Dev";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 74;
+				CURRENT_PROJECT_VERSION = 75;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -1980,7 +1984,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 2.8.0;
+				MARKETING_VERSION = 2.8.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.royp.MaccyPlus;
 				PRODUCT_NAME = "MaccyPlus";
 				PRODUCT_MODULE_NAME = Maccy;
@@ -2001,7 +2005,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "KeyLayoutSwitcher Dev";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 74;
+				CURRENT_PROJECT_VERSION = 75;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -2017,7 +2021,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 2.8.0;
+				MARKETING_VERSION = 2.8.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.royp.MaccyPlus;
 				PRODUCT_NAME = "MaccyPlus";
 				PRODUCT_MODULE_NAME = Maccy;
