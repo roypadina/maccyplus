@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.8.2] - 2026-10-23
+
+### Changed
+- Source builds sign ad hoc by default ("Sign to Run Locally"): no personal signing identity is needed to build MaccyPlus. Release builds can still pass `MACCYPLUS_SIGN_IDENTITY` to `Scripts/build-release.sh`.
+- Added `Scripts/build-release.sh` (universal build + zip) and a "Build from source" section in the README.
+
 ## [2.8.1] - 2026-10-23
 
 ### Changed

@@ -75,6 +75,7 @@ It's a menu-bar app (no Dock icon). On first launch, grant Accessibility when pr
 * [What MaccyPlus adds over Maccy](#what-maccyplus-adds-over-maccy)
 * [Requirements](#requirements)
 * [Install](#install)
+* [Build from source](#build-from-source)
 * [Using the popup](#using-the-popup)
 * [Actions](#actions)
 * [Plugins](#plugins)
@@ -85,6 +86,19 @@ It's a menu-bar app (no Dock icon). On first launch, grant Accessibility when pr
 * [License](#license)
 
 <!-- vim-markdown-toc -->
+
+## Build from source
+
+Needs Xcode (macOS 14+ deployment target). The default build is signed ad hoc ("Sign to Run Locally"), so no signing identity or Apple Developer account is required:
+
+```sh
+git clone https://github.com/roypadina/maccyplus.git
+cd maccyplus
+Scripts/build-release.sh        # universal build + build/MaccyPlus.zip
+open build/Build/Products/Release/MaccyPlus.app
+```
+
+Ad-hoc builds get a new code identity each time, so macOS asks again for Accessibility after a rebuild. To keep the grant, create a self-signed code-signing certificate and build with `MACCYPLUS_SIGN_IDENTITY="<certificate name>" Scripts/build-release.sh`.
 
 ## Using the popup
 
