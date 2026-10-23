@@ -1,29 +1,33 @@
----
-name: 💪 Feature request
-description: Suggest an idea for this project
-labels: [enhancement]
+name: Feature request
+description: Suggest an idea for MaccyPlus
+labels: ["enhancement"]
 body:
-  - type: checkboxes
-    attributes:
-      label: Before Submitting Your Feature Request
-      options:
-        - label: Check that there isn't already a similar feature request to avoid creating a duplicate.
-          required: false
-        - label: I have seen the [FAQ](https://github.com/p0deje/Maccy?tab=readme-ov-file#faq).
-          required: false
   - type: textarea
+    id: problem
     attributes:
-      label: Problem
-      description:
-        Please add a clear and concise description of the problem you are
-        seeking to solve with this feature request.
-      placeholder: |
-        Description
-  - type: textarea
-    attributes:
-      label: Solution
-      description: Please describe what you might want to happen to address this issue. If applicable, add a screenshot, gif, or video to better convey your idea.
-      placeholder: |
-        Short description
+      label: What are you trying to do?
+      description: The situation where MaccyPlus gets in the way or falls short. This matters more than the exact feature.
     validations:
-      required: false
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What would you like MaccyPlus to do?
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Workarounds or alternatives you've tried
+  - type: input
+    id: kofi
+    attributes:
+      label: Ko-fi supporter? (optional)
+      description: Your Ko-fi name, if you've tipped. Supporter requests go to the front of the queue. It's a thank-you, not a purchase, so no promise on what ships or when. This field is public; skip it if you'd rather not say.
+      placeholder: Ko-fi name
+  - type: checkboxes
+    id: pr
+    attributes:
+      label: Would you build it?
+      options:
+        - label: I'd be up for sending a pull request for this.
