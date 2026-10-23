@@ -1,0 +1,26 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    name: Build and test
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build (universal)
+        run: |
+          xcodebuild build -project Maccy.xcodeproj -scheme Maccy -configuration Release \
+            -derivedDataPath build ARCHS="arm64 x86_64" ONLY_ACTIVE_ARCH=NO \
+            CODE_SIGN_IDENTITY=- CODE_SIGNING_ALLOWED=NO
+      - name: Verify universal
+        run: lipo -archs build/Build/Products/Release/MaccyPlus.app/Contents/MacOS/MaccyPlus | grep -q "x86_64" 
+      - name: Test
+        # ClipboardTests need a live pasteboard and are flaky on CI runners.
+        run: |
+          xcodebuild test -project Maccy.xcodeproj -scheme Maccy -destination 'platform=macOS' \
+            -only-testing:MaccyTests -skip-testing:MaccyTests/ClipboardTests \
+            CODE_SIGN_IDENTITY=- CODE_SIGNING_ALLOWED=NO
