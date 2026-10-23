@@ -6,6 +6,20 @@
     <description>Most recent changes with links to updates.</description>
     <language>en</language>
     <item>
+      <title>2.8.2</title>
+      <description>
+        <![CDATA[
+          <ul>
+            <li>Source builds sign ad hoc by default; no personal signing identity needed to build.</li>
+          </ul>
+        ]]>
+      </description>
+      <pubDate>Fri, 23 Oct 2026 16:00:00 +0300</pubDate>
+      <releaseNotesLink>https://github.com/roypadina/maccyplus/releases/tag/v2.8.2</releaseNotesLink>
+      <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+      <enclosure url="https://github.com/roypadina/maccyplus/releases/download/v2.8.2/MaccyPlus.zip" length="7626837" type="application/octet-stream" sparkle:version="76" sparkle:shortVersionString="2.8.2"/>
+    </item>
+    <item>
       <title>2.8.1</title>
       <description>
         <![CDATA[
