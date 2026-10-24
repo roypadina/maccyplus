@@ -666,11 +666,11 @@ final class BuiltinProvidersTests: XCTestCase {
   func testNtfySelfHostedWithBasicAuthAndTitle() throws {
     let params = ntfyParams([
       "server": " https://ntfy.example.com/base/ ", "topic": "clips",
-      "title": "C++ & more", "username": "roy", "password": "p:ss"
+      "title": "C++ & more", "tags": "warning,clip", "username": "roy", "password": "p:ss"
     ])
     let (request, _) = try XCTUnwrap(try NtfyProvider.requests(for: textInput("x"), params: params).first)
 
-    XCTAssertEqual(request.url?.absoluteString, "https://ntfy.example.com/base/clips?title=C%2B%2B%20%26%20more")
+    XCTAssertEqual(request.url?.absoluteString, "https://ntfy.example.com/base/clips?title=C%2B%2B%20%26%20more&tags=warning,clip")
     XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"),
                    "Basic " + Data("roy:p:ss".utf8).base64EncodedString())
   }

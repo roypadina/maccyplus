@@ -458,13 +458,14 @@ struct NtfyProvider: ActionProvider {
     id: "builtin.ntfy",
     name: "Send to ntfy",
     description: "Sends the copied text, file or image to an ntfy topic, on ntfy.sh or your own server.",
-    longHelp: "Fill in the topic. Leave the server empty for ntfy.sh, or enter your own server's address. Title is optional. For a protected topic enter a username and password, or leave the username empty and put an access token (tk_…) in the password field. The password is kept in your Keychain. Copied files and images arrive as attachments, one message each; ntfy.sh accepts files up to 15 MB.",
+    longHelp: "Fill in the topic. Leave the server empty for ntfy.sh, or enter your own server's address. Title and tags are optional; tags are comma-separated, and emoji names such as warning or tada show as emoji. For a protected topic enter a username and password, or leave the username empty and put an access token (tk_…) in the password field. The password is kept in your Keychain. Copied files and images arrive as attachments, one message each; ntfy.sh accepts files up to 15 MB.",
     kind: .action,
     engine: .native,
     params: [
       ParamSpec(key: "server", label: "Server", kind: .text, placeholder: "Server (empty = https://ntfy.sh)"),
       ParamSpec(key: "topic", label: "Topic", kind: .text, placeholder: "Topic"),
       ParamSpec(key: "title", label: "Title", kind: .text, placeholder: "Title (optional)"),
+      ParamSpec(key: "tags", label: "Tags", kind: .text, placeholder: "Tags, comma-separated (optional)"),
       ParamSpec(key: "username", label: "Username", kind: .text, placeholder: "Username (optional)"),
       ParamSpec(key: "password", label: "Password", kind: .secret, placeholder: "Password or token (optional)")
     ],
@@ -516,11 +517,13 @@ struct NtfyProvider: ActionProvider {
       nil
     }
     let title = param("title")
+    let tags = param("tags")
 
     func request(filename: String?) throws -> URLRequest {
       var components = base
       var items: [URLQueryItem] = []
       if !title.isEmpty { items.append(URLQueryItem(name: "title", value: title)) }
+      if !tags.isEmpty { items.append(URLQueryItem(name: "tags", value: tags)) }
       if let filename { items.append(URLQueryItem(name: "filename", value: filename)) }
       components.queryItems = items.isEmpty ? nil : items
       // URLComponents leaves "+" alone, but the server would read it as a space.
