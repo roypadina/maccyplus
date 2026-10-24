@@ -87,6 +87,8 @@ nonisolated struct PluginInput {
   let kinds: Set<ValueKind>
   let sourceAppBundleID: String?
   let fileURLs: [URL]
+  /// Raw clipboard image bytes, read only when an action asks (keeps rule matching cheap).
+  var imageData: @MainActor () -> Data? = { nil }
 }
 
 // MARK: - ActionOutcome
@@ -205,6 +207,8 @@ nonisolated enum ParamKind: String, Codable, Hashable {
   case bundleID
   /// Picker over `PathType` — a copied path that is a file vs one that is a folder.
   case pathType
+  /// Password/token: SecureField in the editor, value kept in the Keychain (see `SecretStore`).
+  case secret
 }
 
 /// Whether a copied local path points at a regular file or at a folder.

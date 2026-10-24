@@ -439,10 +439,160 @@ struct RunShortcutProvider: ActionProvider {
   }
 }
 
+/// Publishes the clip to an ntfy topic on ntfy.sh or a self-hosted server: copied
+/// files and images go as attachments (one message each), anything else as text.
+struct NtfyProvider: ActionProvider {
+
+  /// Sends one request and returns the HTTP status; a file URL is streamed as the body.
+  /// Swapped in tests.
+  static var send: (URLRequest, URL?) async throws -> Int = { request, file in
+    let response = if let file {
+      try await URLSession.shared.upload(for: request, fromFile: file).1
+    } else {
+      try await URLSession.shared.data(for: request).1
+    }
+    return (response as? HTTPURLResponse)?.statusCode ?? 0
+  }
+
+  let descriptor = ProviderDescriptor(
+    id: "builtin.ntfy",
+    name: "Send to ntfy",
+    description: "Sends the copied text, file or image to an ntfy topic, on ntfy.sh or your own server.",
+    longHelp: "Fill in the topic. Leave the server empty for ntfy.sh, or enter your own server's address. Title is optional. For a protected topic enter a username and password, or leave the username empty and put an access token (tk_…) in the password field. The password is kept in your Keychain. Copied files and images arrive as attachments, one message each; ntfy.sh accepts files up to 15 MB.",
+    kind: .action,
+    engine: .native,
+    params: [
+      ParamSpec(key: "server", label: "Server", kind: .text, placeholder: "Server (empty = https://ntfy.sh)"),
+      ParamSpec(key: "topic", label: "Topic", kind: .text, placeholder: "Topic"),
+      ParamSpec(key: "title", label: "Title", kind: .text, placeholder: "Title (optional)"),
+      ParamSpec(key: "username", label: "Username", kind: .text, placeholder: "Username (optional)"),
+      ParamSpec(key: "password", label: "Password", kind: .secret, placeholder: "Password or token (optional)")
+    ],
+    capabilities: [],
+    source: .builtin
+  )
+
+  func run(_ input: PluginInput, params: JSONValue) async throws -> ActionOutcome {
+    do {
+      for (request, file) in try Self.requests(for: input, params: params) {
+        let status = try await Self.send(request, file)
+        guard (200..<300).contains(status) else {
+          throw URLError(.badServerResponse, userInfo: [NSLocalizedDescriptionKey: "the server answered HTTP \(status)"])
+        }
+      }
+    } catch {
+      Notifier.notify(body: "Not sent to ntfy: \(error.localizedDescription)", sound: nil)
+      throw error
+    }
+    Notifier.notify(body: "Sent to ntfy", sound: nil)
+    return .sideEffect
+  }
+
+  /// Builds the publish requests; the URL is set only for file uploads.
+  static func requests(for input: PluginInput, params: JSONValue) throws -> [(URLRequest, URL?)] {
+    func param(_ key: String) -> String {
+      (params[key]?.stringValue ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+    let topic = param("topic")
+    guard !topic.isEmpty else { throw BuiltinProviderError.missingParam("topic") }
+    var server = param("server").isEmpty ? "https://ntfy.sh" : param("server")
+    if !server.contains("://") { server = "https://" + server }
+    guard var base = URLComponents(string: server),
+          ["http", "https"].contains(base.scheme?.lowercased() ?? ""),
+          base.host?.isEmpty == false else {
+      throw BuiltinProviderError.invalidParam("server", value: server)
+    }
+    var path = base.path
+    while path.hasSuffix("/") { path.removeLast() }
+    base.path = path + "/" + topic
+
+    let username = param("username")
+    let secret = SecretStore.resolve(params["password"]?.stringValue) ?? ""
+    let authorization: String? = if !username.isEmpty {
+      "Basic " + Data("\(username):\(secret)".utf8).base64EncodedString()
+    } else if !secret.isEmpty {
+      "Bearer \(secret)"
+    } else {
+      nil
+    }
+    let title = param("title")
+
+    func request(filename: String?) throws -> URLRequest {
+      var components = base
+      var items: [URLQueryItem] = []
+      if !title.isEmpty { items.append(URLQueryItem(name: "title", value: title)) }
+      if let filename { items.append(URLQueryItem(name: "filename", value: filename)) }
+      components.queryItems = items.isEmpty ? nil : items
+      // URLComponents leaves "+" alone, but the server would read it as a space.
+      components.percentEncodedQuery = components.percentEncodedQuery?.replacingOccurrences(of: "+", with: "%2B")
+      guard let url = components.url else { throw BuiltinProviderError.invalidParam("topic", value: topic) }
+      var request = URLRequest(url: url)
+      request.httpMethod = filename == nil ? "POST" : "PUT"
+      request.setValue(authorization, forHTTPHeaderField: "Authorization")
+      return request
+    }
+
+    if !input.fileURLs.isEmpty {
+      return try input.fileURLs.map { (try request(filename: $0.lastPathComponent), $0) }
+    }
+    if let image = input.imageData() {
+      var upload = try request(filename: "clipboard.png")
+      upload.httpBody = NSBitmapImageRep(data: image)?.representation(using: .png, properties: [:]) ?? image
+      return [(upload, nil)]
+    }
+    guard !input.string.isEmpty else { throw ActionError.noValue }
+    var message = try request(filename: nil)
+    message.httpBody = Data(input.string.utf8)
+    return [(message, nil)]
+  }
+}
+
+// MARK: - Secrets
+
+/// Keychain store for `.secret` params: the rule keeps only a `keychain:<uuid>`
+/// reference, so passwords never land in the prefs plist.
+// shortcut: deleting an action leaves its Keychain item behind; delete it with the action if they pile up.
+enum SecretStore {
+  static let prefix = "keychain:"
+  private static let service = "MaccyPlus action secrets"
+
+  /// A `keychain:` reference reads the Keychain; any other value (e.g. set via the CLI) is used as-is.
+  static func resolve(_ value: String?) -> String? {
+    guard let value, value.hasPrefix(prefix) else { return value }
+    return read(account: String(value.dropFirst(prefix.count)))
+  }
+
+  static func read(account: String) -> String? {
+    var query = baseQuery(account: account)
+    query[kSecReturnData as String] = true
+    var result: AnyObject?
+    guard SecItemCopyMatching(query as CFDictionary, &result) == errSecSuccess,
+          let data = result as? Data else { return nil }
+    return String(data: data, encoding: .utf8)
+  }
+
+  /// Replaces the stored secret; an empty one just deletes it.
+  static func write(_ secret: String, account: String) {
+    SecItemDelete(baseQuery(account: account) as CFDictionary)
+    guard !secret.isEmpty else { return }
+    var item = baseQuery(account: account)
+    item[kSecValueData as String] = Data(secret.utf8)
+    SecItemAdd(item as CFDictionary, nil)
+  }
+
+  private static func baseQuery(account: String) -> [String: Any] {
+    [
+      kSecClass as String: kSecClassGenericPassword,
+      kSecAttrService as String: service,
+      kSecAttrAccount as String: account
+    ]
+  }
+}
+
 // MARK: - Registration
 
 enum BuiltinProviders {
-  /// Registers all eleven built-in native providers into `registry`.
+  /// Registers all twelve built-in native providers into `registry`.
   /// Call once at boot (from `ActionEngine.init`) before any rule evaluation.
   @MainActor
   static func registerBuiltins(into registry: ProviderRegistry) {
@@ -457,6 +607,7 @@ enum BuiltinProviders {
     registry.register(action: RevealInFinderProvider())
     registry.register(action: OpenFileProvider())
     registry.register(action: RunShortcutProvider())
+    registry.register(action: NtfyProvider())
   }
 }
 
@@ -465,4 +616,13 @@ enum BuiltinProviders {
 enum BuiltinProviderError: Error, Equatable {
   case missingParam(String)
   case invalidParam(String, value: String)
+}
+
+extension BuiltinProviderError: LocalizedError {
+  var errorDescription: String? {
+    switch self {
+    case .missingParam(let key): "\(key) is empty"
+    case .invalidParam(let key, let value): "\(key) \"\(value)\" is not valid"
+    }
+  }
 }

@@ -44,6 +44,7 @@ final class BuiltinProvidersTests: XCTestCase {
     XCTAssertTrue(ids.contains("builtin.revealInFinder"))
     XCTAssertTrue(ids.contains("builtin.openFile"))
     XCTAssertTrue(ids.contains("builtin.runShortcut"))
+    XCTAssertTrue(ids.contains("builtin.ntfy"))
   }
 
   func testDescriptorsAreSortedByName() {
@@ -642,6 +643,112 @@ final class BuiltinProvidersTests: XCTestCase {
     XCTAssertThrowsError(try condition.evaluate(textInput("/tmp"), params: .emptyObject))
     XCTAssertThrowsError(
       try condition.evaluate(textInput("/tmp"), params: .object(["type": .string("socket")])))
+  }
+
+  // MARK: - Send to ntfy
+
+  private func ntfyParams(_ values: [String: String]) -> JSONValue {
+    .object(values.mapValues { .string($0) })
+  }
+
+  func testNtfyTextPostsToNtfyShByDefault() throws {
+    let requests = try NtfyProvider.requests(for: textInput("hello"), params: ntfyParams(["topic": "alerts"]))
+
+    XCTAssertEqual(requests.count, 1)
+    let (request, file) = try XCTUnwrap(requests.first)
+    XCTAssertEqual(request.url?.absoluteString, "https://ntfy.sh/alerts")
+    XCTAssertEqual(request.httpMethod, "POST")
+    XCTAssertEqual(request.httpBody, Data("hello".utf8))
+    XCTAssertNil(request.value(forHTTPHeaderField: "Authorization"))
+    XCTAssertNil(file)
+  }
+
+  func testNtfySelfHostedWithBasicAuthAndTitle() throws {
+    let params = ntfyParams([
+      "server": " https://ntfy.example.com/base/ ", "topic": "clips",
+      "title": "C++ & more", "username": "roy", "password": "p:ss"
+    ])
+    let (request, _) = try XCTUnwrap(try NtfyProvider.requests(for: textInput("x"), params: params).first)
+
+    XCTAssertEqual(request.url?.absoluteString, "https://ntfy.example.com/base/clips?title=C%2B%2B%20%26%20more")
+    XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"),
+                   "Basic " + Data("roy:p:ss".utf8).base64EncodedString())
+  }
+
+  func testNtfyPasswordWithoutUsernameIsBearerToken() throws {
+    let params = ntfyParams(["topic": "t", "password": "tk_abc"])
+    let (request, _) = try XCTUnwrap(try NtfyProvider.requests(for: textInput("x"), params: params).first)
+
+    XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), "Bearer tk_abc")
+  }
+
+  func testNtfyServerWithoutSchemeDefaultsToHTTPS() throws {
+    let params = ntfyParams(["server": "ntfy.example.com", "topic": "t"])
+    let (request, _) = try XCTUnwrap(try NtfyProvider.requests(for: textInput("x"), params: params).first)
+
+    XCTAssertEqual(request.url?.absoluteString, "https://ntfy.example.com/t")
+  }
+
+  func testNtfyKeychainReferenceResolvesThroughSecretStore() throws {
+    let account = "test-\(UUID().uuidString)"
+    SecretStore.write("tk_secret", account: account)
+    defer { SecretStore.write("", account: account) }
+
+    let params = ntfyParams(["topic": "t", "password": SecretStore.prefix + account])
+    let (request, _) = try XCTUnwrap(try NtfyProvider.requests(for: textInput("x"), params: params).first)
+
+    XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), "Bearer tk_secret")
+  }
+
+  func testNtfyFilesAreUploadedOneMessageEach() throws {
+    let files = [URL(fileURLWithPath: "/tmp/a report.pdf"), URL(fileURLWithPath: "/tmp/b.png")]
+    let requests = try NtfyProvider.requests(
+      for: textInput("/tmp/a report.pdf", fileURLs: files), params: ntfyParams(["topic": "t"]))
+
+    XCTAssertEqual(requests.map(\.0.httpMethod), ["PUT", "PUT"])
+    XCTAssertEqual(requests.map(\.0.url?.absoluteString),
+                   ["https://ntfy.sh/t?filename=a%20report.pdf", "https://ntfy.sh/t?filename=b.png"])
+    XCTAssertEqual(requests.map(\.1), files)
+  }
+
+  func testNtfyImageIsUploadedAsPNG() throws {
+    let image = NSImage(size: NSSize(width: 2, height: 2), flipped: false) { rect in
+      NSColor.red.setFill()
+      rect.fill()
+      return true
+    }
+    var input = textInput("")
+    input.imageData = { image.tiffRepresentation }
+
+    let (request, file) = try XCTUnwrap(try NtfyProvider.requests(for: input, params: ntfyParams(["topic": "t"])).first)
+
+    XCTAssertEqual(request.httpMethod, "PUT")
+    XCTAssertEqual(request.url?.absoluteString, "https://ntfy.sh/t?filename=clipboard.png")
+    XCTAssertEqual(request.httpBody?.prefix(4), Data([0x89, 0x50, 0x4E, 0x47]))
+    XCTAssertNil(file)
+  }
+
+  func testNtfyRejectsMissingTopicBadServerAndEmptyClip() {
+    XCTAssertThrowsError(try NtfyProvider.requests(for: textInput("x"), params: ntfyParams([:])))
+    XCTAssertThrowsError(try NtfyProvider.requests(
+      for: textInput("x"), params: ntfyParams(["topic": "t", "server": "ftp://host"])))
+    XCTAssertThrowsError(try NtfyProvider.requests(for: textInput(""), params: ntfyParams(["topic": "t"])))
+  }
+
+  func testNtfyRunFailsOnHTTPErrorStatus() async {
+    let originalSend = NtfyProvider.send
+    defer { NtfyProvider.send = originalSend }
+    var sent: [URLRequest] = []
+    NtfyProvider.send = { request, _ in
+      sent.append(request)
+      return 403
+    }
+
+    do {
+      _ = try await NtfyProvider().run(textInput("x"), params: ntfyParams(["topic": "t"]))
+      XCTFail("expected an error")
+    } catch {}
+    XCTAssertEqual(sent.count, 1)
   }
 
   // MARK: - ProviderSource verified flag
