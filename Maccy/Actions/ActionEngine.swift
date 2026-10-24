@@ -80,7 +80,8 @@ final class ActionEngine {
       string: ValueClassifier.primaryString(of: item),
       kinds: ValueClassifier.kinds(of: item),
       sourceAppBundleID: item.application,
-      fileURLs: item.fileURLs
+      fileURLs: item.fileURLs,
+      imageData: { item.imageData }
     )
   }
 

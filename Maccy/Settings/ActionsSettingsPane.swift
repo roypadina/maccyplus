@@ -277,7 +277,7 @@ private struct ConditionRow: View {
   @ViewBuilder
   private func paramEditor(_ spec: ParamSpec) -> some View {
     switch spec.kind {
-    case .text:
+    case .text, .secret:
       TextField(spec.placeholder ?? spec.label, text: stringParam($condition.params, spec.key))
         .textFieldStyle(.roundedBorder)
     case .valueKind:
@@ -441,6 +441,9 @@ private struct ActionRow: View {
     case .text:
       TextField(spec.placeholder ?? spec.label, text: stringParam($action.params, spec.key))
         .textFieldStyle(.roundedBorder)
+    case .secret:
+      SecureField(spec.placeholder ?? spec.label, text: secretParam($action.params, spec.key))
+        .textFieldStyle(.roundedBorder)
     case .valueKind:
       Picker("", selection: valueKindParam($action.params, spec.key)) {
         ForEach(ValueKind.allCases) { Text($0.label).tag($0) }
@@ -487,6 +490,21 @@ private struct ActionRow: View {
         var object = params.wrappedValue.objectValue ?? [:]
         object[key] = .string(newValue.rawValue)
         params.wrappedValue = .object(object)
+      }
+    )
+  }
+
+  // The typed secret goes to the Keychain; the rule keeps only a `keychain:<uuid>` reference.
+  private func secretParam(_ params: Binding<JSONValue>, _ key: String) -> Binding<String> {
+    Binding(
+      get: { SecretStore.resolve(params.wrappedValue[key]?.stringValue) ?? "" },
+      set: { newValue in
+        let stored = params.wrappedValue[key]?.stringValue ?? ""
+        let account = stored.hasPrefix(SecretStore.prefix)
+          ? String(stored.dropFirst(SecretStore.prefix.count))
+          : UUID().uuidString
+        SecretStore.write(newValue, account: account)
+        stringParam(params, key).wrappedValue = SecretStore.prefix + account
       }
     )
   }
