@@ -6,6 +6,21 @@
     <description>Most recent changes with links to updates.</description>
     <language>en</language>
     <item>
+      <title>2.9.0</title>
+      <description>
+        <![CDATA[
+          <ul>
+            <li>Send to ntfy: send the copied text, file or image to an ntfy topic, on ntfy.sh or your own server.</li>
+            <li>Synced with upstream Maccy: Swift 6, macOS 27 fixes, better text recognition in images.</li>
+          </ul>
+        ]]>
+      </description>
+      <pubDate>Sun, 25 Oct 2026 00:22:52 +0300</pubDate>
+      <releaseNotesLink>https://github.com/roypadina/maccyplus/releases/tag/v2.9.0</releaseNotesLink>
+      <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+      <enclosure url="https://github.com/roypadina/maccyplus/releases/download/v2.9.0/MaccyPlus.zip" length="8706618" type="application/octet-stream" sparkle:version="78" sparkle:shortVersionString="2.9.0"/>
+    </item>
+    <item>
       <title>2.8.3</title>
       <description>
         <![CDATA[
