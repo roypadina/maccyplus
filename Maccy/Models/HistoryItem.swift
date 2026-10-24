@@ -6,40 +6,50 @@ import Vision
 
 @Model
 class HistoryItem {
+  @MainActor
   static var supportedPins: Set<String> {
     // "a" reserved for select all
     // "q" reserved for quit
     // "v" reserved for paste
     // "w" reserved for close window
     // "z" reserved for undo/redo
+    // "," reserved for preferences
+    // "`" reserved for cycling through windows
     var keys = Set([
       "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l",
-      "m", "n", "o", "p", "r", "s", "t", "u", "x", "y"
+      "m", "n", "o", "p", "r", "s", "t", "u", "x", "y",
+      "[", "]", ";", "'", ".", "/", "-", "=", "\\"
     ])
 
     if let deleteKey = KeyChord.deleteKey,
-       let character = Sauce.shared.character(for: Int(deleteKey.QWERTYKeyCode), cocoaModifiers: []) {
+       let character = Sauce.shared.character(for: Int(deleteKey.QWERTYKeyCode), modifiers: .cocoa([])) {
       keys.remove(character)
     }
 
     if let pinKey = KeyChord.pinKey,
-       let character = Sauce.shared.character(for: Int(pinKey.QWERTYKeyCode), cocoaModifiers: []) {
+       let character = Sauce.shared.character(for: Int(pinKey.QWERTYKeyCode), modifiers: .cocoa([])) {
       keys.remove(character)
     }
     if let previewKey = KeyChord.previewKey,
-       let character = Sauce.shared.character(for: Int(previewKey.QWERTYKeyCode), cocoaModifiers: []) {
+       let character = Sauce.shared.character(for: Int(previewKey.QWERTYKeyCode), modifiers: .cocoa([])) {
       keys.remove(character)
     }
 
     return keys
   }
 
+  // Letters first, then symbols.
+  static func sortedPins(_ pins: some Sequence<String>) -> [String] {
+    pins.sorted { lhs, rhs in
+      let lhsIsLetter = lhs.first?.isLetter ?? false
+      let rhsIsLetter = rhs.first?.isLetter ?? false
+      return lhsIsLetter == rhsIsLetter ? lhs < rhs : lhsIsLetter
+    }
+  }
+
   @MainActor
   static var availablePins: [String] {
-    availablePins(in: History.shared.all.compactMap {
-      if $0.isPinned { return $0.item }
-      return nil
-    })
+    History.shared.availablePins
   }
 
   @MainActor
@@ -98,10 +108,18 @@ class HistoryItem {
       }
   }
 
+  @MainActor
   func generateTitle() -> String {
-    guard image == nil else {
+    let pasteboardImageData = contentData(Self.imageTypes)
+    let universalClipboardImageURL = universalClipboardImage ? fileURLs.first : nil
+    guard pasteboardImageData == nil && universalClipboardImageURL == nil else {
       Task {
-        self.performTextRecognition()
+        if let recognizedText = await Self.recognizeText(
+          imageData: pasteboardImageData,
+          fileURL: universalClipboardImageURL
+        ) {
+          self.title = recognizedText
+        }
       }
       return ""
     }
@@ -251,31 +269,44 @@ class HistoryItem {
       .compactMap { $0.value }
   }
 
-  private func performTextRecognition() {
-    guard let cgImage = image?.cgImage(forProposedRect: nil, context: nil, hints: nil) else {
-      return
+  nonisolated private static let textRecognitionQueue = DispatchQueue(
+    label: "org.p0deje.Maccy.textRecognition",
+    qos: .utility
+  )
+
+  /// Runs OCR on a dedicated queue so the blocking Vision call never occupies
+  /// a thread of Swift's cooperative pool or the main thread.
+  nonisolated private static func recognizeText(imageData: Data?, fileURL: URL?) async -> String? {
+    await withCheckedContinuation { continuation in
+      textRecognitionQueue.async {
+        continuation.resume(returning: performTextRecognition(imageData: imageData, fileURL: fileURL))
+      }
+    }
+  }
+
+  nonisolated private static func performTextRecognition(imageData: Data?, fileURL: URL?) -> String? {
+    guard let data = imageData ?? fileURL.flatMap({ try? Data(contentsOf: $0) }) else {
+      return nil
     }
 
-    let requestHandler = VNImageRequestHandler(cgImage: cgImage)
-    let request = VNRecognizeTextRequest(completionHandler: recognizeTextHandler)
-    request.recognitionLevel = .fast
+    let requestHandler = VNImageRequestHandler(data: data)
+    let request = VNRecognizeTextRequest()
+    request.recognitionLevel = .accurate
+    request.automaticallyDetectsLanguage = true
 
     do {
       try requestHandler.perform([request])
     } catch {
       print("Unable to perform the request: \(error).")
-    }
-  }
-
-  private func recognizeTextHandler(request: VNRequest, error: Error?) {
-    guard let observations = request.results as? [VNRecognizedTextObservation] else {
-      return
+      return nil
     }
 
-    let recognizedStrings = observations.compactMap { observation in
-      return observation.topCandidates(1).first?.string
+    guard let observations = request.results else {
+      return nil
     }
 
-    self.title = recognizedStrings.joined(separator: "\n")
+    return observations
+      .compactMap { $0.topCandidates(1).first?.string }
+      .joined(separator: "\n")
   }
 }

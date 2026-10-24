@@ -23,4 +23,5 @@ jobs:
         run: |
           xcodebuild test -project Maccy.xcodeproj -scheme Maccy -destination 'platform=macOS' \
             -only-testing:MaccyTests -skip-testing:MaccyTests/ClipboardTests \
+            -skip-testing:MaccyTests/SharedStateTests/ClipboardTests \
             CODE_SIGN_IDENTITY=- CODE_SIGNING_ALLOWED=NO

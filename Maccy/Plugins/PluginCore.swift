@@ -2,7 +2,7 @@ import Foundation
 
 // MARK: - JSONValue
 
-enum JSONValue: Codable, Hashable {
+nonisolated enum JSONValue: Codable, Hashable {
   case string(String)
   case number(Double)
   case bool(Bool)
@@ -82,7 +82,7 @@ enum JSONValue: Codable, Hashable {
 
 // MARK: - PluginInput
 
-struct PluginInput {
+nonisolated struct PluginInput {
   let string: String
   let kinds: Set<ValueKind>
   let sourceAppBundleID: String?
@@ -91,7 +91,7 @@ struct PluginInput {
 
 // MARK: - ActionOutcome
 
-enum ActionOutcome: Equatable {
+nonisolated enum ActionOutcome: Equatable {
   case replace(String)
   case sideEffect
   case none
@@ -99,7 +99,7 @@ enum ActionOutcome: Equatable {
 
 // MARK: - Capability
 
-enum Capability: String, Codable, Hashable, CaseIterable {
+nonisolated enum Capability: String, Codable, Hashable, CaseIterable {
   case network
   case fileRead
   case fileWrite
@@ -130,12 +130,12 @@ enum Capability: String, Codable, Hashable, CaseIterable {
 
 // MARK: - ProviderKind / ProviderEngine
 
-enum ProviderKind: String, Codable, Hashable {
+nonisolated enum ProviderKind: String, Codable, Hashable {
   case condition
   case action
 }
 
-enum ProviderEngine: String, Codable, Hashable {
+nonisolated enum ProviderEngine: String, Codable, Hashable {
   case native
   case declarative
   case javascript
@@ -143,7 +143,7 @@ enum ProviderEngine: String, Codable, Hashable {
 
 // MARK: - ProviderSource
 
-enum ProviderSource: Codable, Hashable {
+nonisolated enum ProviderSource: Codable, Hashable {
   case builtin
   case bundled
   case marketplace(String)
@@ -199,7 +199,7 @@ enum ProviderSource: Codable, Hashable {
 
 // MARK: - ParamKind / ParamSpec
 
-enum ParamKind: String, Codable, Hashable {
+nonisolated enum ParamKind: String, Codable, Hashable {
   case text
   case valueKind
   case bundleID
@@ -208,7 +208,7 @@ enum ParamKind: String, Codable, Hashable {
 }
 
 /// Whether a copied local path points at a regular file or at a folder.
-enum PathType: String, Codable, CaseIterable, Identifiable {
+nonisolated enum PathType: String, Codable, CaseIterable, Identifiable {
   case file
   case folder
 
@@ -221,7 +221,7 @@ enum PathType: String, Codable, CaseIterable, Identifiable {
   }
 }
 
-struct ParamSpec: Codable, Hashable, Identifiable {
+nonisolated struct ParamSpec: Codable, Hashable, Identifiable {
   var id: String { key }
   let key: String
   let label: String
@@ -231,7 +231,7 @@ struct ParamSpec: Codable, Hashable, Identifiable {
 
 // MARK: - ProviderDescriptor
 
-struct ProviderDescriptor: Identifiable, Hashable {
+nonisolated struct ProviderDescriptor: Identifiable, Hashable {
   let id: String
   let name: String
   let description: String
