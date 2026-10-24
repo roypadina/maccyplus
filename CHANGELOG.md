@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.9.0] - 2026-10-25
+
+### Added
+- **Send to ntfy** action: sends the copied text, file or image to an [ntfy](https://ntfy.sh) topic, on ntfy.sh or your own server. Optional title and tags; username + password, or an access token, for protected topics. Files and images arrive as attachments. The password is kept in your Keychain, never in the settings file.
+
+### Changed
+- Synced with upstream Maccy (October 2026): Swift 6, macOS 27 fixes, more accurate text recognition in images, image size in the preview, a crash fix when a watched app updates.
+
 ## [2.8.3] - 2026-10-23
 
 ### Added

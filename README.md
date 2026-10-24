@@ -31,20 +31,20 @@ brew install --cask roypadina/tap/maccyplus
 |---|:---:|:---:|
 | Searchable clipboard history, keyboard-first, private | yes | yes |
 | **Rules**: match a copy by kind, regex, text, source app, file or folder | | yes |
-| **Actions**: open in an app, web search, reveal in Finder, transform text, run a Shortcut | | yes |
+| **Actions**: open in an app, web search, reveal in Finder, transform text, run a Shortcut, send to ntfy | | yes |
 | **Per-action global shortcuts**, and auto-run on copy | | yes |
 | **Plugins**: declarative or JavaScript, from a marketplace or a drop-in folder | | yes |
 | **Agent clipboard API**: `MaccyPlus history ...` for scripts and AI agents | | yes |
 
 * **Rules (conditions)**: match what you copied: URL, email, Jira key, regex, file or folder path, source app, a soft-wrapped terminal command, and more.
-* **Actions**: act on it: open in an app, web search with any URL template, reveal in Finder, transform text (trim, UPPERCASE, strip formatting, unwrap), or run a macOS Shortcut.
+* **Actions**: act on it: open in an app, web search with any URL template, reveal in Finder, transform text (trim, UPPERCASE, strip formatting, unwrap), run a macOS Shortcut, or send it to your phone with ntfy.
 * **Per-action shortcuts**: bind any action to its own global hotkey, or run it automatically the moment you copy.
 * **Plugins**: add conditions and actions without rebuilding the app. See [Plugins](#plugins).
 * **Agent clipboard API**: scripts and AI agents can read your history and leave values in it. See [Let AI agents leave values in your history](#let-ai-agents-leave-values-in-your-history).
 
 ![Plugins settings](docs/screenshots/plugins.png)
 
-MaccyPlus tracks upstream Maccy and is currently synced with **Maccy 2.7.1**. Full documentation is in the [Wiki](https://github.com/roypadina/maccyplus/wiki): actions and rules, plugins, the command line, permissions, troubleshooting.
+MaccyPlus tracks upstream Maccy and is currently synced with **Maccy 2.7.1 plus upstream fixes up to October 2026**. Full documentation is in the [Wiki](https://github.com/roypadina/maccyplus/wiki): actions and rules, plugins, the command line, permissions, troubleshooting.
 
 ## Requirements
 
@@ -132,8 +132,8 @@ matches when *all* or *any* of its conditions hold.
 
 **Actions** — open as URL, open in a specific app, web search, **reveal in Finder**,
 **open a local file**,
-**transform text** (trim, UPPERCASE, lowercase, strip formatting, **unwrap**), and run a
-macOS Shortcut.
+**transform text** (trim, UPPERCASE, lowercase, strip formatting, **unwrap**), run a
+macOS Shortcut, and **send to ntfy**.
 
 ### Unwrap soft-wrapped terminal commands
 
@@ -195,6 +195,23 @@ their app while folders open in Finder:
 ```
 
 A path that does not exist matches neither type.
+
+### Send to your phone with ntfy
+
+The **Send to ntfy** action publishes the clip to an [ntfy](https://ntfy.sh) topic, so it shows
+up on your phone or any other ntfy client. Fields:
+
+- **Server**: leave empty for ntfy.sh, or enter your own server (`https://` is added if missing).
+- **Topic** (required), an optional **Title**, and optional **Tags**, comma-separated. A tag
+  that is an emoji name (`warning`, `tada`, `computer`) shows as that emoji.
+- **Username** and **Password** for a protected topic, or leave the username empty and put an
+  access token (`tk_…`) in the password field. The password is stored in your Keychain; the rule
+  keeps only a reference to it.
+
+Text is sent as the message. Copied files arrive as attachments, one message per file, and a
+copied image arrives as a PNG. ntfy.sh accepts attachments up to 15 MB; a self-hosted server
+needs attachments enabled. A notification tells you whether it was sent. Give the action a
+per-action shortcut to send whatever you copied last, whatever its kind.
 
 ### Per-action shortcuts
 
