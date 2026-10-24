@@ -8,6 +8,9 @@ class FloatingPanel<Content: View>: NSPanel, NSWindowDelegate {
   var statusBarButton: NSStatusBarButton?
   let onClose: () -> Void
 
+  // Swift 6.3 (Xcode 26.x) crashes in EarlyPerfInliner on the implicit deinit in Release builds.
+  @_optimize(none) deinit {}
+
   override var isMovable: Bool {
     get { Defaults[.popupPosition] != .statusItem }
     set {}
