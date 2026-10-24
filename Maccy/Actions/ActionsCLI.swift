@@ -187,8 +187,8 @@ enum ActionsCLI {
     // Built from the LIVE provider registry so the catalog can't drift from the
     // installed providers. `ProviderRegistry` is @MainActor; enter synchronously
     // (the CLI has no run loop). `registerProviders()` ran in `run(_:)` first.
-    let catalog: [String: Any] = MainActor.assumeIsolated {
-      func encode(_ descriptors: [ProviderDescriptor]) -> [[String: Any]] {
+    let catalog: [String: Any] = {
+      @MainActor func encode(_ descriptors: [ProviderDescriptor]) -> [[String: Any]] {
         descriptors.map { descriptor -> [String: Any] in
           [
             "id": descriptor.id,
@@ -235,7 +235,7 @@ enum ActionsCLI {
                               "runs that action unconditionally on the most recent clip.",
         "defaultTerminalApps": TerminalApps.defaults
       ]
-    }
+    }()
 
     return emitJSONObject(catalog)
   }
@@ -303,7 +303,7 @@ enum ActionsCLI {
   }
 
   private static func pluginsList() -> Int32 {
-    let payload: [String: Any] = MainActor.assumeIsolated {
+    let payload: [String: Any] = {
       var packages: [String: [String: Any]] = [:]
       for d in ProviderRegistry.shared.descriptors() {
         let pkgID = d.pluginID ?? "builtin"
@@ -324,7 +324,7 @@ enum ActionsCLI {
         "localFolders": Defaults[.localMarketplaceFolders],
         "marketplaces": MarketplaceStore.shared.registeredMarketplaceURLs().map(\.absoluteString)
       ]
-    }
+    }()
     return emitJSONObject(payload)
   }
 

@@ -3,7 +3,7 @@ import Defaults
 import Foundation
 
 // MatchMode: unchanged contract.
-enum MatchMode: String, Codable, CaseIterable, Identifiable {
+nonisolated enum MatchMode: String, Codable, CaseIterable, Identifiable {
   case all // AND
   case any // OR
 
@@ -12,14 +12,14 @@ enum MatchMode: String, Codable, CaseIterable, Identifiable {
 }
 
 // A single condition referencing a provider by id.
-struct RuleCondition: Codable, Identifiable, Hashable {
+nonisolated struct RuleCondition: Codable, Identifiable, Hashable {
   var id: UUID = UUID()
   var provider: String                 // e.g. "builtin.kind", "com.maccyplus.soft-wrap"
   var params: JSONValue = .object([:])
 }
 
 // Persisted configuration for one action within a rule.
-struct ActionConfig: Codable, Identifiable, Hashable {
+nonisolated struct ActionConfig: Codable, Identifiable, Hashable {
   var id: UUID = UUID()
   var provider: String                 // e.g. "builtin.openURL", "com.maccyplus.unwrap"
   var params: JSONValue = .object([:])
@@ -37,7 +37,7 @@ struct ActionConfig: Codable, Identifiable, Hashable {
 
 // A user-defined rule: when its conditions match, its (ordered) actions become
 // available. The first action is the default.
-struct ActionRule: Codable, Identifiable, Hashable, Defaults.Serializable {
+nonisolated struct ActionRule: Codable, Identifiable, Hashable, Defaults.Serializable {
   var id: UUID = UUID()
   var schemaVersion: Int = 3
   var name: String = "New rule"
@@ -47,7 +47,7 @@ struct ActionRule: Codable, Identifiable, Hashable, Defaults.Serializable {
   var actions: [ActionConfig] = []
   var autoRunDefault: Bool = false
 
-  static let presets: [ActionRule] = [
+  @MainActor static let presets: [ActionRule] = [
     // Open links — kind == url → openURL or webSearch
     ActionRule(
       name: "Open links",

@@ -12,7 +12,7 @@ import JavaScriptCore
 // bind to them by their unmangled C symbol names via `@_silgen_name`. The public
 // `JSContextGroupRef` / `JSContextRef` opaque types come from `import JavaScriptCore`.
 @_silgen_name("JSContextGroupSetExecutionTimeLimit")
-private func JSContextGroupSetExecutionTimeLimit(
+nonisolated private func JSContextGroupSetExecutionTimeLimit(
   _ group: JSContextGroupRef?,
   _ limit: Double,
   _ callback: @convention(c) (JSContextRef?, UnsafeMutableRawPointer?) -> Bool,
@@ -20,7 +20,7 @@ private func JSContextGroupSetExecutionTimeLimit(
 )
 
 @_silgen_name("JSContextGroupClearExecutionTimeLimit")
-private func JSContextGroupClearExecutionTimeLimit(_ group: JSContextGroupRef?)
+nonisolated private func JSContextGroupClearExecutionTimeLimit(_ group: JSContextGroupRef?)
 
 enum JSPluginError: Error, Equatable {
   case compileFailed(String)
@@ -34,7 +34,7 @@ enum JSPluginError: Error, Equatable {
 /// (no fetch/require/XMLHttpRequest/setTimeout/process — only ECMAScript built-ins),
 /// guarded by a wall-clock watchdog via `JSContextGroupSetExecutionTimeLimit`.
 /// Not `@MainActor`: pure compute, callable off the main actor.
-final class JSPluginRuntime {
+nonisolated final class JSPluginRuntime {
   private let context: JSContext
   private let timeLimitSeconds: Double
 

@@ -2,7 +2,7 @@ import Foundation
 
 // MARK: - Error
 
-enum PluginManifestError: Error, Equatable {
+nonisolated enum PluginManifestError: Error, Equatable {
   case missingField(String)
   case badEngineEntry        // engine == .javascript but entry is nil/empty
   case descriptionTooLong    // description exceeds 120 characters
@@ -12,7 +12,7 @@ enum PluginManifestError: Error, Equatable {
 
 /// One provider declared inside a package manifest's `providers` list.
 /// Each keeps its own stable `id` (rules/presets reference provider ids).
-struct ProviderSpec: Codable, Hashable {
+nonisolated struct ProviderSpec: Codable, Hashable {
   let id: String
   let name: String
   let description: String       // required, <= 120 chars
@@ -30,7 +30,7 @@ struct ProviderSpec: Codable, Hashable {
 /// A package manifest: ONE folder + ONE `plugin.json` declaring a LIST of
 /// providers (any mix of conditions and actions). The package id is the
 /// install/manage unit; capabilities are consented once per package.
-struct PluginManifest: Codable, Hashable {
+nonisolated struct PluginManifest: Codable, Hashable {
   // MARK: Nested types
 
   struct Author: Codable, Hashable {

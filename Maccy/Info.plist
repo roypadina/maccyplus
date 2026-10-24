@@ -40,5 +40,20 @@
 	<string>https://raw.githubusercontent.com/roypadina/maccyplus/main/appcast.xml</string>
 	<key>SUEnableAutomaticChecks</key>
 	<false/>
+	<key>UTExportedTypeDeclarations</key>
+	<array>
+	<dict>
+		<key>UTTypeIdentifier</key>
+		<string>org.p0deje.Maccy.pin-reorder</string>
+		<key>UTTypeTagSpecification</key>
+		<dict/>
+		<key>UTTypeDescription</key>
+		<string>Maccy Pin Reorder Type</string>
+		<key>UTTypeConformsTo</key>
+		<array>
+		<string>public.data</string>
+		</array>
+	</dict>
+	</array>
 </dict>
 </plist>
