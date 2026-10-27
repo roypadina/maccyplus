@@ -700,6 +700,14 @@ final class BuiltinProvidersTests: XCTestCase {
     XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), "Bearer tk_secret")
   }
 
+  func testSecretStoreParsesSecurityOutput() {
+    XCTAssertEqual(SecretStore.password("password: \"tk_abc\"\n"), "tk_abc")
+    XCTAssertEqual(SecretStore.password("password: \"deadbeef\"\n"), "deadbeef")  // hex-looking text stays text
+    XCTAssertEqual(SecretStore.password("password: \"a\"b c\"\n"), "a\"b c")
+    XCTAssertEqual(SecretStore.password("password: 0xD7A9D79CD795D79D \n"), "שלום")
+    XCTAssertNil(SecretStore.password("security: SecKeychainSearchCopyNext: not found\n"))
+  }
+
   func testNtfyFilesAreUploadedOneMessageEach() throws {
     let files = [URL(fileURLWithPath: "/tmp/a report.pdf"), URL(fileURLWithPath: "/tmp/b.png")]
     let requests = try NtfyProvider.requests(

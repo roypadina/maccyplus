@@ -554,6 +554,9 @@ struct NtfyProvider: ActionProvider {
 
 /// Keychain store for `.secret` params: the rule keeps only a `keychain:<uuid>`
 /// reference, so passwords never land in the prefs plist.
+/// Items are created, read and deleted by Apple-signed `/usr/bin/security`, never `SecItemAdd`: with no
+/// Team ID an item this app creates is tied to this build's cdhash, so every rebuild would ask for the
+/// login password. A CLI-made item trusts the CLI (partition `apple-tool:`), so every build reads it silently.
 // shortcut: deleting an action leaves its Keychain item behind; delete it with the action if they pile up.
 enum SecretStore {
   static let prefix = "keychain:"
@@ -566,29 +569,52 @@ enum SecretStore {
   }
 
   static func read(account: String) -> String? {
-    var query = baseQuery(account: account)
-    query[kSecReturnData as String] = true
-    var result: AnyObject?
-    guard SecItemCopyMatching(query as CFDictionary, &result) == errSecSuccess,
-          let data = result as? Data else { return nil }
-    return String(data: data, encoding: .utf8)
+    security(["find-generic-password", "-s", service, "-a", account, "-g"]).flatMap(password)
   }
 
   /// Replaces the stored secret; an empty one just deletes it.
   static func write(_ secret: String, account: String) {
-    SecItemDelete(baseQuery(account: account) as CFDictionary)
-    guard !secret.isEmpty else { return }
-    var item = baseQuery(account: account)
-    item[kSecValueData as String] = Data(secret.utf8)
-    SecItemAdd(item as CFDictionary, nil)
+    guard !secret.isEmpty else {
+      _ = security(["delete-generic-password", "-s", service, "-a", account])
+      return
+    }
+    // Secret goes in as hex on stdin, never argv: other users' `ps` can read argv.
+    // shortcut: `security -i` truncates lines past ~4 KB (a ~2 KB secret); fine for passwords and tokens.
+    let hex = Data(secret.utf8).map { String(format: "%02x", $0) }.joined()
+    _ = security(["-i"], stdin: "add-generic-password -U -s \"\(service)\" -a \"\(account)\" -X \(hex)\n")
   }
 
-  private static func baseQuery(account: String) -> [String: Any] {
-    [
-      kSecClass as String: kSecClassGenericPassword,
-      kSecAttrService as String: service,
-      kSecAttrAccount as String: account
-    ]
+  /// The `-g` stderr line: `password: "text"` when printable, `password: 0xHEX` otherwise.
+  static func password(_ stderr: String) -> String? {
+    guard let line = stderr.split(separator: "\n").last(where: { $0.hasPrefix("password: ") }) else { return nil }
+    let value = line.dropFirst("password: ".count)
+    if value.hasPrefix("0x") {
+      let hex = Array(value.dropFirst(2).prefix(while: \.isHexDigit))
+      guard hex.count % 2 == 0 else { return nil }
+      let bytes = stride(from: 0, to: hex.count, by: 2).compactMap { UInt8(String(hex[$0..<$0 + 2]), radix: 16) }
+      return String(decoding: bytes, as: UTF8.self)
+    }
+    guard value.count >= 2, value.hasPrefix("\""), value.hasSuffix("\"") else { return nil }
+    return String(value.dropFirst().dropLast())
+  }
+
+  /// Runs `/usr/bin/security`; its stderr on exit 0, nil otherwise (44 = not found).
+  private static func security(_ args: [String], stdin: String? = nil) -> String? {
+    let process = Process()
+    process.executableURL = URL(fileURLWithPath: "/usr/bin/security")
+    process.arguments = args
+    let stderr = Pipe(), input = Pipe()
+    process.standardError = stderr
+    process.standardOutput = FileHandle.nullDevice
+    if stdin != nil { process.standardInput = input }
+    do { try process.run() } catch { return nil }
+    if let stdin {
+      input.fileHandleForWriting.write(Data(stdin.utf8))
+      try? input.fileHandleForWriting.close()
+    }
+    let data = stderr.fileHandleForReading.readDataToEndOfFile()
+    process.waitUntilExit()
+    return process.terminationStatus == 0 ? String(decoding: data, as: UTF8.self) : nil
   }
 }
 
