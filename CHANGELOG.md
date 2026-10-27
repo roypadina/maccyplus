@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.9.1] - 2026-10-27
+
+### Fixed
+- Send to ntfy: no more Keychain password prompts for the saved password after every update. MaccyPlus now saves and reads it through macOS's `security` tool, which every version can use without a prompt. If you saw the prompt before, click **Always Allow** once.
+
 ## [2.9.0] - 2026-10-25
 
 ### Added
