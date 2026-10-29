@@ -28,12 +28,12 @@ struct KeyHandlingView<Content: View>: View {
           }
         }
 
-        // ⌃1…⌃9 run the Nth matching action on the selected item (no mouse).
+        // ⌥⌘1…⌥⌘9 run the Nth matching action on the selected item (no mouse).
         if let event = NSApp.currentEvent {
           let mods = event.modifierFlags
             .intersection(.deviceIndependentFlagsMask)
             .subtracting([.capsLock, .numericPad, .function])
-          if mods == [.control],
+          if mods == [.option, .command],
              let chars = event.charactersIgnoringModifiers,
              let digit = Int(chars), (1...9).contains(digit),
              let lead = appState.navigator.leadHistoryItem {
