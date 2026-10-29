@@ -131,8 +131,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     migrateUserDefaults()
     disableUnusedGlobalHotkeys()
 
-    // Prompt for Accessibility on launch if not yet granted (needed for paste).
-    Accessibility.check()
+    // MaccyPlus: first-launch Welcome window; its button asks for Accessibility, so no prompt at launch.
+    if !AppDelegate.isTesting, !UserDefaults.standard.bool(forKey: "didShowWelcome") {
+      UserDefaults.standard.set(true, forKey: "didShowWelcome")
+      WelcomeWindow.show()
+    }
 
     panel = FloatingPanel(
       contentRect: NSRect(origin: .zero, size: Defaults[.windowSize]),
