@@ -33,8 +33,9 @@ struct ActionsSettingsPane: View {
         ForEach(rules) { rule in
           HStack {
             Image(systemName: rule.enabled ? "circle.fill" : "circle")
-              .font(.system(size: 7))
+              .font(.caption)
               .foregroundStyle(rule.enabled ? Color.accentColor : Color.secondary)
+              .accessibilityLabel(rule.enabled ? "Enabled" : "Disabled")
             Text(rule.name).lineLimit(1)
           }
           .tag(rule.id)
@@ -44,8 +45,12 @@ struct ActionsSettingsPane: View {
       Divider()
       HStack(spacing: 4) {
         Button(action: addRule) { Image(systemName: "plus") }
+          .accessibilityLabel("Add Rule")
+          .help("Add Rule")
         Button(action: removeSelected) { Image(systemName: "minus") }
           .disabled(selection == nil)
+          .accessibilityLabel("Remove Rule")
+          .help("Remove Rule")
         Spacer()
         Button("Terminal apps…") { showingTerminalApps = true }
           .font(.caption)
@@ -66,6 +71,7 @@ struct ActionsSettingsPane: View {
         Image(systemName: "bolt.badge.clock")
           .font(.largeTitle)
           .foregroundStyle(.secondary)
+          .accessibilityHidden(true)
         Text("Select a rule, or add one.")
           .foregroundStyle(.secondary)
         Text("""
@@ -148,7 +154,7 @@ private struct RuleEditor: View {
   private var conditionsBox: some View {
     GroupBox {
       VStack(alignment: .leading, spacing: 8) {
-        Picker("", selection: $rule.matchMode) {
+        Picker("Match Mode", selection: $rule.matchMode) {
           ForEach(MatchMode.allCases) { Text($0.label).tag($0) }
         }
         .pickerStyle(.segmented)
@@ -163,7 +169,7 @@ private struct RuleEditor: View {
         Button {
           rule.conditions.append(RuleCondition(provider: "builtin.kind"))
         } label: {
-          Label("Add condition", systemImage: "plus")
+          Label("Add Condition", systemImage: "plus")
         }
         .buttonStyle(.borderless)
       }
@@ -192,16 +198,20 @@ private struct RuleEditor: View {
           }
         }
 
+        Text("The top action is the default.")
+          .font(.caption)
+          .foregroundStyle(.secondary)
+
         Button {
           rule.actions.append(ActionConfig(provider: "builtin.openURL"))
         } label: {
-          Label("Add action", systemImage: "plus")
+          Label("Add Action", systemImage: "plus")
         }
         .buttonStyle(.borderless)
       }
       .padding(6)
     } label: {
-      Text("Actions  (top = default)").font(.headline)
+      Text("Actions").font(.headline)
     }
   }
 
@@ -233,7 +243,7 @@ private struct ConditionRow: View {
 
   var body: some View {
     HStack(alignment: .top) {
-      Picker("", selection: $condition.provider) {
+      Picker("Condition", selection: $condition.provider) {
         ForEach(descriptors) { d in
           Text(d.name).tag(d.id)
         }
@@ -252,6 +262,7 @@ private struct ConditionRow: View {
           Image(systemName: "info.circle")
         }
         .buttonStyle(.borderless)
+        .accessibilityLabel("Show Help")
         .popover(isPresented: $showingLongHelp) {
           Text(longHelp)
             .padding()
@@ -271,6 +282,8 @@ private struct ConditionRow: View {
 
       Button(action: onDelete) { Image(systemName: "trash") }
         .buttonStyle(.borderless)
+        .accessibilityLabel("Remove Condition")
+        .help("Remove Condition")
     }
   }
 
@@ -281,12 +294,12 @@ private struct ConditionRow: View {
       TextField(spec.placeholder ?? spec.label, text: stringParam($condition.params, spec.key))
         .textFieldStyle(.roundedBorder)
     case .valueKind:
-      Picker("", selection: valueKindParam($condition.params, spec.key)) {
+      Picker(spec.label, selection: valueKindParam($condition.params, spec.key)) {
         ForEach(ValueKind.allCases) { Text($0.label).tag($0) }
       }
       .labelsHidden()
     case .pathType:
-      Picker("", selection: stringParam($condition.params, spec.key)) {
+      Picker(spec.label, selection: stringParam($condition.params, spec.key)) {
         ForEach(PathType.allCases) { Text($0.label).tag($0.rawValue) }
       }
       .labelsHidden()
@@ -356,12 +369,12 @@ private struct ActionRow: View {
     VStack(alignment: .leading, spacing: 6) {
       HStack {
         if isDefault {
-          Text("DEFAULT")
+          Text("Default")
             .font(.caption2).bold()
             .padding(.horizontal, 5).padding(.vertical, 1)
             .background(Color.accentColor.opacity(0.2), in: Capsule())
         }
-        Picker("", selection: $action.provider) {
+        Picker("Action", selection: $action.provider) {
           ForEach(descriptors) { d in
             Text(d.name).tag(d.id)
           }
@@ -380,6 +393,7 @@ private struct ActionRow: View {
             Image(systemName: "info.circle")
           }
           .buttonStyle(.borderless)
+          .accessibilityLabel("Show Help")
           .popover(isPresented: $showingLongHelp) {
             Text(longHelp)
               .padding()
@@ -390,12 +404,14 @@ private struct ActionRow: View {
         Spacer()
 
         if !isDefault {
-          Button("Make default", action: onMakeDefault)
+          Button("Make Default", action: onMakeDefault)
             .buttonStyle(.borderless)
             .font(.caption)
         }
         Button(action: onDelete) { Image(systemName: "trash") }
           .buttonStyle(.borderless)
+          .accessibilityLabel("Remove Action")
+          .help("Remove Action")
       }
 
       if let d = selectedDescriptor {
@@ -445,12 +461,12 @@ private struct ActionRow: View {
       SecureField(spec.placeholder ?? spec.label, text: secretParam($action.params, spec.key))
         .textFieldStyle(.roundedBorder)
     case .valueKind:
-      Picker("", selection: valueKindParam($action.params, spec.key)) {
+      Picker(spec.label, selection: valueKindParam($action.params, spec.key)) {
         ForEach(ValueKind.allCases) { Text($0.label).tag($0) }
       }
       .labelsHidden()
     case .pathType:
-      Picker("", selection: stringParam($action.params, spec.key)) {
+      Picker(spec.label, selection: stringParam($action.params, spec.key)) {
         ForEach(PathType.allCases) { Text($0.label).tag($0.rawValue) }
       }
       .labelsHidden()
@@ -535,6 +551,8 @@ private struct TerminalAppsEditor: View {
               Image(systemName: "trash")
             }
             .buttonStyle(.borderless)
+            .accessibilityLabel("Remove App")
+            .help("Remove App")
           }
         }
       }
@@ -548,7 +566,7 @@ private struct TerminalAppsEditor: View {
         } label: {
           Label("Add…", systemImage: "plus")
         }
-        Button("Reset to defaults") { bundleIDs = TerminalApps.defaults }
+        Button("Reset to Defaults") { bundleIDs = TerminalApps.defaults }
         Spacer()
         Button("Done") { dismiss() }
           .keyboardShortcut(.defaultAction)
