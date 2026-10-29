@@ -63,6 +63,7 @@ struct PluginsSettingsPane: View {
     HStack(spacing: 6) {
       Image(systemName: "magnifyingglass")
         .foregroundStyle(.secondary)
+        .accessibilityHidden(true)
       TextField("Filter providers by name or description", text: $searchText)
         .textFieldStyle(.plain)
       if !searchText.isEmpty {
@@ -73,6 +74,8 @@ struct PluginsSettingsPane: View {
             .foregroundStyle(.secondary)
         }
         .buttonStyle(.borderless)
+        .accessibilityLabel("Clear Filter")
+        .help("Clear Filter")
       }
     }
     .padding(8)
@@ -172,6 +175,7 @@ struct PluginsSettingsPane: View {
       HStack(spacing: 6) {
         Image(systemName: "globe")
           .foregroundStyle(.secondary)
+          .accessibilityHidden(true)
         Text(url.absoluteString)
           .lineLimit(1)
           .truncationMode(.middle)
@@ -179,10 +183,13 @@ struct PluginsSettingsPane: View {
       }
       // A genuinely failing marketplace gets a compact inline warning.
       if let failure = failedMarketplaces.first(where: { $0.url == url }) {
-        Label(failure.message, systemImage: "exclamationmark.triangle.fill")
-          .font(.caption)
-          .foregroundStyle(.orange)
-          .lineLimit(2)
+        Label {
+          Text(failure.message)
+        } icon: {
+          Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.orange)
+        }
+        .font(.caption)
+        .lineLimit(2)
       }
     }
   }
@@ -247,6 +254,7 @@ struct PluginsSettingsPane: View {
           HStack {
             Image(systemName: "folder")
               .foregroundStyle(.secondary)
+              .accessibilityHidden(true)
             Text(path)
               .lineLimit(1)
               .truncationMode(.middle)
@@ -258,6 +266,7 @@ struct PluginsSettingsPane: View {
                 .foregroundStyle(.secondary)
             }
             .buttonStyle(.borderless)
+            .accessibilityLabel("Stop Loading Folder")
             .help("Stop loading plugins from this folder")
           }
         }
@@ -302,14 +311,18 @@ struct PluginsSettingsPane: View {
   }
 
   private var unverifiedBadge: some View {
-    Text("Unverified source")
-      .font(.caption2)
-      .fontWeight(.semibold)
-      .padding(.horizontal, 6)
-      .padding(.vertical, 2)
-      .background(Color.orange.opacity(0.2), in: Capsule())
-      .foregroundStyle(.orange)
-      .help("This plugin comes from a source MaccyPlus can't verify. Review its requested capabilities before installing.")
+    Label {
+      Text("Unverified source")
+    } icon: {
+      Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.orange)
+    }
+    .font(.caption2)
+    .fontWeight(.semibold)
+    .padding(.horizontal, 6)
+    .padding(.vertical, 2)
+    .background(Color.orange.opacity(0.2), in: Capsule())
+    .foregroundStyle(.primary)
+    .help("This plugin comes from a source MaccyPlus can't verify. Review its requested capabilities before installing.")
   }
 
   // MARK: - Add-marketplace sheet
@@ -325,9 +338,12 @@ struct PluginsSettingsPane: View {
         .textFieldStyle(.roundedBorder)
         .frame(width: 380)
       if let addMarketplaceError {
-        Text(addMarketplaceError)
-          .font(.caption)
-          .foregroundStyle(.red)
+        Label {
+          Text(addMarketplaceError)
+        } icon: {
+          Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.red)
+        }
+        .font(.caption)
       }
       HStack {
         Spacer()
@@ -349,6 +365,7 @@ struct PluginsSettingsPane: View {
         Image(systemName: "exclamationmark.shield.fill")
           .font(.title2)
           .foregroundStyle(.orange)
+          .accessibilityHidden(true)
         Text("\"\(entry.name)\" requests permissions")
           .font(.headline)
       }
@@ -361,6 +378,7 @@ struct PluginsSettingsPane: View {
           HStack(alignment: .top, spacing: 6) {
             Image(systemName: "checkmark.circle")
               .foregroundStyle(.orange)
+              .accessibilityHidden(true)
             Text(capability.consentSentence)
           }
         }
@@ -659,6 +677,7 @@ private struct ProviderRowView: View {
                 .foregroundStyle(.secondary)
             }
             .buttonStyle(.borderless)
+            .accessibilityLabel("Show Help")
             .popover(isPresented: $showingLongHelp) {
               LongHelpPopover(descriptor: descriptor)
             }
@@ -682,7 +701,7 @@ private struct ProviderRowView: View {
       .padding(.horizontal, 6)
       .padding(.vertical, 1)
       .background((isCondition ? Color.blue : Color.green).opacity(0.18), in: Capsule())
-      .foregroundStyle(isCondition ? Color.blue : Color.green)
+      .foregroundStyle(.primary)
   }
 
   private var engineChip: some View {
@@ -766,18 +785,22 @@ private struct PackageGroupView: View {
       .padding(.horizontal, 6)
       .padding(.vertical, 1)
       .background(Color.accentColor.opacity(0.18), in: Capsule())
-      .foregroundStyle(Color.accentColor)
+      .foregroundStyle(.primary)
   }
 
   private var unverifiedBadge: some View {
-    Text("Unverified source")
-      .font(.caption2)
-      .fontWeight(.semibold)
-      .padding(.horizontal, 6)
-      .padding(.vertical, 2)
-      .background(Color.orange.opacity(0.2), in: Capsule())
-      .foregroundStyle(.orange)
-      .help("This plugin comes from a source MaccyPlus can't verify.")
+    Label {
+      Text("Unverified source")
+    } icon: {
+      Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.orange)
+    }
+    .font(.caption2)
+    .fontWeight(.semibold)
+    .padding(.horizontal, 6)
+    .padding(.vertical, 2)
+    .background(Color.orange.opacity(0.2), in: Capsule())
+    .foregroundStyle(.primary)
+    .help("This plugin comes from a source MaccyPlus can't verify.")
   }
 }
 
@@ -829,7 +852,7 @@ private struct LongHelpPopover: View {
       .padding(.horizontal, 6)
       .padding(.vertical, 1)
       .background((isCondition ? Color.blue : Color.green).opacity(0.18), in: Capsule())
-      .foregroundStyle(isCondition ? Color.blue : Color.green)
+      .foregroundStyle(.primary)
   }
 
   private var engineChip: some View {

@@ -172,7 +172,7 @@ class AppState: Sendable {
           Settings.Pane(
             identifier: Settings.PaneIdentifier.actions,
             title: "Actions",
-            toolbarIcon: NSImage(systemSymbolName: "bolt.fill", accessibilityDescription: nil) ?? NSImage()
+            toolbarIcon: NSImage(systemSymbolName: "bolt", accessibilityDescription: nil) ?? NSImage()
           ) {
             ActionsSettingsPane()
               .frame(minWidth: minimumWidth)
@@ -180,7 +180,7 @@ class AppState: Sendable {
           Settings.Pane(
             identifier: Settings.PaneIdentifier.plugins,
             title: "Plugins",
-            toolbarIcon: NSImage(systemSymbolName: "puzzlepiece.extension.fill", accessibilityDescription: nil) ?? NSImage()
+            toolbarIcon: NSImage(systemSymbolName: "puzzlepiece.extension", accessibilityDescription: nil) ?? NSImage()
           ) {
             PluginsSettingsPane()
               .frame(minWidth: minimumWidth)
