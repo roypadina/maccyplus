@@ -66,7 +66,7 @@ MaccyPlus is self-signed (not notarized), so macOS blocks it on first launch. Op
 xattr -dr com.apple.quarantine "/Applications/MaccyPlus.app"
 ```
 
-It's a menu-bar app (no Dock icon). On first launch, grant Accessibility when prompted (System Settings → Privacy & Security → Accessibility) so paste works.
+It's a menu-bar app (no Dock icon). On first launch a **Welcome** window explains the menu bar icon and offers an **Open at Login** switch and an **Allow Accessibility…** button. Accessibility (System Settings → Privacy & Security → Accessibility) is only needed to paste into the app you're using; copying works without it, and MaccyPlus no longer asks for it at every launch. Open the window again from About → Welcome Guide….
 
 > [!WARNING]
 > **Beware of fake websites impersonating Maccy.** Malicious sites (such as `maccyapp.net` and `maccyapp.com`) distribute malware disguised as Maccy. [**maccy.app**](https://maccy.app) is the **only** official website for Maccy. MaccyPlus is only distributed from this repo and the `roypadina/tap` Homebrew tap.
@@ -103,7 +103,7 @@ Ad-hoc builds get a new code identity each time, so macOS asks again for Accessi
 
 ## Using the popup
 
-1. <kbd>SHIFT (⇧)</kbd> + <kbd>COMMAND (⌘)</kbd> + <kbd>C</kbd> to popup MaccyPlus or click on its icon in the menu bar.
+1. <kbd>OPTION (⌥)</kbd> + <kbd>COMMAND (⌘)</kbd> + <kbd>C</kbd> to popup MaccyPlus or click on its icon in the menu bar.
 2. Type what you want to find.
 3. To select the history item you wish to copy, press <kbd>ENTER</kbd>, or click the item, or use <kbd>COMMAND (⌘)</kbd> + `n` shortcut.
 4. To choose the history item and paste, press <kbd>OPTION (⌥)</kbd> + <kbd>ENTER</kbd>, or <kbd>OPTION (⌥)</kbd> + <kbd>CLICK</kbd> the item, or use <kbd>OPTION (⌥)</kbd> + `n` shortcut.
@@ -114,7 +114,8 @@ Ad-hoc builds get a new code identity each time, so macOS asks again for Accessi
 9. To clear all unpinned items, select _Clear_ in the menu, or press <kbd>OPTION (⌥)</kbd> + <kbd>COMMAND (⌘)</kbd> + <kbd>DELETE (⌫)</kbd>. To clear all items including pinned, select _Clear_ in the menu with  <kbd>OPTION (⌥)</kbd> pressed, or press <kbd>SHIFT (⇧)</kbd> + <kbd>OPTION (⌥)</kbd> + <kbd>COMMAND (⌘)</kbd> + <kbd>DELETE (⌫)</kbd>.
 10. To disable MaccyPlus and ignore new copies, click on the menu icon with <kbd>OPTION (⌥)</kbd> pressed.
 11. To ignore only the next copy, click on the menu icon with <kbd>OPTION (⌥)</kbd> + <kbd>SHIFT (⇧)</kbd> pressed.
-12. To customize the behavior, check "Preferences…" window, or press <kbd>COMMAND (⌘)</kbd> + <kbd>,</kbd>.
+12. To run one of the item's [actions](#actions) from the keyboard, press <kbd>OPTION (⌥)</kbd> + <kbd>COMMAND (⌘)</kbd> + `n` (1–9) for the nth action in the Actions list (it used to be <kbd>CONTROL (⌃)</kbd> + `n`, which macOS reserves for switching Desktops). VoiceOver lists the same actions on each row.
+13. To customize the behavior, check "Preferences…" window, or press <kbd>COMMAND (⌘)</kbd> + <kbd>,</kbd>.
 
 ## Actions
 
