@@ -17,13 +17,20 @@ Rules that match what you copy, actions that do something with it, per-action ho
   <a href="https://ko-fi.com/roypadina"><img alt="Ko-fi" src="https://img.shields.io/badge/Ko--fi-support-F16061?logo=ko-fi&logoColor=white" /></a>
 </p>
 
+<p align="center">
+  <img src="docs/demo.gif" alt="MaccyPlus in action: copy a Jira key, press ⌥⌘C to open the history, click the bolt badge, and the action the matching rule offers opens the ticket in your browser." width="720">
+</p>
+
 ```sh
 brew install --cask roypadina/tap/maccyplus
 ```
 
 **MaccyPlus** is a fork of [Maccy](https://maccy.app), the fast, keyboard-first, private clipboard manager. It keeps everything Maccy does and adds an automation layer on top. Copy a Jira key, a URL, a file path or a wrapped terminal command and MaccyPlus can act on it with one keystroke, or on its own.
 
-![Rules and actions editor](docs/screenshots/actions-rules.png)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/actions-rules-dark.png">
+  <img alt="Rules and actions editor" src="docs/screenshots/actions-rules.png">
+</picture>
 
 ## What MaccyPlus adds over Maccy
 
@@ -42,7 +49,10 @@ brew install --cask roypadina/tap/maccyplus
 * **Plugins**: add conditions and actions without rebuilding the app. See [Plugins](#plugins).
 * **Agent clipboard API**: scripts and AI agents can read your history and leave values in it. See [Let AI agents leave values in your history](#let-ai-agents-leave-values-in-your-history).
 
-![Plugins settings](docs/screenshots/plugins.png)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/plugins-dark.png">
+  <img alt="Plugins settings" src="docs/screenshots/plugins.png">
+</picture>
 
 MaccyPlus tracks upstream Maccy and is currently synced with **Maccy 2.7.1 plus upstream fixes up to October 2026**. Full documentation is in the [Wiki](https://github.com/roypadina/maccyplus/wiki): actions and rules, plugins, the command line, permissions, troubleshooting.
 
