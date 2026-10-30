@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.10.0] - 2026-10-30
+
 ### Added
 - A Welcome window on first launch explains the menu bar icon, Actions and Accessibility, with an "Open at Login" switch and an "Allow Accessibility…" button. Open it again from About > Welcome Guide….
 - VoiceOver can now run a row's actions from the history list, and every icon-only button, pop-up menu and rule status in the Actions and Plugins settings has a spoken name.
