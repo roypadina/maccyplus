@@ -72,6 +72,11 @@ struct HistoryItemView: View {
     .accessibilityAction(named: Text("history_item_delete_action")) {
       appState.history.delete(item)
     }
+    .accessibilityActions {
+      ForEach(rowActions) { rowAction in
+        Button(rowAction.title, action: rowAction.run)
+      }
+    }
     .contextMenu {
       actionsMenu
     }
@@ -79,13 +84,9 @@ struct HistoryItemView: View {
 
   @ViewBuilder
   private var actionsMenu: some View {
-    if rowActions.isEmpty {
-      Text("No matching actions")
-    } else {
-      ForEach(rowActions) { rowAction in
-        Button(action: rowAction.run) {
-          Label(rowAction.title, systemImage: rowAction.systemImage)
-        }
+    ForEach(rowActions) { rowAction in
+      Button(action: rowAction.run) {
+        Label(rowAction.title, systemImage: rowAction.systemImage)
       }
     }
   }

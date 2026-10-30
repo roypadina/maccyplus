@@ -112,7 +112,7 @@ final class ActionEngine {
   // closure that dispatches the action through the registry (`runProvider`),
   // preserving the `.replace` echo-guard ordering. Title comes from the provider
   // descriptor's name; the icon is a generic action glyph (descriptors carry no
-  // system image). Surfaces the popup right-click menu, ⌃1…⌃9, and the slideout
+  // system image). Surfaces the popup right-click menu, ⌥⌘1…⌥⌘9, and the slideout
   // Actions list.
   func resolvedActions(for item: HistoryItem) -> [RowActionItem] {
     // Classify the item once and reuse it for matching (matchingRules would

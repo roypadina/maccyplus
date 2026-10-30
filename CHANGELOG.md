@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.10.0] - 2026-10-30
+
+### Added
+- A Welcome window on first launch explains the menu bar icon, Actions and Accessibility, with an "Open at Login" switch and an "Allow Accessibility…" button. Open it again from About > Welcome Guide….
+- VoiceOver can now run a row's actions from the history list, and every icon-only button, pop-up menu and rule status in the Actions and Plugins settings has a spoken name.
+
+### Changed
+- Row actions now use ⌥⌘1 to ⌥⌘9 instead of ⌃1 to ⌃9, which macOS reserves for switching Desktops.
+- MaccyPlus no longer asks for Accessibility at every launch. It asks from the Welcome window or when you first paste.
+- The "Unverified source" warning, the plugin chips and marketplace errors are easier to read.
+- Actions settings use title case ("Default", "Add Condition", "Make Default", "Reset to Defaults"), the two new Settings tabs use outline icons, and the rule list shows a larger enabled dot.
+
+### Fixed
+- Right-clicking a history row with no matching actions no longer shows a menu that only says "No matching actions".
+
 ## [2.9.1] - 2026-10-27
 
 ### Fixed

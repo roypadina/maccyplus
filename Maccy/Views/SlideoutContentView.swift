@@ -25,7 +25,7 @@ struct SlideoutContentView: View {
 }
 
 // Lists the actions that match the selected item in the right (preview) pane.
-// Click to run, or press ⌃1…⌃9 (handled in KeyHandlingView).
+// Click to run, or press ⌥⌘1…⌥⌘9 (handled in KeyHandlingView).
 struct ActionsListView: View {
   var item: HistoryItemDecorator
 
@@ -53,7 +53,7 @@ struct ActionsListView: View {
                 .lineLimit(1)
               Spacer(minLength: 4)
               if index < 9 {
-                Text("⌃\(index + 1)")
+                Text("⌥⌘\(index + 1)")
                   .font(.caption)
                   .foregroundStyle(.secondary)
               }
