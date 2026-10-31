@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.10.1] - 2026-10-31
+
+### Fixed
+- Opening a rule with a password field (such as Send to ntfy) in Settings > Actions no longer quits MaccyPlus.
+- A "Value kind" condition left on its default now matches URLs, as the editor shows. Before, such a rule never matched, so its actions were missing from the popup.
+
 ## [2.10.0] - 2026-10-30
 
 ### Added
