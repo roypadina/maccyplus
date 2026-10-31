@@ -123,15 +123,13 @@ final class BuiltinProvidersTests: XCTestCase {
     XCTAssertFalse(result)
   }
 
-  func testKindConditionMissingParamThrows() {
+  // The editor shows "URL" for an unset kind, so evaluate treats it as URL.
+  func testKindConditionMissingParamDefaultsToURL() throws {
     let provider = ProviderRegistry.shared.condition("builtin.kind")!
-    let input = PluginInput(
-      string: "x",
-      kinds: [.text],
-      sourceAppBundleID: nil,
-      fileURLs: []
-    )
-    XCTAssertThrowsError(try provider.evaluate(input, params: .object([:])))
+    let text = PluginInput(string: "x", kinds: [.text], sourceAppBundleID: nil, fileURLs: [])
+    let url = PluginInput(string: "https://example.com", kinds: [.url, .text], sourceAppBundleID: nil, fileURLs: [])
+    XCTAssertFalse(try provider.evaluate(text, params: .object([:])))
+    XCTAssertTrue(try provider.evaluate(url, params: .object([:])))
   }
 
   func testKindConditionUnknownKindThrows() {
