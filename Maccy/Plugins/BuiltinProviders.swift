@@ -607,13 +607,17 @@ enum SecretStore {
     process.standardError = stderr
     process.standardOutput = FileHandle.nullDevice
     if stdin != nil { process.standardInput = input }
+    // Not `waitUntilExit()`: it spins the main run loop, and the Settings SecureField binding calls this
+    // mid SwiftUI update, so the nested layout pass crashed AttributeGraph (abort in AG::Graph::value_set).
+    let exited = DispatchSemaphore(value: 0)
+    process.terminationHandler = { _ in exited.signal() }
     do { try process.run() } catch { return nil }
     if let stdin {
       input.fileHandleForWriting.write(Data(stdin.utf8))
       try? input.fileHandleForWriting.close()
     }
     let data = stderr.fileHandleForReading.readDataToEndOfFile()
-    process.waitUntilExit()
+    exited.wait()
     return process.terminationStatus == 0 ? String(decoding: data, as: UTF8.self) : nil
   }
 }
