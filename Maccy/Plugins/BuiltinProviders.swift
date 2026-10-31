@@ -78,9 +78,8 @@ struct KindCondition: ConditionProvider {
   )
 
   func evaluate(_ input: PluginInput, params: JSONValue) throws -> Bool {
-    guard let kindString = params["kind"]?.stringValue else {
-      throw BuiltinProviderError.missingParam("kind")
-    }
+    // The editor's picker shows "URL" until another kind is picked and saves nothing, so unset = URL.
+    let kindString = params["kind"]?.stringValue ?? ValueKind.url.rawValue
     guard let kind = ValueKind(rawValue: kindString) else {
       throw BuiltinProviderError.invalidParam("kind", value: kindString)
     }
