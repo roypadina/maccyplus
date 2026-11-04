@@ -27,7 +27,8 @@ ditto -c -k --keepParent "$APP" build/MaccyPlus.zip
 echo build/MaccyPlus.zip
 # EdDSA signature + length for the appcast <enclosure> (needs the maintainer's Sparkle key in the keychain).
 SIGN_UPDATE=build/SourcePackages/artifacts/sparkle/Sparkle/bin/sign_update
-if "${SIGN_UPDATE%/*}/generate_keys" -p >/dev/null 2>&1; then
+# Only the key whose public half the app ships (SUPublicEDKey); copies refuse any other.
+if [ "$("${SIGN_UPDATE%/*}/generate_keys" -p 2>/dev/null)" = "$(/usr/libexec/PlistBuddy -c 'Print SUPublicEDKey' "$APP/Contents/Info.plist")" ]; then
   echo "appcast enclosure: $("$SIGN_UPDATE" build/MaccyPlus.zip)"
 else
   echo "Sparkle signing key not in the keychain: sign build/MaccyPlus.zip before publishing the appcast"
