@@ -6,6 +6,21 @@
     <description>Most recent changes with links to updates.</description>
     <language>en</language>
     <item>
+      <title>2.10.3</title>
+      <description>
+        <![CDATA[
+          <ul>
+            <li>MaccyPlus now checks for updates once a day by itself and asks before installing one (the check used to run only while Settings was open). Turn it off in Settings &gt; General.</li>
+            <li>Check for Updates… moved from Settings &gt; General to the About window.</li>
+          </ul>
+        ]]>
+      </description>
+      <pubDate>Wed, 04 Nov 2026 15:25:56 +0200</pubDate>
+      <releaseNotesLink>https://github.com/roypadina/maccyplus/releases/tag/v2.10.3</releaseNotesLink>
+      <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+      <enclosure url="https://github.com/roypadina/maccyplus/releases/download/v2.10.3/MaccyPlus.zip" length="8769804" type="application/octet-stream" sparkle:version="83" sparkle:shortVersionString="2.10.3" sparkle:edSignature="i1afJMfnDc5joGOjy1JFywYMhmocEsJJCtW85k1yBko6p6ojkjVvW1lgU8ZYpJb7h0gzz2ZwojKJlWchHOb3Bw=="/>
+    </item>
+    <item>
       <title>2.10.2</title>
       <description>
         <![CDATA[
