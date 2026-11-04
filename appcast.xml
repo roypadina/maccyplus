@@ -6,6 +6,20 @@
     <description>Most recent changes with links to updates.</description>
     <language>en</language>
     <item>
+      <title>2.10.4</title>
+      <description>
+        <![CDATA[
+          <ul>
+            <li>Right-click (or Control-click) the menu-bar icon for a menu: Check for Updates… (or Install Update X.Y.Z… once one is found), Settings, About and Quit.</li>
+          </ul>
+        ]]>
+      </description>
+      <pubDate>Wed, 04 Nov 2026 18:32:52 +0200</pubDate>
+      <releaseNotesLink>https://github.com/roypadina/maccyplus/releases/tag/v2.10.4</releaseNotesLink>
+      <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+      <enclosure url="https://github.com/roypadina/maccyplus/releases/download/v2.10.4/MaccyPlus.zip" length="8783019" type="application/octet-stream" sparkle:version="84" sparkle:shortVersionString="2.10.4" sparkle:edSignature="MQLnnFuXpfiMGu21pmo9q18UeaWbn9V6CQ3Wp2l9MjPiNz0ceiUNWcYeo9qOeuFWxuc/RZYLlGwM6OZEAZ62Aw=="/>
+    </item>
+    <item>
       <title>2.10.3</title>
       <description>
         <![CDATA[
