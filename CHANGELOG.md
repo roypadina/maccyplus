@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.10.3] - 2026-11-04
+
+### Changed
+- MaccyPlus now checks for updates once a day by itself and asks before installing one; tick "Automatically download and install updates" in that prompt to skip the question next time. Turn the daily check off in Settings > General.
+- **Check for Updates…** moved from Settings > General to the About window.
+
+### Fixed
+- The daily update check only ran while the Settings window was open.
+
 ## [2.10.2] - 2026-11-04
 
 ### Security
