@@ -25,3 +25,10 @@ fi
 rm -f build/MaccyPlus.zip
 ditto -c -k --keepParent "$APP" build/MaccyPlus.zip
 echo build/MaccyPlus.zip
+# EdDSA signature + length for the appcast <enclosure> (needs the maintainer's Sparkle key in the keychain).
+SIGN_UPDATE=build/SourcePackages/artifacts/sparkle/Sparkle/bin/sign_update
+if "${SIGN_UPDATE%/*}/generate_keys" -p >/dev/null 2>&1; then
+  echo "appcast enclosure: $("$SIGN_UPDATE" build/MaccyPlus.zip)"
+else
+  echo "Sparkle signing key not in the keychain: sign build/MaccyPlus.zip before publishing the appcast"
+fi
