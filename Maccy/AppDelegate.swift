@@ -12,6 +12,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
     statusItem.behavior = .removalAllowed
     statusItem.button?.action = #selector(performStatusItemClick)
+    statusItem.button?.sendAction(on: [.leftMouseDown, .rightMouseUp]) // MaccyPlus: right-click menu
     statusItem.button?.image = Defaults[.menuIcon].image
     statusItem.button?.imagePosition = .imageLeft
     statusItem.button?.target = self
@@ -216,6 +217,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
       .union(NSEvent.modifierFlags)
       .intersection(.deviceIndependentFlagsMask)
 
+    // MaccyPlus: right-click or control-click opens the menu; left-click is unchanged.
+    if NSApp.currentEvent?.type == .rightMouseUp || modifierFlags.contains(.control) {
+      showStatusMenu()
+      return
+    }
+
     if modifierFlags.contains(.option) {
       Defaults[.ignoreEvents].toggle()
 
@@ -228,6 +235,28 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     panel.toggle(height: AppState.shared.popup.height, at: .statusItem)
   }
+
+  private func showStatusMenu() {
+    guard let button = statusItem.button else { return }
+    let menu = NSMenu()
+    func item(_ title: String, _ action: Selector, key: String = "") {
+      let item = NSMenuItem(title: title, action: action, keyEquivalent: key)
+      item.target = self
+      menu.addItem(item)
+    }
+    item(SoftwareUpdater.shared.menuTitle, #selector(statusMenuCheckForUpdates))
+    menu.addItem(.separator())
+    item("Settings…", #selector(statusMenuSettings), key: ",")
+    item("About MaccyPlus", #selector(statusMenuAbout))
+    menu.addItem(.separator())
+    item("Quit MaccyPlus", #selector(NSApplication.terminate(_:)), key: "q")
+    menu.items.last?.target = NSApp
+    menu.popUp(positioning: nil, at: NSPoint(x: 0, y: button.bounds.height + 5), in: button)
+  }
+
+  @objc private func statusMenuCheckForUpdates() { SoftwareUpdater.shared.checkForUpdates() }
+  @objc private func statusMenuSettings() { AppState.shared.openPreferences() }
+  @objc private func statusMenuAbout() { AppState.shared.openAbout() }
 
   private func synchronizeMenuIconText() {
     _ = withObservationTracking {
