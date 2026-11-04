@@ -13,12 +13,19 @@ class SoftwareUpdater {
     }
   }
 
+  /// Version of an update Sparkle found that is not installed yet; nil when none is known.
+  var availableVersion: String?
+  /// Title for the status-item menu: offers a found update, else a manual check.
+  var menuTitle: String {
+    availableVersion.map { "Install Update \($0)…" } ?? "Check for Updates…"
+  }
+
   private var updater: SPUUpdater
   private var automaticallyChecksForUpdatesObservation: NSKeyValueObservation?
 
   private let updaterController = SPUStandardUpdaterController(
     startingUpdater: true,
-    updaterDelegate: nil,
+    updaterDelegate: UpdateAlertPresenter.shared,
     userDriverDelegate: UpdateAlertPresenter.shared
   )
 
@@ -46,8 +53,18 @@ class SoftwareUpdater {
 /// MaccyPlus: a menu-bar-only app's scheduled update alert opens behind other windows, with no Dock
 /// icon to find it by. Dock icon + front while the alert is up, back to accessory when it closes.
 // @unchecked Sendable: no stored state.
-nonisolated final class UpdateAlertPresenter: NSObject, SPUStandardUserDriverDelegate, @unchecked Sendable {
+nonisolated final class UpdateAlertPresenter: NSObject, SPUUpdaterDelegate, SPUStandardUserDriverDelegate, @unchecked Sendable {
   static let shared = UpdateAlertPresenter()
+
+  // Sparkle calls these on the main thread; its header just doesn't say so to Swift.
+  func updater(_ updater: SPUUpdater, didFindValidUpdate item: SUAppcastItem) {
+    let version = item.displayVersionString
+    MainActor.assumeIsolated { SoftwareUpdater.shared.availableVersion = version }
+  }
+
+  func updaterDidNotFindUpdate(_ updater: SPUUpdater, error: any Error) {
+    MainActor.assumeIsolated { SoftwareUpdater.shared.availableVersion = nil }
+  }
 
   var supportsGentleScheduledUpdateReminders: Bool { true }
 
