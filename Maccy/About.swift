@@ -37,6 +37,7 @@ private struct AboutView: View {
         Text("Version \(info["CFBundleShortVersionString"] as? String ?? "") (\(info["CFBundleVersion"] as? String ?? ""))")
           .font(.callout)
           .foregroundStyle(.secondary)
+        Button("Check for Updates…") { SoftwareUpdater.shared.checkForUpdates() }.padding(.top, 4)
       }
 
       VStack(spacing: 8) {

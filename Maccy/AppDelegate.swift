@@ -129,6 +129,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
   func applicationDidFinishLaunching(_ aNotification: Notification) {
     migrateUserDefaults()
+    if !AppDelegate.isTesting { _ = SoftwareUpdater.shared } // MaccyPlus: starts the daily update check
     disableUnusedGlobalHotkeys()
 
     // MaccyPlus: first-launch Welcome window; its button asks for Accessibility, so no prompt at launch.
