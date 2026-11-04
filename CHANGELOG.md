@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.10.2] - 2026-11-04
+
 ### Security
 - In-app updates are now checked against a signing key as well as the code signature. A tampered or swapped download is refused.
 
