@@ -6,6 +6,20 @@
     <description>Most recent changes with links to updates.</description>
     <language>en</language>
     <item>
+      <title>2.10.2</title>
+      <description>
+        <![CDATA[
+          <ul>
+            <li>In-app updates are now checked against a signing key as well as the code signature. A tampered or swapped download is refused.</li>
+          </ul>
+        ]]>
+      </description>
+      <pubDate>Wed, 04 Nov 2026 13:54:52 +0200</pubDate>
+      <releaseNotesLink>https://github.com/roypadina/maccyplus/releases/tag/v2.10.2</releaseNotesLink>
+      <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+      <enclosure url="https://github.com/roypadina/maccyplus/releases/download/v2.10.2/MaccyPlus.zip" length="8762884" type="application/octet-stream" sparkle:version="82" sparkle:shortVersionString="2.10.2" sparkle:edSignature="ZEocOEZxlCQQ2MK9lAaKTcfPO6pxutRmGrm/QXRGVV5NWKjWVqv73TLNd4Dbg3M2zsrCd5m6ZZGe/SJiIoTtCw=="/>
+    </item>
+    <item>
       <title>2.10.1</title>
       <description>
         <![CDATA[
