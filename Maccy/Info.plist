@@ -38,6 +38,8 @@
 	<true/>
 	<key>SUFeedURL</key>
 	<string>https://raw.githubusercontent.com/roypadina/maccyplus/main/appcast.xml</string>
+	<key>SUPublicEDKey</key>
+	<string>qq4oZAVmJanKJ1bTAzGSO94WWX6cx+/5kCjBZxJXEm0=</string>
 	<key>SUEnableAutomaticChecks</key>
 	<false/>
 	<key>UTExportedTypeDeclarations</key>
