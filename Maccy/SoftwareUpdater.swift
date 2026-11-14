@@ -77,8 +77,8 @@ nonisolated final class UpdateAlertPresenter: NSObject, SPUUpdaterDelegate, SPUS
     let userInitiated = state.userInitiated
     MainActor.assumeIsolated {
       NSApp.setActivationPolicy(.regular)
-      // A "Check for Updates…" click forces it (macOS 14+ can refuse activate()); scheduled reminders never steal focus.
-      if userInitiated { NSApp.activate(ignoringOtherApps: true) } else { NSApp.activate() }
+      // A "Check for Updates…" click forces it and guards the hand-back after the .regular switch (macOS 14+); scheduled reminders never steal focus.
+      if userInitiated { NSApp.activate(ignoringOtherApps: true); keepUpdateWindowFront() } else { NSApp.activate() }
     }
   }
 
@@ -88,5 +88,27 @@ nonisolated final class UpdateAlertPresenter: NSObject, SPUUpdaterDelegate, SPUS
         NSApp.setActivationPolicy(.accessory)
       }
     }
+  }
+}
+
+/// shortcut: ~0.5 s after the .accessory → .regular switch macOS hands activation back to the previous app (traced in
+/// PullPing). Take it back once unless the user clicked elsewhere meanwhile; drop when macOS stops. Limit: a keyboard
+/// switch (⌘-Tab, a launcher hotkey) within the 1.5 s is pulled back once.
+@MainActor private func keepUpdateWindowFront() {
+  var clicked = false, done = false
+  let clicks: NSEvent.EventTypeMask = [.leftMouseDown, .rightMouseDown, .otherMouseDown]
+  let monitor = NSEvent.addGlobalMonitorForEvents(matching: clicks) { _ in clicked = true }
+  let observer = NotificationCenter.default.addObserver(
+    forName: NSApplication.didResignActiveNotification, object: nil, queue: .main
+  ) { _ in
+    MainActor.assumeIsolated {
+      guard !clicked, !done else { return }
+      done = true
+      NSApp.activate(ignoringOtherApps: true)
+    }
+  }
+  DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+    monitor.map(NSEvent.removeMonitor)
+    NotificationCenter.default.removeObserver(observer)
   }
 }
