@@ -17,7 +17,8 @@ class About {
       window.center()
       self.window = window
     }
-    NSApp.activate()
+    // MaccyPlus: forceful, a user action; on macOS 14+ the front app can refuse activate() (window opens behind).
+    NSApp.activate(ignoringOtherApps: true)
     window?.makeKeyAndOrderFront(nil)
   }
 }
@@ -128,7 +129,8 @@ enum WelcomeWindow {
         Self.window = nil
       }
     }
-    NSApp.activate()
+    // MaccyPlus: forceful, a user action or the user's first launch; on macOS 14+ activate() can be refused (window behind).
+    NSApp.activate(ignoringOtherApps: true)
     window?.makeKeyAndOrderFront(nil)
   }
 }
