@@ -27,7 +27,7 @@ struct Select: AppIntent, CustomIntentMigratedAppIntent {
       }
 
       let value = items[index].title
-      AppState.shared.history.select(items[index], flags: .currentModifierFlags)
+      AppState.shared.history.select(items[index], flags: .currentModifierFlags, countsAsPick: false)  // MaccyPlus: Shortcuts picks don't count for the Ko-fi card
 
       return value
     }

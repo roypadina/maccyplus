@@ -359,7 +359,7 @@ class History: ItemsContainer { // swiftlint:disable:this type_body_length
   }
 
   @MainActor
-  func select(_ item: HistoryItemDecorator?, flags modifierFlags: NSEvent.ModifierFlags) {
+  func select(_ item: HistoryItemDecorator?, flags modifierFlags: NSEvent.ModifierFlags, countsAsPick: Bool = true) {
     guard let item else {
       return
     }
@@ -387,6 +387,7 @@ class History: ItemsContainer { // swiftlint:disable:this type_body_length
         return
       }
     }
+    if countsAsPick { SupportPrompt.notePaste() } // MaccyPlus: the Ko-fi card counts picks from history (copy or paste)
 
     Task {
       searchQuery = ""
