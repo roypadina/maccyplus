@@ -102,7 +102,7 @@ nonisolated final class UpdateAlertPresenter: NSObject, SPUUpdaterDelegate, SPUS
     forName: NSApplication.didResignActiveNotification, object: nil, queue: .main
   ) { _ in
     MainActor.assumeIsolated {
-      guard !clicked, !done else { return }
+      guard !clicked, !done, NSApp.activationPolicy() == .regular else { return }  // update session already over: stay out
       done = true
       NSApp.activate(ignoringOtherApps: true)
     }
