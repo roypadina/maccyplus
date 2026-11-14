@@ -138,6 +138,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
       UserDefaults.standard.set(true, forKey: "didShowWelcome")
       WelcomeWindow.show()
     }
+    if !AppDelegate.isTesting { SupportPrompt.setUp() } // MaccyPlus: Ko-fi support card
 
     panel = FloatingPanel(
       contentRect: NSRect(origin: .zero, size: Defaults[.windowSize]),
@@ -244,10 +245,21 @@ class AppDelegate: NSObject, NSApplicationDelegate {
       item.target = self
       menu.addItem(item)
     }
+    if SupportPanel.isShowing { // the Ko-fi card is mouse-only; same three answers here
+      menu.addItem(.sectionHeader(title: "Support MaccyPlus"))
+      for (tag, title) in ["Tip a Coffee on Ko-fi ☕", "Ask Me in 2 Weeks", "Don't Ask Again"].enumerated() {
+        item(title, #selector(statusMenuSupportAnswer(_:)))
+        menu.items.last?.tag = tag
+      }
+      menu.addItem(.separator())
+    }
     item(SoftwareUpdater.shared.menuTitle, #selector(statusMenuCheckForUpdates))
     menu.addItem(.separator())
     item("Settings…", #selector(statusMenuSettings), key: ",")
     item("About MaccyPlus", #selector(statusMenuAbout))
+    item("Show Support Prompt Now", #selector(statusMenuSupportPreview)) // ⌥ swaps it in for About; never recorded
+    menu.items.last?.isAlternate = true
+    menu.items.last?.keyEquivalentModifierMask = .option
     menu.addItem(.separator())
     item("Quit MaccyPlus", #selector(NSApplication.terminate(_:)), key: "q")
     menu.items.last?.target = NSApp
@@ -257,6 +269,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
   @objc private func statusMenuCheckForUpdates() { SoftwareUpdater.shared.checkForUpdates() }
   @objc private func statusMenuSettings() { AppState.shared.openPreferences() }
   @objc private func statusMenuAbout() { AppState.shared.openAbout() }
+  @objc private func statusMenuSupportPreview() { SupportPrompt.present(record: false) }
+  @objc private func statusMenuSupportAnswer(_ sender: NSMenuItem) {
+    SupportPanel.respond([SupportPromptState.Answer.support, .snooze, .never][sender.tag])
+    SupportPanel.close()
+  }
 
   private func synchronizeMenuIconText() {
     _ = withObservationTracking {

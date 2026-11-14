@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.11.0] - 2026-11-14
+
+### Added
+- Ko-fi support card: about 20 seconds after you pick an item from the history (copy or paste), or a rule action finishes, a small receipt card may ask for a tip. It waits until 7 days after you install or update to this version, and until more than 60 picks from the history. It asks at most 3 times a year, only when you used the Mac in the last 10 seconds and are not typing, and never while the history popup, a MaccyPlus window, an update prompt or a menu is open, the screen is locked or the microphone is in use. "Ask me in 2 weeks" snoozes it. "Nope, don't ask again" keeps it quiet until the next major version, and for at least 90 days. A card still open when you open the history popup, a MaccyPlus window or an update prompt, or when the Mac sleeps or locks, closes and counts as a snooze; one left unanswered for 5 minutes, or 2 minutes without input, fades and counts as a snooze too. The card never takes keyboard focus, and the same three choices head the right-click menu while it shows, for keyboard and VoiceOver users. Hold ⌥ in the right-click menu for "Show Support Prompt Now" to preview it. The pick and rule-action counts (since this version) stay on your Mac, in the app's preferences; nothing is sent.
+
 ## [2.10.4] - 2026-11-04
 
 ### Added

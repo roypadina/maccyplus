@@ -165,7 +165,9 @@ final class ActionEngine {
         case .sideEffect, .none:
           break
         }
+        if outcome != .none { SupportPrompt.noteRuleAction() }
       } catch {
+        SupportPrompt.noteFailure()
         NSSound.beep()
       }
     }

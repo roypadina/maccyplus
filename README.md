@@ -426,6 +426,8 @@ Free, open-source Mac menu-bar apps and terminal tools, all on one site: **[apps
 
 If MaccyPlus saves you time with your clipboard, you can support its development — it's optional and always appreciated.
 
+Once in a while, MaccyPlus asks too. A small receipt card shows up about 20 seconds after you pick an item from the history (copy or paste), or a rule action runs, while you are still at the Mac. It only appears after more than 60 picks from the history, and at most 3 times a year. "Ask me in 2 weeks" snoozes it, and "Nope, don't ask again" keeps it away until the next major version. If you open the history popup, a MaccyPlus window or an update prompt while the card is still open, it closes and counts as a snooze; one left unanswered for 5 minutes, or when you step away (2 minutes without input, sleep or screen lock), fades and counts as a snooze too. It never takes keyboard focus, and its counts stay on your Mac.
+
 [![Support me on Ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/roypadina)
 
 A ⭐ on the repo helps just as much.
