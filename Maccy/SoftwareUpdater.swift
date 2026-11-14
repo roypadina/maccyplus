@@ -74,9 +74,11 @@ nonisolated final class UpdateAlertPresenter: NSObject, SPUUpdaterDelegate, SPUS
     forUpdate update: SUAppcastItem,
     state: SPUUserUpdateState
   ) {
+    let userInitiated = state.userInitiated
     MainActor.assumeIsolated {
       NSApp.setActivationPolicy(.regular)
-      NSApp.activate()
+      // A "Check for Updates…" click forces it (macOS 14+ can refuse activate()); scheduled reminders never steal focus.
+      if userInitiated { NSApp.activate(ignoringOtherApps: true) } else { NSApp.activate() }
     }
   }
 
