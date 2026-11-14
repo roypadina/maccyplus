@@ -188,6 +188,8 @@ class AppState: Sendable {
         ]
       )
     }
+    // MaccyPlus: forceful, every caller is a user action; Settings' own activate() on macOS 14+ is a request the front app can refuse.
+    NSApp.activate(ignoringOtherApps: true)
     settingsWindowController?.show()
     settingsWindowController?.window?.orderFrontRegardless()
   }
