@@ -1,4 +1,5 @@
 import AppKit
+import OSLog
 import Sparkle
 
 @Observable
@@ -92,23 +93,28 @@ nonisolated final class UpdateAlertPresenter: NSObject, SPUUpdaterDelegate, SPUS
 }
 
 /// shortcut: ~0.5 s after the .accessory → .regular switch macOS hands activation back to the previous app (traced in
-/// PullPing). Take it back once unless the user clicked elsewhere meanwhile; drop when macOS stops. Limit: a keyboard
-/// switch (⌘-Tab, a launcher hotkey) within the 1.5 s is pulled back once.
+/// PullPing). Take it back once, within 1.5 s, and only if there was no click or key press anywhere since (asked of the
+/// window server when activation goes, so no event monitor can lose the race); drop when macOS stops.
 @MainActor private func keepUpdateWindowFront() {
-  var clicked = false, done = false
-  let clicks: NSEvent.EventTypeMask = [.leftMouseDown, .rightMouseDown, .otherMouseDown]
-  let monitor = NSEvent.addGlobalMonitorForEvents(matching: clicks) { _ in clicked = true }
+  let shown = Date()
+  var done = false
   let observer = NotificationCenter.default.addObserver(
     forName: NSApplication.didResignActiveNotification, object: nil, queue: .main
   ) { _ in
     MainActor.assumeIsolated {
-      guard !clicked, !done, NSApp.activationPolicy() == .regular else { return }  // update session already over: stay out
+      let elapsed = Date().timeIntervalSince(shown)
+      let input = [CGEventType.leftMouseDown, .rightMouseDown, .otherMouseDown, .keyDown]
+        .map { CGEventSource.secondsSinceLastEventType(.hidSystemState, eventType: $0) }.min() ?? 0
+      // update session already over (.accessory again): stay out
+      guard !done, elapsed < 1.5, input > elapsed, NSApp.activationPolicy() == .regular else { return }
       done = true
+      activationLog.notice(
+        "keepFront: took activation back from \(NSWorkspace.shared.frontmostApplication?.bundleIdentifier ?? "-", privacy: .public) \(Int(elapsed * 1000)) ms after the update window"
+      )
       NSApp.activate(ignoringOtherApps: true)
     }
   }
-  DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-    monitor.map(NSEvent.removeMonitor)
-    NotificationCenter.default.removeObserver(observer)
-  }
+  DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { NotificationCenter.default.removeObserver(observer) }
 }
+
+private let activationLog = Logger(subsystem: "com.royp.MaccyPlus", category: "activation")
