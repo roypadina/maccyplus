@@ -6,6 +6,21 @@
     <description>Most recent changes with links to updates.</description>
     <language>en</language>
     <item>
+      <title>2.11.1</title>
+      <description>
+        <![CDATA[
+          <ul>
+            <li>On macOS 14 and later, Settings, About and the Welcome window come to the front instead of opening behind the app you were using.</li>
+            <li>Check for Updates… brings the update window to the front.</li>
+          </ul>
+        ]]>
+      </description>
+      <pubDate>Sun, 15 Nov 2026 02:00:29 +0200</pubDate>
+      <releaseNotesLink>https://github.com/roypadina/maccyplus/releases/tag/v2.11.1</releaseNotesLink>
+      <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+      <enclosure url="https://github.com/roypadina/maccyplus/releases/download/v2.11.1/MaccyPlus.zip" length="9032465" type="application/octet-stream" sparkle:version="86" sparkle:shortVersionString="2.11.1" sparkle:edSignature="CL5yiCDpJhYr3lHPKKVr07LWkivI74Ia5llMqs+kgAlactSgB5HOVU68LEfwT9NT8YQfdJcm9FmAKG6VUdCrDA=="/>
+    </item>
+    <item>
       <title>2.11.0</title>
       <description>
         <![CDATA[
