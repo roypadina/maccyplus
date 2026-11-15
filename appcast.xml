@@ -6,6 +6,20 @@
     <description>Most recent changes with links to updates.</description>
     <language>en</language>
     <item>
+      <title>2.11.2</title>
+      <description>
+        <![CDATA[
+          <ul>
+            <li>No longer takes focus back from another app you clicked into right after opening a window.</li>
+          </ul>
+        ]]>
+      </description>
+      <pubDate>Sun, 15 Nov 2026 22:19:32 +0200</pubDate>
+      <releaseNotesLink>https://github.com/roypadina/maccyplus/releases/tag/v2.11.2</releaseNotesLink>
+      <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+      <enclosure url="https://github.com/roypadina/maccyplus/releases/download/v2.11.2/MaccyPlus.zip" length="9037234" type="application/octet-stream" sparkle:version="87" sparkle:shortVersionString="2.11.2" sparkle:edSignature="wfYG8cnwgKWHCbEZov7PWVmqGCkIrJsyTyrSXcipvI7dW4skb0/e2rXUfq1Trf/f+SboOnJU9XxuvizJtCi4Cg=="/>
+    </item>
+    <item>
       <title>2.11.1</title>
       <description>
         <![CDATA[
